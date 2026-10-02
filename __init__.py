@@ -1,23 +1,22 @@
+"""Elegant Nodes for ComfyUI: small, tidy utility nodes that also work inside subgraphs."""
+
 from typing_extensions import override
 
 from comfy_api.latest import ComfyExtension, io
 
-from .any_math import ElegantAnyMathMultiPreview
-from .any_to_string import ElegantAnyToString, ElegantAnyToStringAdvanced
-from .resolution import ElegantResolution
-from .seed import ElegantSeed
+from .nodes import NODES
 
 WEB_DIRECTORY = "./web/js"
 
 
-class ElegantExtension(ComfyExtension):
+class ElegantNodesExtension(ComfyExtension):
     @override
     async def get_node_list(self) -> list[type[io.ComfyNode]]:
-        return [ElegantSeed, ElegantResolution, ElegantAnyToString, ElegantAnyToStringAdvanced, ElegantAnyMathMultiPreview]
+        return NODES
 
 
-async def comfy_entrypoint() -> ElegantExtension:
-    return ElegantExtension()
+async def comfy_entrypoint() -> ElegantNodesExtension:
+    return ElegantNodesExtension()
 
 
-__all__ = ["comfy_entrypoint", "WEB_DIRECTORY"]
+__all__ = ["WEB_DIRECTORY", "comfy_entrypoint"]

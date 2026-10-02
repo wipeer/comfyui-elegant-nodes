@@ -1,8 +1,54 @@
-// Shared helpers for Elegant nodes promoted into subgraphs.
+// Shared helpers for the Elegant nodes' frontend code.
+
+/** Node ids, as defined in ../../nodes/*.py. */
+export const NODE_IDS = {
+  seed: "ElegantSeed",
+  resolutionSelector: "ElegantResolutionSelector",
+  anyToStringPreview: "ElegantAnyToStringPreview",
+  anyToStringMultiPreview: "ElegantAnyToStringMultiPreview",
+  anyMathMultiPreview: "ElegantAnyMathMultiPreview",
+};
+
+/** Runs `after(this, result, args)` after `object[name](...args)`, keeping the original. */
+export function chainMethod(object, name, after) {
+  const original = object[name];
+  object[name] = function (...args) {
+    const result = original?.apply(this, args);
+    after(this, result, args);
+    return result;
+  };
+}
+
+/** Calls `setup(node)` for every new node of the given node type. */
+export function onNodeCreated(nodeType, setup) {
+  chainMethod(nodeType.prototype, "onNodeCreated", (node) => setup(node));
+}
+
+/** Enlarges the node to its computed minimum size; never shrinks it. */
+export function growToFit(node) {
+  const [minWidth, minHeight] = node.computeSize?.() ?? node.size;
+  if (node.size[0] < minWidth || node.size[1] < minHeight) {
+    node.setSize?.([Math.max(node.size[0], minWidth), Math.max(node.size[1], minHeight)]);
+  }
+  node.setDirtyCanvas?.(true, true);
+}
+
+/** Marks a frontend-only widget so it is saved neither in the workflow nor in the prompt. */
+export function frontendOnly(widget) {
+  widget.serialize = false;
+  widget.options ??= {};
+  widget.options.serialize = false;
+  return widget;
+}
 
 export function inputIsLinked(node, widgetName) {
   return !!node.inputs?.some((input) => input.widget?.name === widgetName && input.link != null);
 }
+
+// ---------------------------------------------------------------------------
+// Subgraphs: when widgets of an Elegant node are promoted to a subgraph node,
+// the subgraph node's (store-backed) widgets hold the values that are used.
+// ---------------------------------------------------------------------------
 
 /** Follows a subgraph node input to the interior widgets it feeds, through nested subgraphs. */
 function resolvePromotedTargets(host, input, nodeType, depth = 0) {
@@ -44,6 +90,7 @@ export function collectPromoted(host, nodeType) {
   return [...groups.values()];
 }
 
+/** A string that changes whenever the promoted groups change. */
 export function groupsSignature(groups) {
   return groups
     .map((g) => `${g.inner.id}:${Object.entries(g.inputs).map(([w, i]) => `${w}=${i.name}`).sort().join(",")}`)
@@ -51,7 +98,7 @@ export function groupsSignature(groups) {
     .join("|");
 }
 
-export function hostWidgetFor(host, input) {
+function hostWidgetFor(host, input) {
   return (
     host.getWidgetFromSlot?.(input) ??
     host.widgets?.find((w) => (input.widgetId && w.widgetId === input.widgetId) || w.name === input.name)
@@ -64,8 +111,8 @@ export function hostInputConnected(host, input) {
 }
 
 /**
- * For a promoted group: the widget that holds the live value of `widgetName`.
- * That is the subgraph node's widget when promoted, else the interior node's.
+ * The widget that holds the live value of `widgetName` for a promoted group:
+ * the subgraph node's widget when promoted, otherwise the interior node's.
  */
 export function liveWidget(host, group, widgetName) {
   const input = group.inputs[widgetName];
@@ -94,21 +141,9 @@ export function watchSubgraphHost(host, sync) {
     for (const type of ["widget-promoted", "widget-demoted", "input-added", "removing-input"]) {
       host.subgraph?.events?.addEventListener?.(type, scheduleSync, { signal: abort.signal });
     }
-
-    for (const hook of ["onConfigure", "onConnectionsChange"]) {
-      const original = host[hook];
-      host[hook] = function (...args) {
-        const result = original?.apply(this, args);
-        scheduleSync();
-        return result;
-      };
-    }
-
-    const originalOnRemoved = host.onRemoved;
-    host.onRemoved = function (...args) {
-      abort.abort();
-      return originalOnRemoved?.apply(this, args);
-    };
+    chainMethod(host, "onConfigure", scheduleSync);
+    chainMethod(host, "onConnectionsChange", scheduleSync);
+    chainMethod(host, "onRemoved", () => abort.abort());
 
     host.__elegantWatch = { syncs, scheduleSync };
   }
@@ -116,7 +151,7 @@ export function watchSubgraphHost(host, sync) {
   host.__elegantWatch.scheduleSync();
 }
 
-/** Replaces the widgets previously added by `key` on the subgraph node. */
+/** Replaces the widgets previously added under `key` on the subgraph node with `build()`'s. */
 export function replaceHostWidgets(host, key, build) {
   const state = (host.__elegantWidgets ??= {});
   for (const widget of state[key] ?? []) host.removeWidget?.(widget);

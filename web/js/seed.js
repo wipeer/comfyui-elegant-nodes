@@ -1,27 +1,33 @@
+// Elegant Seed: random/fixed switch, buttons, and seed control on queue.
+
 import { app } from "../../scripts/app.js";
 import {
+  NODE_IDS,
+  chainMethod,
   collectPromoted,
+  frontendOnly,
   groupsSignature,
   hostInputConnected,
   inputIsLinked,
   liveWidget,
+  onNodeCreated,
   replaceHostWidgets,
   watchSubgraphHost,
-} from "./elegant_common.js";
+} from "./common.js";
 
-const NODE_ID = "ElegantSeed";
+// Last queued seed, saved in the workflow: one value on the node itself, and a
+// map by interior node id on subgraph nodes.
 const LAST_SEED_PROPERTY = "elegant_last_seed";
-// On subgraph nodes, last seeds are kept per interior Elegant Seed node id.
 const HOST_LAST_SEEDS_PROPERTY = "elegant_last_seeds";
 
-// Same as ComfyUI's built-in randomize: never go past what JS can represent exactly.
+/** A random seed in the widget's range, capped like ComfyUI's own randomize to what JS represents exactly. */
 function randomSeed(seedWidget) {
   const min = Math.max(0, seedWidget.options?.min ?? 0);
   const max = Math.min(Number.MAX_SAFE_INTEGER, seedWidget.options?.max ?? Number.MAX_SAFE_INTEGER);
   return Math.min(max, min + Math.floor(Math.random() * (max - min + 1)));
 }
 
-// Global "Settings > Node Widget > Widget control mode": "before" or "after".
+/** Global setting "Widget control mode": randomize before (true) or after (false) queueing. */
 function controlRunsBefore() {
   const setting =
     app.extensionManager?.setting?.get?.("Comfy.WidgetControlMode") ??
@@ -30,21 +36,21 @@ function controlRunsBefore() {
 }
 
 /**
- * Adds the three buttons to `owner` and drives the seed on queue.
+ * Adds the three buttons to `owner` and drives the seed around each queued prompt.
  *
  * The seed and mode widgets are looked up on every use because on a subgraph
  * node they are store-backed projections that the frontend may recreate.
  */
-function createSeedController({ owner, getSeedWidget, getModeWidget, isActive, lastSeed, suffix = "" }) {
-  // Seed value we last left in the field. A different value at queue time means
-  // the user typed one, which is then used for the next run as-is.
+function createSeedController({ owner, getSeedWidget, getModeWidget, isActive, lastSeed, labelSuffix = "" }) {
+  // The seed we last left in the field. A different value at queue time means the
+  // user typed one, which is then used for the next run as-is.
   let lastSeen = getSeedWidget()?.value;
+  // Set by the buttons: use the seed they put in the field for the next run.
   let keepNextSeed = false;
-  // Seed captured right before the prompt is built; confirmed once it is queued.
+  // Seed captured right before the prompt is built; recorded once it is queued.
   let pendingSeed;
 
   const redraw = () => owner.setDirtyCanvas?.(true, true);
-
   const isRandom = () => !!getModeWidget()?.value;
 
   const setSeed = (value) => {
@@ -64,14 +70,11 @@ function createSeedController({ owner, getSeedWidget, getModeWidget, isActive, l
   };
 
   const addButton = (label, tooltip, onClick) => {
-    const button = owner.addWidget("button", label + suffix, null, () => {
+    const button = owner.addWidget("button", label + labelSuffix, null, () => {
       if (getSeedWidget()) onClick();
     });
-    button.serialize = false;
-    button.options ??= {};
-    button.options.serialize = false;
     button.tooltip = tooltip;
-    return button;
+    return frontendOnly(button);
   };
 
   const randomButton = addButton(
@@ -104,14 +107,14 @@ function createSeedController({ owner, getSeedWidget, getModeWidget, isActive, l
 
   const refresh = () => {
     const last = lastSeed.get();
-    lastButton.label =
-      (typeof last === "number" ? `♻️ Last seed → fixed (${last})` : "♻️ Last seed → fixed (none yet)") + suffix;
+    const shown = typeof last === "number" ? last : "none yet";
+    lastButton.label = `♻️ Last seed → fixed (${shown})${labelSuffix}`;
     lastSeen = getSeedWidget()?.value;
     redraw();
   };
   refresh();
 
-  // The frontend calls these on every widget of every node around each queued prompt.
+  // The frontend calls these on every widget around each queued prompt (per batch item).
   randomButton.beforeQueued = () => {
     const seedWidget = getSeedWidget();
     if (!seedWidget || !isActive()) {
@@ -138,48 +141,33 @@ function createSeedController({ owner, getSeedWidget, getModeWidget, isActive, l
     refresh();
   };
 
-  return {
-    widgets: [randomButton, lastButton, fixedButton],
-    refresh,
-  };
+  return { widgets: [randomButton, lastButton, fixedButton], refresh };
 }
 
-function setupElegantSeed(node) {
+function setupSeedNode(node) {
   const findWidget = (name) => node.widgets?.find((w) => w.name === name);
   if (!findWidget("mode") || !findWidget("seed")) return;
-
   node.properties ??= {};
 
   const controller = createSeedController({
     owner: node,
     getSeedWidget: () => findWidget("seed"),
     getModeWidget: () => findWidget("mode"),
-    // When the seed or mode is fed by a link (e.g. promoted to a subgraph node),
-    // the value here is not the one that gets used; the subgraph node takes over.
+    // Seed or mode fed by a link (e.g. promoted to a subgraph node): the value
+    // here isn't the one used; the subgraph node takes over.
     isActive: () => !inputIsLinked(node, "seed") && !inputIsLinked(node, "mode"),
     lastSeed: {
       get: () => node.properties[LAST_SEED_PROPERTY],
       set: (value) => (node.properties[LAST_SEED_PROPERTY] = value),
     },
   });
-
-  const originalOnConfigure = node.onConfigure;
-  node.onConfigure = function (...args) {
-    const result = originalOnConfigure?.apply(this, args);
-    controller.refresh();
-    return result;
-  };
+  chainMethod(node, "onConfigure", () => controller.refresh());
 }
 
-// ---------------------------------------------------------------------------
-// Subgraph support: when an Elegant Seed's "seed" or "mode" widget is promoted
-// to a subgraph node, the buttons are shown on the subgraph node as well, and
-// the subgraph node's (store-backed) widgets become the ones that are driven.
-// ---------------------------------------------------------------------------
-
-function syncSubgraphHost(host) {
+/** Shows the buttons on a subgraph node for each Elegant Seed whose seed or mode it promotes. */
+function syncSubgraphNode(host) {
   const state = (host.__elegantSeed ??= { signature: null, controllers: [] });
-  const groups = collectPromoted(host, NODE_ID).filter((g) => g.inputs.seed || g.inputs.mode);
+  const groups = collectPromoted(host, NODE_IDS.seed).filter((g) => g.inputs.seed || g.inputs.mode);
   const signature = groupsSignature(groups);
 
   if (signature === state.signature) {
@@ -187,8 +175,8 @@ function syncSubgraphHost(host) {
     return;
   }
   state.signature = signature;
-
   host.properties ??= {};
+
   replaceHostWidgets(host, "seed", () => {
     state.controllers = groups.map((group) => {
       const { inner, inputs } = group;
@@ -213,7 +201,7 @@ function syncSubgraphHost(host) {
             };
           },
         },
-        suffix: groups.length > 1 ? ` · #${inner.id}` : "",
+        labelSuffix: groups.length > 1 ? ` · #${inner.id}` : "",
       });
     });
     return state.controllers.flatMap((controller) => controller.widgets);
@@ -223,15 +211,9 @@ function syncSubgraphHost(host) {
 app.registerExtension({
   name: "elegant.seed",
   async beforeRegisterNodeDef(nodeType, nodeData) {
-    if (nodeData.name !== NODE_ID) return;
-    const onNodeCreated = nodeType.prototype.onNodeCreated;
-    nodeType.prototype.onNodeCreated = function (...args) {
-      const result = onNodeCreated?.apply(this, args);
-      setupElegantSeed(this);
-      return result;
-    };
+    if (nodeData.name === NODE_IDS.seed) onNodeCreated(nodeType, setupSeedNode);
   },
   nodeCreated(node) {
-    if (node.isSubgraphNode?.()) watchSubgraphHost(node, syncSubgraphHost);
+    if (node.isSubgraphNode?.()) watchSubgraphHost(node, syncSubgraphNode);
   },
 });

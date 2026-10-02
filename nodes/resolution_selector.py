@@ -1,41 +1,15 @@
-import math
-
 from comfy_api.latest import io
 
-# Listed in landscape form; the orientation switch turns e.g. 3:2 into 2:3.
-ASPECT_RATIOS = {
-    "1:1": (1, 1),
-    "5:4": (5, 4),
-    "9:7": (9, 7),
-    "4:3": (4, 3),
-    "3:2": (3, 2),
-    "16:9": (16, 9),
-    "21:9": (21, 9),
-}
-
-ROUND_TO = ["8", "16", "32", "64"]
+from ..core.resolution import ASPECT_RATIOS, ROUND_TO_OPTIONS, compute_resolution
 
 
-def compute_resolution(aspect_ratio: str, landscape: bool, base: int, round_to: int) -> tuple[int, int]:
-    """Width and height with about the same area as a base x base square.
+class ElegantResolutionSelector(io.ComfyNode):
+    """Width and height from an aspect ratio. The live result line is in web/js/resolution_selector.js."""
 
-    Must stay in sync with computeResolution() in web/js/elegant_resolution.js,
-    which shows the result live in the UI.
-    """
-    a, b = ASPECT_RATIOS[aspect_ratio]
-    ratio = a / b if landscape else b / a
-    scale = math.sqrt(ratio)
-    # floor(x + 0.5) rather than round(): Python rounds halves to even, JS does not.
-    width = max(round_to, math.floor(base * scale / round_to + 0.5) * round_to)
-    height = max(round_to, math.floor(base / scale / round_to + 0.5) * round_to)
-    return width, height
-
-
-class ElegantResolution(io.ComfyNode):
     @classmethod
     def define_schema(cls):
         return io.Schema(
-            node_id="ElegantResolution",
+            node_id="ElegantResolutionSelector",
             display_name="Elegant Resolution Selector",
             search_aliases=["resolution", "aspect ratio", "size", "width height", "elegant resolution"],
             category="utilities/elegant",
@@ -46,14 +20,14 @@ class ElegantResolution(io.ComfyNode):
                     "aspect_ratio",
                     options=list(ASPECT_RATIOS),
                     default="1:1",
-                    tooltip="Aspect ratio in landscape form. Use the orientation switch for portrait.",
+                    tooltip="Aspect ratio. Shown flipped (e.g. 2:3) in portrait.",
                 ),
                 io.Boolean.Input(
                     "orientation",
                     default=True,
                     label_on="landscape",
                     label_off="portrait",
-                    tooltip="Landscape: wider than tall. Portrait: taller than wide. Has no effect at 1:1.",
+                    tooltip="Landscape: wider than tall. Portrait: taller than wide. No effect at 1:1.",
                 ),
                 io.Int.Input(
                     "base",
@@ -66,10 +40,10 @@ class ElegantResolution(io.ComfyNode):
                 ),
                 io.Combo.Input(
                     "round_to",
-                    options=ROUND_TO,
+                    options=ROUND_TO_OPTIONS,
                     default="16",
                     tooltip="Width and height are rounded to a multiple of this. 8 is the minimum for "
-                    "latent models, 16 is safe for Flux/SD3, 64 matches SDXL training sizes.",
+                    "latent models, 16 suits Flux/SD3, 64 matches SDXL training sizes.",
                 ),
             ],
             outputs=[

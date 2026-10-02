@@ -1,14 +1,26 @@
 [project]
-name = "comfyui-elegant-nodes"
-description = "Elegant utility nodes for ComfyUI: a seed node with random/fixed controls, an aspect-ratio resolution selector any-to-string previews and a math expression node, all working in subgraphs."
-version = "0.1.0"
-license = { text = "MIT" }
-dependencies = []
+# Registry id: permanent once published. Folder name when installed via ComfyUI-Manager.
+name = "elegant-nodes"
+description = "Small, tidy utility nodes that also work inside subgraphs: a seed with random/fixed controls, an aspect-ratio resolution selector, plain-text previews and a math expression node."
+version = "1.0.0"
+license = { file = "LICENSE" }
+readme = "README.md"
+requires-python = ">=3.10"
+classifiers = ["Operating System :: OS Independent"]
+dynamic = ["dependencies"]
+
+[tool.setuptools.dynamic]
+dependencies = { file = ["requirements.txt"] }
 
 [project.urls]
 Repository = "https://github.com/wipeer/comfyui-elegant-nodes"
+Documentation = "https://github.com/wipeer/comfyui-elegant-nodes#readme"
+"Bug Tracker" = "https://github.com/wipeer/comfyui-elegant-nodes/issues"
 
 [tool.comfy]
-PublisherId = ""
+# Your publisher id from https://registry.comfy.org (the part after "@" on your profile).
+PublisherId = "wipeer"
 DisplayName = "Elegant Nodes"
-Icon = ""
+Icon = "https://raw.githubusercontent.com/wipeer/comfyui-elegant-nodes/main/docs/icon.svg"
+# First ComfyUI release with Autogrow (auto-expanding) inputs in the V3 node API.
+requires-comfyui = ">=0.4.0"

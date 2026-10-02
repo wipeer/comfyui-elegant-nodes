@@ -1,9 +1,11 @@
+// Help: a cyan ? at the right end of each Elegant node's title opens a help dialog.
+
 import { app } from "../../scripts/app.js";
+import { NODE_IDS, onNodeCreated } from "./common.js";
 
-// A cyan ? button at the right end of each Elegant node's title opens this help.
-
+// Help content per node id. Plain HTML; shown in the dialog below.
 const HELP = {
-  ElegantSeed: {
+  [NODE_IDS.seed]: {
     title: "Elegant Seed",
     html: `
 <p>A seed you can keep fixed or have regenerated on every run.</p>
@@ -27,7 +29,7 @@ const HELP = {
 <p>When <code>seed</code> (and optionally <code>mode</code>) is promoted, the buttons also appear on the subgraph node. Each copy of a subgraph keeps its own seed.</p>`,
   },
 
-  ElegantResolution: {
+  [NODE_IDS.resolutionSelector]: {
     title: "Elegant Resolution Selector",
     html: `
 <p>Width and height for an aspect ratio, keeping about the same number of pixels as a square of <b>base</b> × <b>base</b>.</p>
@@ -50,7 +52,7 @@ const HELP = {
 <p><code>width</code> and <code>height</code> (INT), e.g. into Empty Latent Image.</p>`,
   },
 
-  ElegantAnyToString: {
+  [NODE_IDS.anyToStringPreview]: {
     title: "Elegant Any to String Preview",
     html: `
 <p>Turns any value into text, shows it, and outputs it as a <code>string</code>.</p>
@@ -67,7 +69,7 @@ const HELP = {
 <p>The text isn't saved in the workflow; run again after loading.</p>`,
   },
 
-  ElegantAnyToStringAdvanced: {
+  [NODE_IDS.anyToStringMultiPreview]: {
     title: "Elegant Any to String Multi Preview",
     html: `
 <p>Turns several values into text and joins them with a delimiter.</p>
@@ -79,7 +81,7 @@ const HELP = {
 <p>Each value is converted like in <b>Elegant Any to String Preview</b>. The joined text is shown and output as <code>string</code>, also on subgraph nodes.</p>`,
   },
 
-  ElegantAnyMathMultiPreview: {
+  [NODE_IDS.anyMathMultiPreview]: {
     title: "Elegant Any Math Multi Preview",
     html: `
 <p>Calculates an expression from the inputs <code>a</code>, <code>b</code>, <code>c</code>, … and outputs the result as int, float, boolean and string.</p>
@@ -155,7 +157,12 @@ const HELP = {
   },
 };
 
+// ---------------------------------------------------------------------------
+// Dialog
+// ---------------------------------------------------------------------------
+
 const HELP_COLOR = "#22d3ee"; // cyan
+const TITLE_BUTTON_NAME = "elegant_help";
 
 const STYLE = `
 .elegant-help-icon { display: inline-flex; align-items: center; justify-content: center; flex: none;
@@ -168,7 +175,7 @@ const STYLE = `
   border-radius: 10px; box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5); font: 14px/1.5 sans-serif; }
 .elegant-help header { display: flex; align-items: center; justify-content: space-between; gap: 12px;
   padding: 12px 16px; border-bottom: 1px solid var(--border-color, #444); }
-.elegant-help header h2 { margin: 0; font-size: 16px; }
+.elegant-help header h2 { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 16px; }
 .elegant-help header button { background: none; border: 0; color: inherit; font-size: 18px; cursor: pointer; line-height: 1;
   padding: 4px 8px; border-radius: 6px; }
 .elegant-help header button:hover { background: var(--comfy-input-bg, #333); }
@@ -181,10 +188,10 @@ const STYLE = `
 .elegant-help td:first-child { white-space: nowrap; width: 1%; }
 .elegant-help code { font: 12.5px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   background: var(--comfy-input-bg, #2a2a2a); padding: 1px 4px; border-radius: 4px; }
-.elegant-help-button { margin-left: auto; margin-right: 14px; /* clear of the top-right resize handle */ padding: 2px; background: none; border: 0; cursor: pointer; line-height: 0;
-  opacity: 0.85; border-radius: 50%; }
+/* margin-right keeps the button clear of the Vue node's top-right resize handle */
+.elegant-help-button { margin-left: auto; margin-right: 14px; padding: 2px; background: none; border: 0; cursor: pointer;
+  line-height: 0; opacity: 0.85; border-radius: 50%; }
 .elegant-help-button:hover { opacity: 1; background: rgba(34, 211, 238, 0.15); }
-.elegant-help header h2 { display: flex; align-items: center; gap: 8px; }
 `;
 
 function ensureStyle() {
@@ -195,8 +202,8 @@ function ensureStyle() {
   document.head.appendChild(style);
 }
 
-export function showHelp(nodeType) {
-  const help = HELP[nodeType];
+function showHelp(nodeId) {
+  const help = HELP[nodeId];
   if (!help) return;
   ensureStyle();
   document.querySelector(".elegant-help-overlay")?.remove();
@@ -230,12 +237,14 @@ export function showHelp(nodeType) {
   overlay.querySelector("header button").focus();
 }
 
-// --- Classic (canvas) nodes: a title button -------------------------------------
+// ---------------------------------------------------------------------------
+// Classic canvas nodes: a title button
+// ---------------------------------------------------------------------------
 
-function addTitleHelpButton(node, nodeType) {
-  if (!node.addTitleButton || node.title_buttons?.some((b) => b.name === "elegant_help")) return;
+function addTitleHelpButton(node, nodeId) {
+  if (!node.addTitleButton || node.title_buttons?.some((b) => b.name === TITLE_BUTTON_NAME)) return;
   const button = node.addTitleButton({
-    name: "elegant_help",
+    name: TITLE_BUTTON_NAME,
     text: "?",
     fontSize: 11,
     bgColor: "transparent",
@@ -269,13 +278,15 @@ function addTitleHelpButton(node, nodeType) {
     ctx.restore();
   };
   const original = node.onTitleButtonClick;
-  node.onTitleButtonClick = function (button, canvas) {
-    if (button?.name === "elegant_help") return showHelp(nodeType);
-    return original?.call(this, button, canvas);
+  node.onTitleButtonClick = function (clicked, canvas) {
+    if (clicked?.name === TITLE_BUTTON_NAME) return showHelp(nodeId);
+    return original?.call(this, clicked, canvas);
   };
 }
 
-// --- Vue nodes: a button in the node header -------------------------------------
+// ---------------------------------------------------------------------------
+// Vue nodes: the frontend doesn't render title buttons there, so add one to the header
+// ---------------------------------------------------------------------------
 
 function nodeForHeader(header) {
   const id = header.dataset.testid?.slice("node-header-".length);
@@ -284,8 +295,8 @@ function nodeForHeader(header) {
   return graph?.getNodeById?.(id) ?? graph?.getNodeById?.(Number(id)) ?? null;
 }
 
-function decorateVueHeaders(root = document) {
-  for (const header of root.querySelectorAll?.('[data-testid^="node-header-"]') ?? []) {
+function decorateVueHeaders() {
+  for (const header of document.querySelectorAll('[data-testid^="node-header-"]')) {
     if (header.querySelector(".elegant-help-button")) continue;
     const node = nodeForHeader(header);
     if (!node || !HELP[node.type]) continue;
@@ -335,12 +346,6 @@ app.registerExtension({
   },
   // nodeCreated runs before a node's type is set, so hook each node type instead.
   async beforeRegisterNodeDef(nodeType, nodeData) {
-    if (!HELP[nodeData.name]) return;
-    const onNodeCreated = nodeType.prototype.onNodeCreated;
-    nodeType.prototype.onNodeCreated = function (...args) {
-      const result = onNodeCreated?.apply(this, args);
-      addTitleHelpButton(this, nodeData.name);
-      return result;
-    };
+    if (HELP[nodeData.name]) onNodeCreated(nodeType, (node) => addTitleHelpButton(node, nodeData.name));
   },
 });

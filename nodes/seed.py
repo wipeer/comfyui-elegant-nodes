@@ -4,6 +4,12 @@ from comfy_api.latest import io
 
 
 class ElegantSeed(io.ComfyNode):
+    """A seed with a random/fixed switch.
+
+    Randomizing, the buttons and remembering the last seed all happen in the
+    frontend (web/js/seed.js), so the prompt always carries the seed that was used.
+    """
+
     @classmethod
     def define_schema(cls):
         return io.Schema(
@@ -11,9 +17,8 @@ class ElegantSeed(io.ComfyNode):
             display_name="Elegant Seed",
             search_aliases=["seed", "random", "elegant seed"],
             category="utilities/elegant",
-            description="Outputs a seed value as both an integer and a string. "
-            "In random mode a new seed is generated before or after each run, following the "
-            "'Widget control mode' setting.",
+            description="A seed you can keep fixed or have regenerated on every run, before or "
+            "after queueing per the 'Widget control mode' setting.",
             inputs=[
                 io.Boolean.Input(
                     "mode",
@@ -31,7 +36,7 @@ class ElegantSeed(io.ComfyNode):
                     # Opt out of the frontend's automatic "control after generate" widget for
                     # inputs named "seed"; the mode switch and buttons replace it.
                     control_after_generate=False,
-                    tooltip="The seed value. Type a number to set it manually.",
+                    tooltip="The seed. Type a number to use it for the next run.",
                 ),
             ],
             outputs=[
@@ -42,6 +47,4 @@ class ElegantSeed(io.ComfyNode):
 
     @classmethod
     def execute(cls, mode: bool, seed: int) -> io.NodeOutput:
-        # Randomization happens in the frontend (web/js/elegant_seed.js), so the
-        # prompt always carries the concrete seed that was used.
         return io.NodeOutput(seed, str(seed))

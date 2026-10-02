@@ -1,0 +1,4 @@
+# Kept in git but not needed in the Comfy Registry package.
+.github/
+docs/
+tests/

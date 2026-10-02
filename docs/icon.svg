@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1e293b"/>
+      <stop offset="1" stop-color="#0f172a"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="400" rx="88" fill="url(#bg)"/>
+  <!-- two nodes joined by a link -->
+  <rect x="62" y="104" width="128" height="96" rx="18" fill="#334155"/>
+  <rect x="62" y="104" width="128" height="26" rx="13" fill="#475569"/>
+  <rect x="210" y="200" width="128" height="96" rx="18" fill="#334155"/>
+  <rect x="210" y="200" width="128" height="26" rx="13" fill="#475569"/>
+  <path d="M190 165 C 240 165, 160 261, 210 261" fill="none" stroke="#22d3ee" stroke-width="10" stroke-linecap="round"/>
+  <circle cx="190" cy="165" r="11" fill="#22d3ee"/>
+  <circle cx="210" cy="261" r="11" fill="#22d3ee"/>
+  <!-- cyan help mark -->
+  <circle cx="318" cy="96" r="34" fill="none" stroke="#22d3ee" stroke-width="8"/>
+  <text x="318" y="112" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="46" font-weight="700" fill="#22d3ee">?</text>
+</svg>
