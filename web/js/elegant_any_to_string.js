@@ -1,7 +1,7 @@
 import { app } from "../../scripts/app.js";
 import { api } from "../../scripts/api.js";
 
-const NODE_ID = "ElegantAnyToString";
+const NODE_IDS = new Set(["ElegantAnyToString", "ElegantAnyToStringAdvanced"]);
 const TEXT_WIDGET = "text";
 // Subgraph nodes get one text box per Elegant Any to String inside them, named by
 // the inner node's id path relative to the subgraph node (e.g. "5" or "7:5").
@@ -95,7 +95,7 @@ function pruneHosts(graph, depth = 0) {
     for (const widget of [...(node.widgets ?? [])]) {
       if (!widget.name?.startsWith(HOST_WIDGET_PREFIX)) continue;
       const ids = widget.name.slice(HOST_WIDGET_PREFIX.length).split(":");
-      if (resolvePath(node.subgraph, ids)?.node.type !== NODE_ID) node.removeWidget?.(widget);
+      if (!NODE_IDS.has(resolvePath(node.subgraph, ids)?.node.type)) node.removeWidget?.(widget);
     }
     pruneHosts(node.subgraph, depth + 1);
   }
@@ -105,7 +105,7 @@ api.addEventListener("executed", ({ detail }) => {
   if (detail?.output?.text === undefined) return;
   const ids = String(detail.node ?? detail.display_node ?? "").split(":");
   const resolved = resolvePath(app.rootGraph ?? app.graph, ids);
-  if (!resolved || resolved.node.type !== NODE_ID) return;
+  if (!resolved || !NODE_IDS.has(resolved.node.type)) return;
 
   const text = toText(detail.output.text);
   const { hosts, node } = resolved;
@@ -118,7 +118,7 @@ api.addEventListener("execution_start", () => pruneHosts(app.rootGraph ?? app.gr
 app.registerExtension({
   name: "elegant.any_to_string",
   async beforeRegisterNodeDef(nodeType, nodeData) {
-    if (nodeData.name !== NODE_ID) return;
+    if (!NODE_IDS.has(nodeData.name)) return;
     const onNodeCreated = nodeType.prototype.onNodeCreated;
     nodeType.prototype.onNodeCreated = function (...args) {
       const result = onNodeCreated?.apply(this, args);

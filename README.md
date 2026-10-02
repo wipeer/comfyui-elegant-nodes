@@ -6,6 +6,7 @@ Small, tidy utility nodes for [ComfyUI](https://github.com/Comfy-Org/ComfyUI):
   built-in [`SeedNode`](https://github.com/Comfy-Org/ComfyUI/blob/master/comfy_extras/nodes_seed.py).
 - **Elegant Resolution**: width and height from an aspect ratio, keeping the pixel count steady.
 - **Elegant Any to String**: turns any value into text and shows it, also on subgraph nodes.
+- **Elegant Any to String (Advanced)**: the same for several values, joined with a delimiter.
 
 All are in the `utilities/elegant` category and work inside subgraphs.
 
@@ -105,6 +106,20 @@ The value is shown in a read-only plain-text box (no Markdown) that you can sele
 can see the value without opening the subgraph. Each copy of a subgraph node shows its own
 value, and nested subgraphs show it on every level. Delete the node inside and its box goes
 away from the subgraph node. The text isn't saved with the workflow; run again after loading.
+
+## Node: Elegant Any to String (Advanced)
+
+Category: `utilities/elegant`
+
+Converts several values to text (same conversion as above) and joins them.
+
+| Input / Output | Type   | Description |
+|----------------|--------|-------------|
+| `source_1`, `source_2`, … | any | Values to join. A new input appears each time you connect the last free one (up to 20). Disconnect one and the gap closes. |
+| `delimiter`    | STRING | Put between the values. Default `\n` (new line). Type `\n` for a new line, `\t` for a tab, `\\` for a backslash; anything else is used as typed, e.g. `, `. |
+| `string`       | STRING | The joined text. |
+
+It shows the result in the same plain-text box, also on subgraph nodes.
 
 ## Installation
 
