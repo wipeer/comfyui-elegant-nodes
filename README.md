@@ -31,6 +31,19 @@ In `random` mode, the node follows ComfyUI's global setting
 The last used seed is saved with the workflow, so it survives a reload. With a batch
 count above 1, every run in the batch gets its own seed, and the last one is remembered.
 
+### Inside a subgraph
+
+When you turn an Elegant Seed into a subgraph (or put it inside one), ComfyUI promotes
+the `seed` widget to the subgraph node automatically. The three buttons then show up on
+the subgraph node too, right under the promoted widgets, and they work on the subgraph
+node's own seed.
+
+- Promote `mode` as well (right-click the widget inside the subgraph → *Promote widget*)
+  to get the random/fixed switch on the subgraph node. If you don't, the switch on the
+  node inside the subgraph is used.
+- Each copy of the subgraph node keeps its own seed and its own last used seed.
+- Demote both `seed` and `mode` and the buttons go away.
+
 ### Outputs
 
 | Output      | Type   | Description |
