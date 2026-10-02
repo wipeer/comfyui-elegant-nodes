@@ -2,7 +2,8 @@
 
 ## 1.0.0
 
-First public release.
+First public release. Every node works from the subgraph node: buttons, live results and
+previews show there, per copy of the subgraph.
 
 - **Elegant Seed**: random/fixed switch, Random, Last seed → fixed and Random → fixed buttons,
   follows the global "Widget control mode" (before/after), remembers the last seed per node.
@@ -12,7 +13,6 @@ First public release.
   with a configurable delimiter.
 - **Elegant Any Math Multi Preview**: safe math expressions over auto-growing inputs, with int,
   float, boolean and string outputs and a worked-out preview.
-- All nodes work inside subgraphs: buttons, results and previews also show on the subgraph node.
 - A cyan **?** in each node's title opens detailed help.
 
 **Breaking:** node ids renamed from earlier development versions: `ElegantResolution` →

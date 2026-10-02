@@ -9,6 +9,7 @@ const HELP = {
     title: "Elegant Seed",
     html: `
 <p>A seed you can keep fixed or have regenerated on every run.</p>
+<p class="elegant-help-subgraph"><b>Works from the subgraph node.</b> Inside a subgraph, <code>seed</code> is promoted automatically and the three buttons appear on the subgraph node, acting on its own seed. Promote <code>mode</code> too to get the switch there. Each copy of a subgraph keeps its own seed.</p>
 <h3>Controls</h3>
 <table>
 <tr><td><b>mode</b></td><td><code>random</code>: a new seed for every run. <code>fixed</code>: the seed in the field is always used.</td></tr>
@@ -25,14 +26,14 @@ const HELP = {
 </ul>
 <h3>Outputs</h3>
 <p><code>seed</code> (INT) for samplers, <code>seed_text</code> (STRING) for filenames or prompts.</p>
-<h3>Subgraphs</h3>
-<p>When <code>seed</code> (and optionally <code>mode</code>) is promoted, the buttons also appear on the subgraph node. Each copy of a subgraph keeps its own seed.</p>`,
+`,
   },
 
   [NODE_IDS.resolutionSelector]: {
     title: "Elegant Resolution Selector",
     html: `
 <p>Width and height for an aspect ratio, keeping about the same number of pixels as a square of <b>base</b> × <b>base</b>.</p>
+<p class="elegant-help-subgraph"><b>Works from the subgraph node.</b> Promote any of its widgets and the <b>result</b> field appears on the subgraph node, following the promoted values live.</p>
 <h3>Controls</h3>
 <table>
 <tr><td><b>aspect_ratio</b></td><td>1:1, 5:4, 9:7, 4:3, 3:2, 16:9, 21:9. In portrait they show flipped (2:3, 9:16, …).</td></tr>
@@ -56,6 +57,7 @@ const HELP = {
     title: "Elegant Any to String Preview",
     html: `
 <p>Turns any value into text, shows it, and outputs it as a <code>string</code>.</p>
+<p class="elegant-help-subgraph"><b>Works from the subgraph node.</b> After each run the text also appears on the subgraph node, so you can check a value without opening it. Each copy of a subgraph shows its own value.</p>
 <h3>Conversion</h3>
 <ul>
 <li>Text stays as it is.</li>
@@ -64,8 +66,6 @@ const HELP = {
 <li>Anything else (images, latents, models, …) is printed, with large tensors shortened.</li>
 </ul>
 <p>The box is plain text (no Markdown); you can select and copy from it.</p>
-<h3>Subgraphs</h3>
-<p>Inside a subgraph, the text also appears on the subgraph node after a run, so you don't have to open it. Each copy of a subgraph shows its own value.</p>
 <p>The text isn't saved in the workflow; run again after loading.</p>`,
   },
 
@@ -73,12 +73,13 @@ const HELP = {
     title: "Elegant Any to String Multi Preview",
     html: `
 <p>Turns several values into text and joins them with a delimiter.</p>
+<p class="elegant-help-subgraph"><b>Works from the subgraph node.</b> After each run the joined text also appears on the subgraph node. Each copy of a subgraph shows its own value.</p>
 <h3>Inputs</h3>
 <table>
 <tr><td><b>source_1, source_2, …</b></td><td>Connect values here. A new input appears each time you connect the last free one (up to 20). Disconnect one and the gap closes.</td></tr>
 <tr><td><b>delimiter</b></td><td>Put between the values. <code>\\n</code> = new line (default), <code>\\t</code> = tab, <code>\\\\</code> = backslash. Anything else is used as typed, e.g. <code>, </code> or <code> | </code>.</td></tr>
 </table>
-<p>Each value is converted like in <b>Elegant Any to String Preview</b>. The joined text is shown and output as <code>string</code>, also on subgraph nodes.</p>`,
+<p>Each value is converted like in <b>Elegant Any to String Preview</b>. The joined text is shown and output as <code>string</code>.</p>`,
   },
 
   [NODE_IDS.anyMathMultiPreview]: {
@@ -86,6 +87,7 @@ const HELP = {
     html: `
 <p>Calculates an expression from the inputs <code>a</code>, <code>b</code>, <code>c</code>, … and outputs the result as int, float, boolean and string.</p>
 <p>The preview shows the expression with the real numbers filled in, e.g. <code>1 + (2 / 2) - 3 = -1</code>, followed by all four outputs.</p>
+<p class="elegant-help-subgraph"><b>Works from the subgraph node.</b> After each run the worked-out result also appears on the subgraph node. Each copy of a subgraph shows its own result.</p>
 
 <h3>Inputs</h3>
 <ul>
@@ -181,6 +183,8 @@ const STYLE = `
 .elegant-help header button:hover { background: var(--comfy-input-bg, #333); }
 .elegant-help .body { padding: 4px 16px 16px; overflow: auto; }
 .elegant-help h3 { margin: 16px 0 6px; font-size: 14px; }
+.elegant-help .elegant-help-subgraph { margin: 10px 0; padding: 8px 12px; border-left: 3px solid ${HELP_COLOR};
+  background: rgba(34, 211, 238, 0.08); border-radius: 0 6px 6px 0; }
 .elegant-help p, .elegant-help ul { margin: 6px 0; }
 .elegant-help ul { padding-left: 20px; }
 .elegant-help table { border-collapse: collapse; width: 100%; margin: 6px 0; }

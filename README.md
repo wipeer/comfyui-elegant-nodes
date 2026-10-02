@@ -5,21 +5,46 @@
 <h1 align="center">Elegant Nodes for ComfyUI</h1>
 
 <p align="center">
-  Small, tidy utility nodes that also work inside subgraphs.
+  Small, tidy utility nodes <b>built to work inside subgraphs</b>.
   <br>
   <a href="https://github.com/wipeer/comfyui-elegant-nodes/actions/workflows/tests.yml"><img src="https://github.com/wipeer/comfyui-elegant-nodes/actions/workflows/tests.yml/badge.svg" alt="Tests"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT License"></a>
 </p>
 
+## Built for subgraphs
+
+<img src="docs/images/subgraph.png" width="360" align="right" alt="One subgraph node with the seed buttons, the resolution result and the math preview">
+
+Subgraphs are great for packing a workflow into one tidy node, but buttons, live results and
+previews usually stay hidden inside, so you keep opening the subgraph to use or check them.
+ComfyUI's own Preview as Text, for example, shows nothing on the subgraph node.
+
+**Every Elegant node keeps working from the subgraph node.** The node on the right is a
+subgraph holding an Elegant Seed, a Resolution Selector and a Math preview, used without
+opening it:
+
+- **Buttons:** 🎲 Random, ♻️ Last seed → fixed and 🎲 Random → fixed act on the subgraph
+  node's own seed.
+- **Live results:** the resolution result updates as you change the promoted widgets.
+- **Previews:** text and math results appear on the subgraph node after every run.
+- **Every copy** of a subgraph keeps its own seed and shows its own values.
+
+Nothing to set up: promote the widgets you want (ComfyUI promotes `seed` automatically), and
+the rest follows. Demote them and it goes away.
+
+<br clear="right">
+
+## The nodes
+
 ![Elegant Nodes overview](docs/images/overview.png)
 
-| Node | What it does |
-|------|--------------|
-| [**Elegant Seed**](#elegant-seed) | A seed with a random/fixed switch and buttons to reuse or re-roll it. |
-| [**Elegant Resolution Selector**](#elegant-resolution-selector) | Width and height from an aspect ratio, keeping the pixel count steady. |
-| [**Elegant Any to String Preview**](#elegant-any-to-string-preview) | Any value as plain text, shown on the node. |
-| [**Elegant Any to String Multi Preview**](#elegant-any-to-string-multi-preview) | Several values as text, joined with a delimiter. |
-| [**Elegant Any Math Multi Preview**](#elegant-any-math-multi-preview) | A math expression over any number of inputs, with a worked-out preview. |
+| Node | What it does | On the subgraph node |
+|------|--------------|----------------------|
+| [**Elegant Seed**](#elegant-seed) | A seed with a random/fixed switch and buttons to reuse or re-roll it. | Seed buttons, per copy |
+| [**Elegant Resolution Selector**](#elegant-resolution-selector) | Width and height from an aspect ratio, keeping the pixel count steady. | Live result |
+| [**Elegant Any to String Preview**](#elegant-any-to-string-preview) | Any value as plain text. | Text preview |
+| [**Elegant Any to String Multi Preview**](#elegant-any-to-string-multi-preview) | Several values as text, joined with a delimiter. | Text preview |
+| [**Elegant Any Math Multi Preview**](#elegant-any-math-multi-preview) | A math expression over any number of inputs, with a worked-out preview. | Worked-out result |
 
 All nodes are in the **utilities → elegant** category. Click the cyan **?** in a node's title
 for detailed help on that node.
@@ -48,7 +73,7 @@ Restart ComfyUI and refresh the browser.
 inputs). The only Python dependency is [simpleeval](https://github.com/danthedeckie/simpleeval),
 which ComfyUI already installs.
 
-## Nodes
+## Node details
 
 ### Elegant Seed
 
@@ -75,6 +100,9 @@ The last seed is saved with the workflow. In a batch, every run gets its own see
 one is remembered. Random seeds go up to 2⁵³ − 1, the largest number the browser handles
 exactly (like ComfyUI's own randomize).
 
+**In a subgraph:** `seed` is promoted automatically and the three buttons appear on the subgraph
+node. Promote `mode` too to get the switch there; otherwise the switch inside is used.
+
 ### Elegant Resolution Selector
 
 | Control | What it does |
@@ -91,6 +119,9 @@ The size is `width = base × √ratio` and `height = base ÷ √ratio`, each rou
 and round to 16: 1:1 → 1024 × 1024, 4:3 → 1184 × 880, 3:2 → 1248 × 832, 16:9 → 1360 × 768,
 21:9 → 1568 × 672.
 
+**In a subgraph:** promote any of its widgets and the result field appears on the subgraph node,
+following the promoted values live.
+
 ### Elegant Any to String Preview
 
 Turns any value into text, shows it in a plain-text box you can select and copy, and outputs it
@@ -98,6 +129,9 @@ as `string`. Uses the same conversion as ComfyUI's
 [Preview as Text](https://github.com/Comfy-Org/ComfyUI/blob/master/comfy_extras/nodes_preview_any.py),
 without the Markdown mode: text stays as is, numbers and booleans become their value, lists and
 dictionaries become indented JSON, and anything else (tensors, latents, …) is printed.
+
+**In a subgraph:** after each run the text also appears on the subgraph node, so you can check a
+value without opening it. Text isn't saved in the workflow; run again after loading.
 
 ### Elegant Any to String Multi Preview
 
@@ -107,6 +141,8 @@ The same for several values, joined with a delimiter.
   to 20). Disconnect one and the gap closes.
 - `delimiter`: default `\n` (new line). `\t` is a tab and `\\` a backslash; anything else is
   used as typed, e.g. `, ` or ` | `.
+
+**In a subgraph:** the joined text appears on the subgraph node, like the single preview.
 
 ### Elegant Any Math Multi Preview
 
@@ -137,22 +173,7 @@ Expressions are evaluated with [simpleeval](https://github.com/danthedeckie/simp
 ComfyUI's own Math Expression node: only math, no Python code, and huge powers are refused.
 Errors such as division by zero or an unconnected input stop the run with a message.
 
-## Subgraphs
-
-<img src="docs/images/subgraph.png" width="320" align="right" alt="Elegant Seed and a preview inside a subgraph">
-
-The nodes keep working when you put them inside a subgraph:
-
-- **Elegant Seed:** promote `seed` (done automatically) and optionally `mode`, and the buttons
-  appear on the subgraph node too. Each copy of a subgraph keeps its own seed.
-- **Elegant Resolution Selector:** promote any of its widgets and the result line appears on
-  the subgraph node.
-- **Preview nodes:** after a run, their text also shows on the subgraph node, so you don't have
-  to open it. Each copy shows its own value.
-
-Preview text isn't saved in the workflow; run again after loading.
-
-<br clear="right">
+**In a subgraph:** the worked-out result appears on the subgraph node after each run.
 
 ## Help
 
