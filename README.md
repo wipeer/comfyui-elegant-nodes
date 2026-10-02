@@ -89,7 +89,7 @@ node as well.
 
 ```bash
 cd ComfyUI/custom_nodes
-git clone https://github.com/wipeer/comfyui-elegant-seed.git
+git clone https://github.com/wipeer/comfyui-elegant-nodes.git
 ```
 
 Restart ComfyUI and search for **Elegant Seed** or **Elegant Resolution**.
