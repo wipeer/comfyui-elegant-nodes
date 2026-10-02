@@ -19,7 +19,7 @@ jobs:
       REGISTRY_ACCESS_TOKEN: ${{ secrets.REGISTRY_ACCESS_TOKEN }}
     steps:
       - name: Check out code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Skip when the registry token isn't set up yet
         if: env.REGISTRY_ACCESS_TOKEN == ''
         run: echo "::notice::Add the REGISTRY_ACCESS_TOKEN repository secret to publish."
