@@ -5,8 +5,9 @@ Small, tidy utility nodes for [ComfyUI](https://github.com/Comfy-Org/ComfyUI):
 - **Elegant Seed**: a seed with a random/fixed switch and handy buttons, based on the
   built-in [`SeedNode`](https://github.com/Comfy-Org/ComfyUI/blob/master/comfy_extras/nodes_seed.py).
 - **Elegant Resolution**: width and height from an aspect ratio, keeping the pixel count steady.
+- **Elegant Any to String**: turns any value into text and shows it, also on subgraph nodes.
 
-Both are in the `utilities/elegant` category and work inside subgraphs.
+All are in the `utilities/elegant` category and work inside subgraphs.
 
 ## Node: Elegant Seed
 
@@ -85,6 +86,26 @@ Some results at base 1024, round to 16: 1:1 → 1024 × 1024, 4:3 → 1184 × 88
 In a subgraph, promote any of its widgets and the result line shows up on the subgraph
 node as well.
 
+## Node: Elegant Any to String
+
+Category: `utilities/elegant`
+
+Based on ComfyUI's [Preview as Text](https://github.com/Comfy-Org/ComfyUI/blob/master/comfy_extras/nodes_preview_any.py)
+and uses the same conversion: text stays as is, numbers and booleans become their value,
+lists and dicts become indented JSON, and anything else (tensors, latents, …) is printed.
+
+| Input / Output | Type   | Description |
+|----------------|--------|-------------|
+| `source`       | any    | The value to convert. |
+| `string`       | STRING | The value as text, to feed into other nodes. |
+
+The value is shown in a read-only plain-text box (no Markdown) that you can select and copy.
+
+**Inside a subgraph:** after a run, the same text box appears on the subgraph node, so you
+can see the value without opening the subgraph. Each copy of a subgraph node shows its own
+value, and nested subgraphs show it on every level. Delete the node inside and its box goes
+away from the subgraph node. The text isn't saved with the workflow; run again after loading.
+
 ## Installation
 
 ```bash
@@ -92,6 +113,6 @@ cd ComfyUI/custom_nodes
 git clone https://github.com/wipeer/comfyui-elegant-nodes.git
 ```
 
-Restart ComfyUI and search for **Elegant Seed** or **Elegant Resolution**.
+Restart ComfyUI and search for **Elegant Seed**, **Elegant Resolution** or **Elegant Any to String**.
 
 Requires a ComfyUI version that ships the V3 node API (`comfy_api.latest`).
