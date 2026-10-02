@@ -5,8 +5,8 @@ Small, tidy utility nodes for [ComfyUI](https://github.com/Comfy-Org/ComfyUI):
 - **Elegant Seed**: a seed with a random/fixed switch and handy buttons, based on the
   built-in [`SeedNode`](https://github.com/Comfy-Org/ComfyUI/blob/master/comfy_extras/nodes_seed.py).
 - **Elegant Resolution**: width and height from an aspect ratio, keeping the pixel count steady.
-- **Elegant Any to String**: turns any value into text and shows it, also on subgraph nodes.
-- **Elegant Any to String (Advanced)**: the same for several values, joined with a delimiter.
+- **Elegant Any to String Preview**: turns any value into text and shows it, also on subgraph nodes.
+- **Elegant Any to String Multi Preview**: the same for several values, joined with a delimiter.
 
 All are in the `utilities/elegant` category and work inside subgraphs.
 
@@ -67,7 +67,7 @@ Category: `utilities/elegant`
 
 | Control | What it does |
 |---------|--------------|
-| **aspect_ratio** | 1:1, 5:4, 9:7, 4:3, 3:2, 16:9, 21:9 (written in landscape form). |
+| **aspect_ratio** | 1:1, 5:4, 9:7, 4:3, 3:2, 16:9, 21:9. In portrait the list shows them flipped (4:5, 7:9, 3:4, 2:3, 9:16, 9:21). |
 | **orientation** switch | `landscape` or `portrait`; portrait turns 3:2 into 2:3. Has no effect at 1:1. |
 | **base** | Side of the square (1:1) image. Every ratio keeps about the same pixel count, so 1024 gives about 1 MP for all of them. |
 | **round_to** | Width and height are rounded to a multiple of 8, 16 (default), 32 or 64. 8 is the minimum for latent models, 16 is safe for Flux/SD3, 64 matches SDXL training sizes. |
@@ -87,7 +87,7 @@ Some results at base 1024, round to 16: 1:1 → 1024 × 1024, 4:3 → 1184 × 88
 In a subgraph, promote any of its widgets and the result line shows up on the subgraph
 node as well.
 
-## Node: Elegant Any to String
+## Node: Elegant Any to String Preview
 
 Category: `utilities/elegant`
 
@@ -107,7 +107,7 @@ can see the value without opening the subgraph. Each copy of a subgraph node sho
 value, and nested subgraphs show it on every level. Delete the node inside and its box goes
 away from the subgraph node. The text isn't saved with the workflow; run again after loading.
 
-## Node: Elegant Any to String (Advanced)
+## Node: Elegant Any to String Multi Preview
 
 Category: `utilities/elegant`
 
@@ -128,6 +128,6 @@ cd ComfyUI/custom_nodes
 git clone https://github.com/wipeer/comfyui-elegant-nodes.git
 ```
 
-Restart ComfyUI and search for **Elegant Seed**, **Elegant Resolution** or **Elegant Any to String**.
+Restart ComfyUI and search for **Elegant Seed**, **Elegant Resolution**, **Elegant Any to String Preview** or **Elegant Any to String Multi Preview**.
 
 Requires a ComfyUI version that ships the V3 node API (`comfy_api.latest`).

@@ -28,7 +28,7 @@ class ElegantAnyToString(io.ComfyNode):
     def define_schema(cls):
         return io.Schema(
             node_id="ElegantAnyToString",
-            display_name="Elegant Any to String",
+            display_name="Elegant Any to String Preview",
             search_aliases=["any to string", "preview", "preview text", "show text", "debug", "inspect", "to string"],
             category="utilities/elegant",
             description="Converts any value to a string and shows it as plain text, also on the "
@@ -63,7 +63,7 @@ class ElegantAnyToStringAdvanced(io.ComfyNode):
         source_names = [f"source_{i}" for i in range(1, MAX_SOURCES + 1)]
         return io.Schema(
             node_id="ElegantAnyToStringAdvanced",
-            display_name="Elegant Any to String (Advanced)",
+            display_name="Elegant Any to String Multi Preview",
             search_aliases=["any to string", "join", "concatenate", "combine text", "preview", "show text", "debug"],
             category="utilities/elegant",
             description="Converts several values to strings and joins them with a delimiter. "

@@ -46,51 +46,85 @@ function describe(values) {
   return `${width} × ${height}  ·  ${megapixels} MP  ·  ${ratio}`;
 }
 
-/**
- * Read-only line showing the resulting size. It recomputes on every draw, so it
- * follows any change (typing, promoted widgets, workflow load) without wiring.
- */
-function addResultWidget(owner, getWidgets, isActive) {
-  const LG = globalThis.LiteGraph ?? {};
-  const widget = {
-    name: "result",
-    type: "elegant_resolution_result",
-    value: "",
-    serialize: false,
-    options: { serialize: false },
-    draw(ctx, node, width, y, height) {
-      const widgets = getWidgets();
-      const values = isActive()
-        ? Object.fromEntries(INPUT_NAMES.map((name) => [name, widgets[name]?.value]))
-        : null;
-      this.value = describe(values);
+// Result lines currently on screen; refreshed together so they follow any change
+// (typing, switches, promoted widgets, workflow load) in both renderers.
+const liveResults = new Set();
+setInterval(() => {
+  for (const entry of liveResults) {
+    if (!entry.owner.graph || !entry.owner.widgets?.includes(entry.widget)) liveResults.delete(entry);
+    else entry.update();
+  }
+}, 250);
 
-      // Orientation has no effect on a square.
-      if (widgets.orientation && "disabled" in widgets.orientation) {
-        widgets.orientation.disabled = values?.aspect_ratio === "1:1";
-      }
-
-      const margin = 15;
-      ctx.save();
-      ctx.strokeStyle = LG.WIDGET_OUTLINE_COLOR ?? "#666";
-      ctx.setLineDash([3, 3]);
-      ctx.beginPath();
-      ctx.roundRect?.(margin, y, width - margin * 2, height, height * 0.5) ??
-        ctx.rect(margin, y, width - margin * 2, height);
-      ctx.stroke();
-      ctx.setLineDash([]);
-      ctx.fillStyle = LG.WIDGET_TEXT_COLOR ?? "#ddd";
-      ctx.font = `${Math.round(height * 0.6)}px sans-serif`;
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.fillText(this.value, width * 0.5, y + height * 0.5);
-      ctx.restore();
-    },
-    computeSize(width) {
-      return [width, globalThis.LiteGraph?.NODE_WIDGET_HEIGHT ?? 20];
-    },
+/** Shows the aspect ratio dropdown in the current orientation, e.g. 3:2 as 2:3 in portrait. */
+function labelAspectRatios(aspectWidget, getOrientationWidget) {
+  if (!aspectWidget?.options || aspectWidget.options.__elegantLabels) return;
+  aspectWidget.options.getOptionLabel = (value) => {
+    const landscape = getOrientationWidget()?.value ?? true;
+    if (landscape || !value || !value.includes(":")) return value ?? "";
+    const [a, b] = value.split(":");
+    return `${b}:${a}`;
   };
-  return owner.addCustomWidget(widget);
+  aspectWidget.options.__elegantLabels = true;
+}
+
+/** Read-only line showing the resulting size. */
+function addResultWidget(owner, getWidgets, isActive) {
+  const element = document.createElement("div");
+  Object.assign(element.style, {
+    boxSizing: "border-box",
+    width: "100%",
+    height: "22px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: "0 8px",
+    border: "1px dashed var(--border-color, #555)",
+    borderRadius: "6px",
+    color: "var(--input-text, #ddd)",
+    font: "12px/1 sans-serif",
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    userSelect: "text",
+  });
+
+  const widget = owner.addDOMWidget("result", "elegant_resolution_result", element, {
+    serialize: false,
+    getValue: () => element.textContent,
+    setValue: () => {},
+    getMinHeight: () => 30,
+    getMaxHeight: () => 30,
+    // Space around the box on every side; the default 10 would leave only a sliver.
+    margin: 4,
+  });
+  widget.serialize = false;
+
+  let lastAspect;
+  const update = () => {
+    const widgets = getWidgets();
+    labelAspectRatios(widgets.aspect_ratio, () => getWidgets().orientation);
+    const values = isActive()
+      ? Object.fromEntries(INPUT_NAMES.map((name) => [name, widgets[name]?.value]))
+      : null;
+    const text = describe(values);
+    if (element.textContent !== text) {
+      element.textContent = text;
+      element.title = text;
+      // The dropdown shows the ratio in the current orientation, so redraw it too.
+      owner.setDirtyCanvas?.(true, false);
+    }
+
+    // Orientation has no effect on a square.
+    const square = values?.aspect_ratio === "1:1";
+    if (widgets.orientation && "disabled" in widgets.orientation && lastAspect !== square) {
+      widgets.orientation.disabled = square;
+      lastAspect = square;
+    }
+  };
+  update();
+  liveResults.add({ owner, widget, update });
+  return widget;
 }
 
 function setupElegantResolution(node) {
@@ -98,6 +132,22 @@ function setupElegantResolution(node) {
   // When an input is fed by a link (e.g. promoted to a subgraph node), the value
   // here is not the one that gets used; the subgraph node shows the result instead.
   addResultWidget(node, byName, () => !INPUT_NAMES.some((name) => inputIsLinked(node, name)));
+
+  // The node's initial size is set before this widget exists; make room for it,
+  // also for workflows saved with a smaller node.
+  const growToFit = () => {
+    const [minWidth, minHeight] = node.computeSize?.() ?? node.size;
+    if (node.size[0] < minWidth || node.size[1] < minHeight) {
+      node.setSize?.([Math.max(node.size[0], minWidth), Math.max(node.size[1], minHeight)]);
+    }
+  };
+  growToFit();
+  const originalOnConfigure = node.onConfigure;
+  node.onConfigure = function (...args) {
+    const result = originalOnConfigure?.apply(this, args);
+    growToFit();
+    return result;
+  };
 }
 
 function syncSubgraphHost(host) {
