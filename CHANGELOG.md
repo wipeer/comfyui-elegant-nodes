@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- Preview nodes inside a subgraph show their box on the subgraph node right away, before the
+  first run (also when added later or when a node that already ran is turned into a subgraph).
+- The last preview text is saved with the workflow (up to 10,000 characters), so previews show
+  their values again right after loading, also on subgraph nodes.
+
 ## 1.0.0
 
 First public release. Every node works from the subgraph node: buttons, live results and

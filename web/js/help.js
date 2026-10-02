@@ -57,7 +57,7 @@ const HELP = {
     title: "Elegant Any to String Preview",
     html: `
 <p>Turns any value into text, shows it, and outputs it as a <code>string</code>.</p>
-<p class="elegant-help-subgraph"><b>Works from the subgraph node.</b> After each run the text also appears on the subgraph node, so you can check a value without opening it. Each copy of a subgraph shows its own value.</p>
+<p class="elegant-help-subgraph"><b>Works from the subgraph node.</b> The text also shows on the subgraph node, so you can check a value without opening it. Each copy of a subgraph shows its own value.</p>
 <h3>Conversion</h3>
 <ul>
 <li>Text stays as it is.</li>
@@ -66,7 +66,7 @@ const HELP = {
 <li>Anything else (images, latents, models, …) is printed, with large tensors shortened.</li>
 </ul>
 <p>The box is plain text (no Markdown); you can select and copy from it.</p>
-<p>The text isn't saved in the workflow; run again after loading.</p>`,
+<p>The last text is saved with the workflow (up to 10,000 characters), so it shows again after loading.</p>`,
   },
 
   [NODE_IDS.anyToStringMultiPreview]: {

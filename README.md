@@ -26,7 +26,8 @@ opening it:
 - **Buttons:** 🎲 Random, ♻️ Last seed → fixed and 🎲 Random → fixed act on the subgraph
   node's own seed.
 - **Live results:** the resolution result updates as you change the promoted widgets.
-- **Previews:** text and math results appear on the subgraph node after every run.
+- **Previews:** text and math results show on the subgraph node, and their last values are
+  saved with the workflow, so they're there right after loading.
 - **Every copy** of a subgraph keeps its own seed and shows its own values.
 
 Nothing to set up: promote the widgets you want (ComfyUI promotes `seed` automatically), and
@@ -131,7 +132,8 @@ without the Markdown mode: text stays as is, numbers and booleans become their v
 dictionaries become indented JSON, and anything else (tensors, latents, …) is printed.
 
 **In a subgraph:** after each run the text also appears on the subgraph node, so you can check a
-value without opening it. Text isn't saved in the workflow; run again after loading.
+value without opening it. The box is there as soon as the node is inside a subgraph, and the
+last text is saved with the workflow, so it shows again right after loading.
 
 ### Elegant Any to String Multi Preview
 
