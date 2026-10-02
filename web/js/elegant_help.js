@@ -181,7 +181,7 @@ const STYLE = `
 .elegant-help td:first-child { white-space: nowrap; width: 1%; }
 .elegant-help code { font: 12.5px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   background: var(--comfy-input-bg, #2a2a2a); padding: 1px 4px; border-radius: 4px; }
-.elegant-help-button { margin-left: 4px; padding: 2px; background: none; border: 0; cursor: pointer; line-height: 0;
+.elegant-help-button { margin-left: auto; margin-right: 14px; /* clear of the top-right resize handle */ padding: 2px; background: none; border: 0; cursor: pointer; line-height: 0;
   opacity: 0.85; border-radius: 50%; }
 .elegant-help-button:hover { opacity: 1; background: rgba(34, 211, 238, 0.15); }
 .elegant-help header h2 { display: flex; align-items: center; gap: 8px; }
@@ -289,8 +289,9 @@ function decorateVueHeaders(root = document) {
     if (header.querySelector(".elegant-help-button")) continue;
     const node = nodeForHeader(header);
     if (!node || !HELP[node.type]) continue;
-    const title = header.querySelector('[data-testid="node-title"]');
-    if (!title) continue;
+    // The header row: title group on the left (it has mr-auto), badges on the right.
+    const row = header.firstElementChild;
+    if (!row) continue;
 
     ensureStyle();
     const button = document.createElement("button");
@@ -306,7 +307,7 @@ function decorateVueHeaders(root = document) {
       e.stopPropagation();
       showHelp(node.type);
     });
-    title.after(button);
+    row.appendChild(button);
   }
 }
 
