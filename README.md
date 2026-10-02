@@ -1,7 +1,12 @@
-# ComfyUI Elegant Seed
+# ComfyUI Elegant Nodes
 
-A custom seed node for [ComfyUI](https://github.com/Comfy-Org/ComfyUI), based on the
-built-in [`SeedNode`](https://github.com/Comfy-Org/ComfyUI/blob/master/comfy_extras/nodes_seed.py).
+Small, tidy utility nodes for [ComfyUI](https://github.com/Comfy-Org/ComfyUI):
+
+- **Elegant Seed**: a seed with a random/fixed switch and handy buttons, based on the
+  built-in [`SeedNode`](https://github.com/Comfy-Org/ComfyUI/blob/master/comfy_extras/nodes_seed.py).
+- **Elegant Resolution**: width and height from an aspect ratio, keeping the pixel count steady.
+
+Both are in the `utilities/elegant` category and work inside subgraphs.
 
 ## Node: Elegant Seed
 
@@ -54,6 +59,32 @@ node's own seed.
 Random seeds go up to 2^53 − 1, the largest number the browser handles exactly
 (same limit as ComfyUI's own randomize).
 
+## Node: Elegant Resolution
+
+Category: `utilities/elegant`
+
+| Control | What it does |
+|---------|--------------|
+| **aspect_ratio** | 1:1, 5:4, 9:7, 4:3, 3:2, 16:9, 21:9 (written in landscape form). |
+| **orientation** switch | `landscape` or `portrait`; portrait turns 3:2 into 2:3. Has no effect at 1:1. |
+| **base** | Side of the square (1:1) image. Every ratio keeps about the same pixel count, so 1024 gives about 1 MP for all of them. |
+| **round_to** | Width and height are rounded to a multiple of 8, 16 (default), 32 or 64. 8 is the minimum for latent models, 16 is safe for Flux/SD3, 64 matches SDXL training sizes. |
+| **result** (read-only) | Live preview, e.g. `1360 × 768 · 1.00 MP · 1.77:1`. The ratio shown is the one after rounding. |
+
+The size is `width = base × √ratio`, `height = base ÷ √ratio`, then rounded. Megapixels use
+ComfyUI's convention (1 MP = 1024 × 1024).
+
+| Output   | Type | Description |
+|----------|------|-------------|
+| `width`  | INT  | Connect to Empty Latent Image (or any width input). |
+| `height` | INT  | Connect to Empty Latent Image (or any height input). |
+
+Some results at base 1024, round to 16: 1:1 → 1024 × 1024, 4:3 → 1184 × 880,
+3:2 → 1248 × 832, 16:9 → 1360 × 768, 21:9 → 1568 × 672.
+
+In a subgraph, promote any of its widgets and the result line shows up on the subgraph
+node as well.
+
 ## Installation
 
 ```bash
@@ -61,6 +92,6 @@ cd ComfyUI/custom_nodes
 git clone https://github.com/wipeer/comfyui-elegant-seed.git
 ```
 
-Restart ComfyUI and search for **Elegant Seed**.
+Restart ComfyUI and search for **Elegant Seed** or **Elegant Resolution**.
 
 Requires a ComfyUI version that ships the V3 node API (`comfy_api.latest`).

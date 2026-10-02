@@ -1,4 +1,13 @@
 import { app } from "../../scripts/app.js";
+import {
+  collectPromoted,
+  groupsSignature,
+  hostInputConnected,
+  inputIsLinked,
+  liveWidget,
+  replaceHostWidgets,
+  watchSubgraphHost,
+} from "./elegant_common.js";
 
 const NODE_ID = "ElegantSeed";
 const LAST_SEED_PROPERTY = "elegant_last_seed";
@@ -18,10 +27,6 @@ function controlRunsBefore() {
     app.extensionManager?.setting?.get?.("Comfy.WidgetControlMode") ??
     app.ui?.settings?.getSettingValue?.("Comfy.WidgetControlMode");
   return setting === "before";
-}
-
-function inputIsLinked(node, widgetName) {
-  return !!node.inputs?.some((input) => input.widget?.name === widgetName && input.link != null);
 }
 
 /**
@@ -172,153 +177,47 @@ function setupElegantSeed(node) {
 // the subgraph node's (store-backed) widgets become the ones that are driven.
 // ---------------------------------------------------------------------------
 
-/** Follows a subgraph node input to the interior widget it feeds, through nested subgraphs. */
-function resolvePromotedTarget(host, input, depth = 0) {
-  const subgraph = host.subgraph;
-  const subgraphInput = input._subgraphSlot;
-  if (!subgraph || !subgraphInput || depth > 16) return [];
-
-  const targets = [];
-  for (const linkId of subgraphInput.linkIds ?? []) {
-    const link = subgraph.getLink?.(linkId) ?? subgraph.links?.get?.(linkId) ?? subgraph.links?.[linkId];
-    if (!link) continue;
-    const node = subgraph.getNodeById(link.target_id);
-    const nodeInput = node?.inputs?.[link.target_slot];
-    if (!node || !nodeInput) continue;
-
-    if (node.type === NODE_ID && (nodeInput.widget?.name === "seed" || nodeInput.widget?.name === "mode")) {
-      targets.push({ node, widgetName: nodeInput.widget.name });
-    } else if (node.isSubgraphNode?.()) {
-      targets.push(...resolvePromotedTarget(node, nodeInput, depth + 1));
-    }
-  }
-  return targets;
-}
-
-function hostWidgetFor(host, input) {
-  return (
-    host.getWidgetFromSlot?.(input) ??
-    host.widgets?.find((w) => (input.widgetId && w.widgetId === input.widgetId) || w.name === input.name)
-  );
-}
-
-/** Groups the subgraph node's promoted inputs by the interior Elegant Seed node they lead to. */
-function collectPromotedSeeds(host) {
-  const groups = new Map();
-  for (const input of host.inputs ?? []) {
-    if (!input._subgraphSlot) continue;
-    for (const { node, widgetName } of resolvePromotedTarget(host, input)) {
-      const group = groups.get(node.id) ?? { inner: node };
-      group[widgetName] = input;
-      groups.set(node.id, group);
-    }
-  }
-  return [...groups.values()];
-}
-
-function groupsSignature(groups) {
-  return groups
-    .map((g) => `${g.inner.id}:${g.seed?.name ?? "-"}:${g.mode?.name ?? "-"}`)
-    .sort()
-    .join("|");
-}
-
 function syncSubgraphHost(host) {
-  const state = (host.__elegantSeed ??= { signature: "", widgets: [], controllers: [] });
-  const groups = collectPromotedSeeds(host);
+  const state = (host.__elegantSeed ??= { signature: null, controllers: [] });
+  const groups = collectPromoted(host, NODE_ID).filter((g) => g.inputs.seed || g.inputs.mode);
   const signature = groupsSignature(groups);
 
   if (signature === state.signature) {
     for (const controller of state.controllers) controller.refresh();
     return;
   }
-
-  for (const widget of state.widgets) host.removeWidget?.(widget);
-  state.widgets = [];
-  state.controllers = [];
   state.signature = signature;
 
   host.properties ??= {};
-  for (const group of groups) {
-    const { inner } = group;
-    const innerWidget = (name) => inner.widgets?.find((w) => w.name === name);
-    const hostInputConnected = (input) => {
-      const index = host.inputs.indexOf(input);
-      return index !== -1 && host.isInputConnected(index);
-    };
-
-    const controller = createSeedController({
-      owner: host,
-      getSeedWidget: () => (group.seed ? hostWidgetFor(host, group.seed) : innerWidget("seed")),
-      getModeWidget: () => (group.mode ? hostWidgetFor(host, group.mode) : innerWidget("mode")),
-      isActive: () => {
-        // Fed from outside this subgraph node (e.g. an outer subgraph): not ours to drive.
-        if (group.seed && hostInputConnected(group.seed)) return false;
-        if (group.mode && hostInputConnected(group.mode)) return false;
-        // Seed not promoted: the interior widget is used, unless something else feeds it.
-        if (!group.seed && inputIsLinked(inner, "seed")) return false;
-        return true;
-      },
-      lastSeed: {
-        get: () => host.properties[HOST_LAST_SEEDS_PROPERTY]?.[inner.id],
-        set: (value) => {
-          host.properties[HOST_LAST_SEEDS_PROPERTY] = {
-            ...host.properties[HOST_LAST_SEEDS_PROPERTY],
-            [inner.id]: value,
-          };
+  replaceHostWidgets(host, "seed", () => {
+    state.controllers = groups.map((group) => {
+      const { inner, inputs } = group;
+      return createSeedController({
+        owner: host,
+        getSeedWidget: () => liveWidget(host, group, "seed"),
+        getModeWidget: () => liveWidget(host, group, "mode"),
+        isActive: () => {
+          // Fed from outside this subgraph node (e.g. an outer subgraph): not ours to drive.
+          if (inputs.seed && hostInputConnected(host, inputs.seed)) return false;
+          if (inputs.mode && hostInputConnected(host, inputs.mode)) return false;
+          // Seed not promoted: the interior widget is used, unless something else feeds it.
+          if (!inputs.seed && inputIsLinked(inner, "seed")) return false;
+          return true;
         },
-      },
-      suffix: groups.length > 1 ? ` · #${inner.id}` : "",
+        lastSeed: {
+          get: () => host.properties[HOST_LAST_SEEDS_PROPERTY]?.[inner.id],
+          set: (value) => {
+            host.properties[HOST_LAST_SEEDS_PROPERTY] = {
+              ...host.properties[HOST_LAST_SEEDS_PROPERTY],
+              [inner.id]: value,
+            };
+          },
+        },
+        suffix: groups.length > 1 ? ` · #${inner.id}` : "",
+      });
     });
-    state.controllers.push(controller);
-    state.widgets.push(...controller.widgets);
-  }
-
-  host.setSize?.(host.computeSize?.() ?? host.size);
-  host.setDirtyCanvas?.(true, true);
-}
-
-function setupSubgraphHost(host) {
-  if (host.__elegantSeedSetup) return;
-  host.__elegantSeedSetup = true;
-
-  let scheduled = false;
-  const scheduleSync = () => {
-    if (scheduled) return;
-    scheduled = true;
-    setTimeout(() => {
-      scheduled = false;
-      if (host.graph) syncSubgraphHost(host);
-    }, 0);
-  };
-
-  const events = host.subgraph?.events;
-  const abort = new AbortController();
-  for (const type of ["widget-promoted", "widget-demoted", "input-added", "removing-input"]) {
-    events?.addEventListener?.(type, scheduleSync, { signal: abort.signal });
-  }
-
-  const originalOnConfigure = host.onConfigure;
-  host.onConfigure = function (...args) {
-    const result = originalOnConfigure?.apply(this, args);
-    scheduleSync();
-    return result;
-  };
-
-  const originalOnConnectionsChange = host.onConnectionsChange;
-  host.onConnectionsChange = function (...args) {
-    const result = originalOnConnectionsChange?.apply(this, args);
-    scheduleSync();
-    return result;
-  };
-
-  const originalOnRemoved = host.onRemoved;
-  host.onRemoved = function (...args) {
-    abort.abort();
-    return originalOnRemoved?.apply(this, args);
-  };
-
-  scheduleSync();
+    return state.controllers.flatMap((controller) => controller.widgets);
+  });
 }
 
 app.registerExtension({
@@ -333,6 +232,6 @@ app.registerExtension({
     };
   },
   nodeCreated(node) {
-    if (node.isSubgraphNode?.()) setupSubgraphHost(node);
+    if (node.isSubgraphNode?.()) watchSubgraphHost(node, syncSubgraphHost);
   },
 });

@@ -1,7 +1,6 @@
 import sys
-from typing_extensions import override
 
-from comfy_api.latest import ComfyExtension, io
+from comfy_api.latest import io
 
 
 class ElegantSeed(io.ComfyNode):
@@ -46,13 +45,3 @@ class ElegantSeed(io.ComfyNode):
         # Randomization happens in the frontend (web/js/elegant_seed.js), so the
         # prompt always carries the concrete seed that was used.
         return io.NodeOutput(seed, str(seed))
-
-
-class ElegantSeedExtension(ComfyExtension):
-    @override
-    async def get_node_list(self) -> list[type[io.ComfyNode]]:
-        return [ElegantSeed]
-
-
-async def comfy_entrypoint() -> ElegantSeedExtension:
-    return ElegantSeedExtension()

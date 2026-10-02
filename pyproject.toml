@@ -1,6 +1,6 @@
 [project]
 name = "comfyui-elegant-seed"
-description = "A simple seed node for ComfyUI that outputs the seed as an integer and a string."
+description = "Elegant utility nodes for ComfyUI: a seed node with random/fixed controls and an aspect-ratio resolution selector."
 version = "0.1.0"
 license = { text = "MIT" }
 dependencies = []
@@ -10,5 +10,5 @@ Repository = "https://github.com/wipeer/comfyui-elegant-seed"
 
 [tool.comfy]
 PublisherId = ""
-DisplayName = "Elegant Seed"
+DisplayName = "Elegant Nodes"
 Icon = ""
