@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.1.0
 
 - Preview nodes inside a subgraph show their box on the subgraph node right away, before the
   first run (also when added later or when a node that already ran is turned into a subgraph).
