@@ -1,0 +1,14 @@
+[project]
+name = "comfyui-elegant-seed"
+description = "A simple seed node for ComfyUI that outputs the seed as an integer and a string."
+version = "0.1.0"
+license = { text = "MIT" }
+dependencies = []
+
+[project.urls]
+Repository = "https://github.com/wipeer/comfyui-elegant-seed"
+
+[tool.comfy]
+PublisherId = ""
+DisplayName = "Elegant Seed"
+Icon = ""
