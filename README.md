@@ -9,7 +9,8 @@ Small, tidy utility nodes for [ComfyUI](https://github.com/Comfy-Org/ComfyUI):
 - **Elegant Any to String Multi Preview**: the same for several values, joined with a delimiter.
 - **Elegant Any Math Multi Preview**: a math expression over any number of inputs, with int, float, boolean and string outputs.
 
-All are in the `utilities/elegant` category and work inside subgraphs.
+All are in the `utilities/elegant` category and work inside subgraphs. Click the ❓ in a
+node's title for detailed help on that node.
 
 ## Node: Elegant Seed
 
@@ -147,7 +148,17 @@ all inputs, so `sum(values)` adds them all.
 If the result is text that isn't a number, `int` and `float` are 0. Errors (division by
 zero, an unconnected input in the expression) stop the run with a message.
 
-The plain-text box shows the result and all four outputs, also on subgraph nodes.
+The plain-text box shows the expression with the real values filled in, then all four
+outputs, also on subgraph nodes. For `a  + (b / 2) - c` with 1, 2 and 3:
+
+```
+1  + (2 / 2) - 3 = -1
+
+int      -1
+float    -1.0
+boolean  True
+string   -1.0
+```
 
 ## Installation
 
