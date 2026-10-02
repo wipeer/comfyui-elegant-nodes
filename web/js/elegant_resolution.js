@@ -43,10 +43,10 @@ function describe(values) {
   const megapixels = ((width * height) / (1024 * 1024)).toFixed(2);
   const long = Math.max(width, height) / Math.min(width, height);
   const ratio = width === height ? "1:1" : width > height ? `${long.toFixed(2)}:1` : `1:${long.toFixed(2)}`;
-  return `${width} × ${height}  ·  ${megapixels} MP  ·  ${ratio}`;
+  return `${width} × ${height} · ${megapixels} MP · ${ratio}`;
 }
 
-// Result lines currently on screen; refreshed together so they follow any change
+// Result fields currently on screen; refreshed together so they follow any change
 // (typing, switches, promoted widgets, workflow load) in both renderers.
 const liveResults = new Set();
 setInterval(() => {
@@ -68,37 +68,19 @@ function labelAspectRatios(aspectWidget, getOrientationWidget) {
   aspectWidget.options.__elegantLabels = true;
 }
 
-/** Read-only line showing the resulting size. */
+/**
+ * Read-only "result" field showing the resulting size. It is a regular text
+ * widget so it looks like the other fields, and is never sent to the backend.
+ * (Not "disabled": the canvas hides the value of disabled widgets.)
+ */
 function addResultWidget(owner, getWidgets, isActive) {
-  const element = document.createElement("div");
-  Object.assign(element.style, {
-    boxSizing: "border-box",
-    width: "100%",
-    height: "22px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: "0 8px",
-    border: "1px dashed var(--border-color, #555)",
-    borderRadius: "6px",
-    color: "var(--input-text, #ddd)",
-    font: "12px/1 sans-serif",
-    whiteSpace: "nowrap",
-    overflow: "hidden",
-    textOverflow: "ellipsis",
-    userSelect: "text",
-  });
-
-  const widget = owner.addDOMWidget("result", "elegant_resolution_result", element, {
-    serialize: false,
-    getValue: () => element.textContent,
-    setValue: () => {},
-    getMinHeight: () => 30,
-    getMaxHeight: () => 30,
-    // Space around the box on every side; the default 10 would leave only a sliver.
-    margin: 4,
-  });
+  const widget = owner.addWidget("text", "result", "", () => {}, { serialize: false });
   widget.serialize = false;
+  widget.options ??= {};
+  widget.options.serialize = false;
+  widget.options.read_only = true; // Vue nodes: read-only input
+  widget.onClick = () => {}; // Canvas: don't open the edit prompt
+  widget.tooltip = "Width × height · megapixels · actual aspect ratio after rounding";
 
   let lastAspect;
   const update = () => {
@@ -108,9 +90,8 @@ function addResultWidget(owner, getWidgets, isActive) {
       ? Object.fromEntries(INPUT_NAMES.map((name) => [name, widgets[name]?.value]))
       : null;
     const text = describe(values);
-    if (element.textContent !== text) {
-      element.textContent = text;
-      element.title = text;
+    if (widget.value !== text) {
+      widget.value = text;
       // The dropdown shows the ratio in the current orientation, so redraw it too.
       owner.setDirtyCanvas?.(true, false);
     }

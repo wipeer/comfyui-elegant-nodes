@@ -1,6 +1,6 @@
 import { app } from "../../scripts/app.js";
 
-// A ❓ button at the right end of each Elegant node's title opens this help.
+// A cyan ? button at the right end of each Elegant node's title opens this help.
 
 const HELP = {
   ElegantSeed: {
@@ -155,7 +155,12 @@ const HELP = {
   },
 };
 
+const HELP_COLOR = "#22d3ee"; // cyan
+
 const STYLE = `
+.elegant-help-icon { display: inline-flex; align-items: center; justify-content: center; flex: none;
+  width: 16px; height: 16px; box-sizing: border-box; border: 1.5px solid ${HELP_COLOR}; border-radius: 50%;
+  color: ${HELP_COLOR}; font: bold 11px/1 sans-serif; }
 .elegant-help-overlay { position: fixed; inset: 0; z-index: 10000; display: flex; align-items: center; justify-content: center;
   background: rgba(0, 0, 0, 0.5); }
 .elegant-help { width: min(680px, calc(100vw - 32px)); max-height: min(80vh, 900px); display: flex; flex-direction: column;
@@ -176,9 +181,10 @@ const STYLE = `
 .elegant-help td:first-child { white-space: nowrap; width: 1%; }
 .elegant-help code { font: 12.5px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   background: var(--comfy-input-bg, #2a2a2a); padding: 1px 4px; border-radius: 4px; }
-.elegant-help-button { margin-left: 4px; padding: 0 4px; background: none; border: 0; cursor: pointer; font-size: 13px;
-  line-height: 1; opacity: 0.8; border-radius: 4px; }
-.elegant-help-button:hover { opacity: 1; background: rgba(255, 255, 255, 0.08); }
+.elegant-help-button { margin-left: 4px; padding: 2px; background: none; border: 0; cursor: pointer; line-height: 0;
+  opacity: 0.85; border-radius: 50%; }
+.elegant-help-button:hover { opacity: 1; background: rgba(34, 211, 238, 0.15); }
+.elegant-help header h2 { display: flex; align-items: center; gap: 8px; }
 `;
 
 function ensureStyle() {
@@ -199,7 +205,7 @@ export function showHelp(nodeType) {
   overlay.className = "elegant-help-overlay";
   overlay.innerHTML = `
 <div class="elegant-help" role="dialog" aria-modal="true" aria-label="${help.title} help">
-  <header><h2>❓ ${help.title}</h2><button type="button" aria-label="Close">✕</button></header>
+  <header><h2><span class="elegant-help-icon">?</span>${help.title}</h2><button type="button" aria-label="Close">✕</button></header>
   <div class="body">${help.html}</div>
 </div>`;
 
@@ -228,13 +234,40 @@ export function showHelp(nodeType) {
 
 function addTitleHelpButton(node, nodeType) {
   if (!node.addTitleButton || node.title_buttons?.some((b) => b.name === "elegant_help")) return;
-  node.addTitleButton({
+  const button = node.addTitleButton({
     name: "elegant_help",
-    text: "❓",
-    fontSize: 13,
+    text: "?",
+    fontSize: 11,
     bgColor: "transparent",
     xOffset: -6,
   });
+  // Title buttons draw in the title colour; draw a cyan "?" in a ring instead.
+  const SIZE = 16;
+  button.getWidth = () => SIZE;
+  button.draw = function (ctx, x, y) {
+    if (!this.visible) return;
+    const left = x + this.xOffset;
+    const top = y + this.yOffset;
+    this._last_area[0] = left;
+    this._last_area[1] = top;
+    this._last_area[2] = SIZE;
+    this._last_area[3] = this.height;
+
+    const cx = left + SIZE / 2;
+    const cy = top + this.height / 2;
+    ctx.save();
+    ctx.strokeStyle = HELP_COLOR;
+    ctx.fillStyle = HELP_COLOR;
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.arc(cx, cy, SIZE / 2 - 1, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.font = "bold 11px sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("?", cx, cy + 0.5);
+    ctx.restore();
+  };
   const original = node.onTitleButtonClick;
   node.onTitleButtonClick = function (button, canvas) {
     if (button?.name === "elegant_help") return showHelp(nodeType);
@@ -263,7 +296,7 @@ function decorateVueHeaders(root = document) {
     const button = document.createElement("button");
     button.type = "button";
     button.className = "elegant-help-button";
-    button.textContent = "❓";
+    button.innerHTML = '<span class="elegant-help-icon">?</span>';
     button.title = "Help";
     // Don't start a drag or select the node.
     for (const type of ["pointerdown", "mousedown", "dblclick"]) {

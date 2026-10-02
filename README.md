@@ -9,7 +9,7 @@ Small, tidy utility nodes for [ComfyUI](https://github.com/Comfy-Org/ComfyUI):
 - **Elegant Any to String Multi Preview**: the same for several values, joined with a delimiter.
 - **Elegant Any Math Multi Preview**: a math expression over any number of inputs, with int, float, boolean and string outputs.
 
-All are in the `utilities/elegant` category and work inside subgraphs. Click the ❓ in a
+All are in the `utilities/elegant` category and work inside subgraphs. Click the cyan **?** in a
 node's title for detailed help on that node.
 
 ## Node: Elegant Seed
