@@ -1,11 +1,15 @@
 import { app } from "../../scripts/app.js";
 import { api } from "../../scripts/api.js";
 
-const NODE_IDS = new Set(["ElegantAnyToString", "ElegantAnyToStringAdvanced"]);
+const NODE_IDS = new Set(["ElegantAnyToString", "ElegantAnyToStringAdvanced", "ElegantAnyMathMultiPreview"]);
 const TEXT_WIDGET = "text";
 // Subgraph nodes get one text box per Elegant Any to String inside them, named by
 // the inner node's id path relative to the subgraph node (e.g. "5" or "7:5").
 const HOST_WIDGET_PREFIX = "elegant_text:";
+
+const MIN_TEXT_HEIGHT = 60;
+const MAX_TEXT_HEIGHT = 240;
+const LINE_HEIGHT = 17; // 12px monospace at line-height 1.4, rounded up
 
 function toText(text) {
   if (text == null) return "";
@@ -35,16 +39,23 @@ function addTextWidget(owner, name) {
   // Keep wheel scrolling and text selection inside the box instead of the canvas.
   textarea.addEventListener("wheel", (e) => e.stopPropagation(), { passive: true });
 
+  let minHeight = MIN_TEXT_HEIGHT;
   const widget = owner.addDOMWidget(name, "elegant_text", textarea, {
     serialize: false,
     getValue: () => textarea.value,
     setValue: (value) => {
       textarea.value = toText(value);
     },
-    getMinHeight: () => 60,
+    getMinHeight: () => minHeight,
   });
   widget.serialize = false;
   widget.textarea = textarea;
+  widget.owner = owner;
+  // Room for the text's lines, up to a limit; longer text scrolls.
+  widget.fitLines = (text) => {
+    const lines = text.split("\n").length;
+    minHeight = Math.max(MIN_TEXT_HEIGHT, Math.min(MAX_TEXT_HEIGHT, lines * LINE_HEIGHT + 20));
+  };
   return widget;
 }
 
@@ -55,6 +66,8 @@ function setText(widget, text, tooltip) {
     widget.textarea.value = text;
     if (tooltip !== undefined) widget.textarea.title = tooltip;
   }
+  widget.fitLines?.(text);
+  if (widget.owner) growToFit(widget.owner);
 }
 
 /** Resolves an id path like "12:7:5" from `graph`: the subgraph nodes passed through, and the node. */
@@ -79,10 +92,7 @@ function growToFit(node) {
 function showOnHost(host, relativePath, inner, text) {
   const name = HOST_WIDGET_PREFIX + relativePath;
   let widget = host.widgets?.find((w) => w.name === name);
-  if (!widget) {
-    widget = addTextWidget(host, name);
-    growToFit(host);
-  }
+  if (!widget) widget = addTextWidget(host, name);
   setText(widget, text, inner.title);
   host.setDirtyCanvas?.(true, true);
 }

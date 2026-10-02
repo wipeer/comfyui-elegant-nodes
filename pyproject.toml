@@ -1,6 +1,6 @@
 [project]
 name = "comfyui-elegant-nodes"
-description = "Elegant utility nodes for ComfyUI: a seed node with random/fixed controls, an aspect-ratio resolution selector and an any-to-string preview that works in subgraphs."
+description = "Elegant utility nodes for ComfyUI: a seed node with random/fixed controls, an aspect-ratio resolution selector any-to-string previews and a math expression node, all working in subgraphs."
 version = "0.1.0"
 license = { text = "MIT" }
 dependencies = []

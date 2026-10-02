@@ -36,7 +36,7 @@ class ElegantResolution(io.ComfyNode):
     def define_schema(cls):
         return io.Schema(
             node_id="ElegantResolution",
-            display_name="Elegant Resolution",
+            display_name="Elegant Resolution Selector",
             search_aliases=["resolution", "aspect ratio", "size", "width height", "elegant resolution"],
             category="utilities/elegant",
             description="Width and height for an aspect ratio, keeping about the same pixel count "

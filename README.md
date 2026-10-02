@@ -4,9 +4,10 @@ Small, tidy utility nodes for [ComfyUI](https://github.com/Comfy-Org/ComfyUI):
 
 - **Elegant Seed**: a seed with a random/fixed switch and handy buttons, based on the
   built-in [`SeedNode`](https://github.com/Comfy-Org/ComfyUI/blob/master/comfy_extras/nodes_seed.py).
-- **Elegant Resolution**: width and height from an aspect ratio, keeping the pixel count steady.
+- **Elegant Resolution Selector**: width and height from an aspect ratio, keeping the pixel count steady.
 - **Elegant Any to String Preview**: turns any value into text and shows it, also on subgraph nodes.
 - **Elegant Any to String Multi Preview**: the same for several values, joined with a delimiter.
+- **Elegant Any Math Multi Preview**: a math expression over any number of inputs, with int, float, boolean and string outputs.
 
 All are in the `utilities/elegant` category and work inside subgraphs.
 
@@ -61,7 +62,7 @@ node's own seed.
 Random seeds go up to 2^53 − 1, the largest number the browser handles exactly
 (same limit as ComfyUI's own randomize).
 
-## Node: Elegant Resolution
+## Node: Elegant Resolution Selector
 
 Category: `utilities/elegant`
 
@@ -121,6 +122,33 @@ Converts several values to text (same conversion as above) and joins them.
 
 It shows the result in the same plain-text box, also on subgraph nodes.
 
+## Node: Elegant Any Math Multi Preview
+
+Category: `utilities/elegant`
+
+Evaluates an expression over the inputs `a`, `b`, `c`, … Based on ComfyUI's Math Expression
+node and evaluated safely with [simpleeval](https://github.com/danthedeckie/simpleeval)
+(already installed with ComfyUI), so only math is possible, no Python code.
+
+| Input / Output | Type    | Description |
+|----------------|---------|-------------|
+| `a`, `b`, …    | any     | Values for the expression. A new input appears each time you connect the last free one (up to `z`). Text that looks like a number is used as a number. |
+| `expression`   | STRING  | E.g. `a * b`, `(a + b) / 2`, `a / b`, `max(a, b)`, `a > b and b >= 768`, `round(a / 64) * 64`, `a + "_" + str(b)`. |
+| `int`          | INT     | The result as a whole number (decimals are cut off: 1.77 → 1). |
+| `float`        | FLOAT   | The result as a decimal number. |
+| `boolean`      | BOOLEAN | `False` for 0, empty text or false, otherwise `True`. |
+| `string`       | STRING  | The result as text. |
+
+Operators: `+ - * / // % **`, comparisons `== != < <= > >=`, `and or not`, and
+`x if condition else y`. Functions: `sum min max abs round pow sqrt ceil floor log log2 log10
+exp sin cos tan clamp int float str bool`. Constants: `pi`, `tau`. `values` is the list of
+all inputs, so `sum(values)` adds them all.
+
+If the result is text that isn't a number, `int` and `float` are 0. Errors (division by
+zero, an unconnected input in the expression) stop the run with a message.
+
+The plain-text box shows the result and all four outputs, also on subgraph nodes.
+
 ## Installation
 
 ```bash
@@ -128,6 +156,6 @@ cd ComfyUI/custom_nodes
 git clone https://github.com/wipeer/comfyui-elegant-nodes.git
 ```
 
-Restart ComfyUI and search for **Elegant Seed**, **Elegant Resolution**, **Elegant Any to String Preview** or **Elegant Any to String Multi Preview**.
+Restart ComfyUI and search for **Elegant** to see all nodes.
 
 Requires a ComfyUI version that ships the V3 node API (`comfy_api.latest`).
