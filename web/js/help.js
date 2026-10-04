@@ -15,7 +15,7 @@ const HELP = {
 <tr><td><b>mode</b></td><td><code>random</code>: a new seed for every run. <code>fixed</code>: the seed in the field is always used.</td></tr>
 <tr><td><b>seed</b></td><td>The seed. Type a number to use it for the next run, in either mode.</td></tr>
 <tr><td><b>🎲 Random</b></td><td>New seed now, and switch to random mode.</td></tr>
-<tr><td><b>♻️ Last seed → fixed</b></td><td>Put back the seed the last run used and switch to fixed. The label shows that seed.</td></tr>
+<tr><td><b>♻️ Last seed → fixed</b></td><td>Put back the seed of the last <b>finished</b> run (the image you see) and switch to fixed. The label shows that seed. Runs still queued or generating don't count, so it's safe to click while the next one is running.</td></tr>
 <tr><td><b>🎲 Random → fixed</b></td><td>New seed, and switch to fixed mode.</td></tr>
 </table>
 <h3>Before or after the run</h3>

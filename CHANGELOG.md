@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- **Elegant Seed**: ♻️ Last seed → fixed now restores the seed of the last *finished* run (the
+  image you see). Before, it took the last *queued* run, so with another run queued or
+  generating (Run pressed again, batch count, Instant mode) it gave a newer, unseen seed.
+
 ## 1.1.0
 
 - Preview nodes inside a subgraph show their box on the subgraph node right away, before the

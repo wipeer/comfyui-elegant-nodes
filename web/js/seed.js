@@ -1,6 +1,7 @@
 // Elegant Seed: random/fixed switch, buttons, and seed control on queue.
 
 import { app } from "../../scripts/app.js";
+import { api } from "../../scripts/api.js";
 import {
   NODE_IDS,
   chainMethod,
@@ -15,8 +16,8 @@ import {
   watchSubgraphHost,
 } from "./common.js";
 
-// Last queued seed, saved in the workflow: one value on the node itself, and a
-// map by interior node id on subgraph nodes.
+// Seed of the last run that finished, saved in the workflow: one value on the
+// node itself, and a map by interior node id on subgraph nodes.
 const LAST_SEED_PROPERTY = "elegant_last_seed";
 const HOST_LAST_SEEDS_PROPERTY = "elegant_last_seeds";
 
@@ -47,8 +48,8 @@ function createSeedController({ owner, getSeedWidget, getModeWidget, isActive, l
   let lastSeen = getSeedWidget()?.value;
   // Set by the buttons: use the seed they put in the field for the next run.
   let keepNextSeed = false;
-  // Seed captured right before the prompt is built; recorded once it is queued.
-  let pendingSeed;
+  // Whether this controller drives the queued prompt (captured before it is built).
+  let queued = false;
 
   const redraw = () => owner.setDirtyCanvas?.(true, true);
   const isRandom = () => !!getModeWidget()?.value;
@@ -89,7 +90,7 @@ function createSeedController({ owner, getSeedWidget, getModeWidget, isActive, l
 
   const lastButton = addButton(
     "♻️ Last seed → fixed",
-    "Put the seed used by the last queued run back in the field and switch to fixed mode.",
+    "Put back the seed of the last finished run (the image you see) and switch to fixed mode.",
     () => {
       const last = lastSeed.get();
       if (typeof last !== "number") return;
@@ -117,31 +118,32 @@ function createSeedController({ owner, getSeedWidget, getModeWidget, isActive, l
   // The frontend calls these on every widget around each queued prompt (per batch item).
   randomButton.beforeQueued = () => {
     const seedWidget = getSeedWidget();
-    if (!seedWidget || !isActive()) {
-      pendingSeed = undefined;
-      return;
-    }
+    queued = !!seedWidget && isActive();
+    if (!queued) return;
     const userChangedSeed = seedWidget.value !== lastSeen;
     if (isRandom() && controlRunsBefore() && !keepNextSeed && !userChangedSeed) {
       setSeed(randomSeed(seedWidget));
     }
     keepNextSeed = false;
-    pendingSeed = seedWidget.value;
     lastSeen = seedWidget.value;
   };
 
   randomButton.afterQueued = () => {
-    if (pendingSeed === undefined) return;
-    lastSeed.set(pendingSeed);
-    pendingSeed = undefined;
+    if (!queued) return;
+    queued = false;
     const seedWidget = getSeedWidget();
     if (seedWidget && isRandom() && !controlRunsBefore()) {
       setSeed(randomSeed(seedWidget));
     }
+  };
+
+  // Called when a run that used `seed` has finished (see the execution_success listener).
+  const recordFinished = (seed) => {
+    lastSeed.set(seed);
     refresh();
   };
 
-  return { widgets: [randomButton, lastButton, fixedButton], refresh };
+  return { widgets: [randomButton, lastButton, fixedButton], refresh, recordFinished };
 }
 
 function setupSeedNode(node) {
@@ -161,12 +163,13 @@ function setupSeedNode(node) {
       set: (value) => (node.properties[LAST_SEED_PROPERTY] = value),
     },
   });
+  node.__elegantSeedController = controller;
   chainMethod(node, "onConfigure", () => controller.refresh());
 }
 
 /** Shows the buttons on a subgraph node for each Elegant Seed whose seed or mode it promotes. */
 function syncSubgraphNode(host) {
-  const state = (host.__elegantSeed ??= { signature: null, controllers: [] });
+  const state = (host.__elegantSeed ??= { signature: null, controllers: [], byInnerId: new Map() });
   const groups = collectPromoted(host, NODE_IDS.seed).filter((g) => g.inputs.seed || g.inputs.mode);
   const signature = groupsSignature(groups);
 
@@ -178,9 +181,10 @@ function syncSubgraphNode(host) {
   host.properties ??= {};
 
   replaceHostWidgets(host, "seed", () => {
+    state.byInnerId = new Map();
     state.controllers = groups.map((group) => {
       const { inner, inputs } = group;
-      return createSeedController({
+      const controller = createSeedController({
         owner: host,
         getSeedWidget: () => liveWidget(host, group, "seed"),
         getModeWidget: () => liveWidget(host, group, "mode"),
@@ -203,10 +207,50 @@ function syncSubgraphNode(host) {
         },
         labelSuffix: groups.length > 1 ? ` · #${inner.id}` : "",
       });
+      state.byInnerId.set(String(inner.id), controller);
+      return controller;
     });
     return state.controllers.flatMap((controller) => controller.widgets);
   });
 }
+
+// ---------------------------------------------------------------------------
+// "Last seed": the seed of the last run that finished, read back from the
+// server's history, so it matches the image you see even when more runs were
+// queued after it (batch count, Run again, Instant mode).
+// ---------------------------------------------------------------------------
+
+/** The controller that owns the Elegant Seed at execution id path `ids` (e.g. ["12", "5"]). */
+function controllerForExecutionPath(ids) {
+  const graph = app.rootGraph ?? app.graph;
+  const top = graph?.getNodeById?.(ids[0]);
+  if (!top) return null;
+  if (ids.length === 1) return top.__elegantSeedController ?? null;
+
+  // Inside a subgraph: the subgraph node drives it when seed/mode are promoted…
+  const fromHost = top.__elegantSeed?.byInnerId?.get(String(ids.at(-1)));
+  if (fromHost) return fromHost;
+  // …otherwise the Elegant Seed node inside does.
+  let node = top;
+  for (const id of ids.slice(1)) node = node?.subgraph?.getNodeById?.(id);
+  return node?.__elegantSeedController ?? null;
+}
+
+api.addEventListener("execution_success", async ({ detail }) => {
+  const promptId = detail?.prompt_id;
+  if (!promptId) return;
+  try {
+    const history = await (await api.fetchApi(`/history/${encodeURIComponent(promptId)}`)).json();
+    const prompt = history?.[promptId]?.prompt?.[2] ?? {};
+    for (const [executionId, node] of Object.entries(prompt)) {
+      const seed = node?.inputs?.seed;
+      if (node?.class_type !== NODE_IDS.seed || typeof seed !== "number") continue; // linked seeds are [id, slot]
+      controllerForExecutionPath(executionId.split(":"))?.recordFinished(seed);
+    }
+  } catch (error) {
+    console.warn("[Elegant Seed] Couldn't read the finished run's seed", error);
+  }
+});
 
 app.registerExtension({
   name: "elegant.seed",

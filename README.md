@@ -85,7 +85,7 @@ Based on ComfyUI's built-in [Seed](https://github.com/Comfy-Org/ComfyUI/blob/mas
 | **mode** | `random`: a new seed for every run. `fixed`: the seed in the field is always used. |
 | **seed** | Shows the seed; type one to use it for the next run, in either mode. |
 | **🎲 Random** | New seed now, and switch to `random`. |
-| **♻️ Last seed → fixed** | Put back the seed the last run used and switch to `fixed`. The label shows that seed. |
+| **♻️ Last seed → fixed** | Put back the seed of the last **finished** run (the image you see) and switch to `fixed`. The label shows that seed. Runs still queued or generating don't count. |
 | **🎲 Random → fixed** | New seed, and switch to `fixed`. |
 
 Outputs: `seed` (INT) and `seed_text` (STRING).
