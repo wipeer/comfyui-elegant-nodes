@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+- **New: Elegant Random Number**: a seeded random int or float between min and max, with the same
+  random/fixed switch and seed buttons as Elegant Seed; works from subgraph nodes.
+- **Elegant Any to String Multi Preview**: new **switch** mode picks one source by **index**, with
+  a **value** output that passes the chosen source through unchanged (images, models, …).
+  Advanced **out_of_range** setting: error (default), clamp or wrap.
+- **Elegant Any Math Multi Preview**: seeded `rand`, `randint` and `uniform` functions.
+- Subgraph nodes keep preview boxes below the buttons and results.
+
 ## 1.2.0
 
 - **Elegant Any to String Preview** and **Multi Preview**: new **wrap_text** switch to wrap long

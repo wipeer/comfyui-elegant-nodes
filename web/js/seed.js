@@ -1,4 +1,5 @@
-// Elegant Seed: random/fixed switch, buttons, and seed control on queue.
+// Seed controls (random/fixed switch, buttons, seed control on queue) for
+// Elegant Seed and Elegant Random Number.
 
 import { app } from "../../scripts/app.js";
 import { api } from "../../scripts/api.js";
@@ -15,6 +16,9 @@ import {
   replaceHostWidgets,
   watchSubgraphHost,
 } from "./common.js";
+
+// Nodes with a "mode" switch and a "seed" field that get the seed controls.
+const SEED_NODE_TYPES = new Set([NODE_IDS.seed, NODE_IDS.randomNumber]);
 
 // Seed of the last run that finished, saved in the workflow: one value on the
 // node itself, and a map by interior node id on subgraph nodes.
@@ -167,10 +171,12 @@ function setupSeedNode(node) {
   chainMethod(node, "onConfigure", () => controller.refresh());
 }
 
-/** Shows the buttons on a subgraph node for each Elegant Seed whose seed or mode it promotes. */
+/** Shows the buttons on a subgraph node for each seed node whose seed or mode it promotes. */
 function syncSubgraphNode(host) {
   const state = (host.__elegantSeed ??= { signature: null, controllers: [], byInnerId: new Map() });
-  const groups = collectPromoted(host, NODE_IDS.seed).filter((g) => g.inputs.seed || g.inputs.mode);
+  const groups = [...SEED_NODE_TYPES]
+    .flatMap((type) => collectPromoted(host, type))
+    .filter((g) => g.inputs.seed || g.inputs.mode);
   const signature = groupsSignature(groups);
 
   if (signature === state.signature) {
@@ -244,7 +250,7 @@ api.addEventListener("execution_success", async ({ detail }) => {
     const prompt = history?.[promptId]?.prompt?.[2] ?? {};
     for (const [executionId, node] of Object.entries(prompt)) {
       const seed = node?.inputs?.seed;
-      if (node?.class_type !== NODE_IDS.seed || typeof seed !== "number") continue; // linked seeds are [id, slot]
+      if (!SEED_NODE_TYPES.has(node?.class_type) || typeof seed !== "number") continue; // linked seeds are [id, slot]
       controllerForExecutionPath(executionId.split(":"))?.recordFinished(seed);
     }
   } catch (error) {
@@ -255,7 +261,7 @@ api.addEventListener("execution_success", async ({ detail }) => {
 app.registerExtension({
   name: "elegant.seed",
   async beforeRegisterNodeDef(nodeType, nodeData) {
-    if (nodeData.name === NODE_IDS.seed) onNodeCreated(nodeType, setupSeedNode);
+    if (SEED_NODE_TYPES.has(nodeData.name)) onNodeCreated(nodeType, setupSeedNode);
   },
   nodeCreated(node) {
     if (node.isSubgraphNode?.()) watchSubgraphHost(node, syncSubgraphNode);

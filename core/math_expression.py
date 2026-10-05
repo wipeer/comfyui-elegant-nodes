@@ -2,6 +2,7 @@
 
 import io
 import math
+import random
 import tokenize
 from dataclasses import dataclass
 
@@ -28,7 +29,25 @@ def _clamp(value, low, high):
     return max(low, min(high, value))
 
 
-# Same set as ComfyUI's Math Expression node, plus clamp, exp, str and bool.
+# Seeded random functions: the same seed always gives the same number, so results
+# stay reproducible and ComfyUI's caching stays correct.
+def _rand(seed):
+    """A float in [0, 1)."""
+    return random.Random(seed).random()
+
+
+def _randint(seed, low, high):
+    """A whole number between low and high, both included."""
+    low, high = sorted((math.ceil(low), math.floor(high)))
+    return random.Random(seed).randint(low, high)
+
+
+def _uniform(seed, low, high):
+    """A decimal number between low and high."""
+    return random.Random(seed).uniform(low, high)
+
+
+# Same set as ComfyUI's Math Expression node, plus clamp, exp, str, bool and seeded random.
 FUNCTIONS = {
     "sum": _variadic_sum,
     "min": min,
@@ -47,6 +66,9 @@ FUNCTIONS = {
     "cos": math.cos,
     "tan": math.tan,
     "clamp": _clamp,
+    "rand": _rand,
+    "randint": _randint,
+    "uniform": _uniform,
     "int": int,
     "float": float,
     "str": str,

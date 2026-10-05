@@ -72,15 +72,50 @@ const HELP = {
   [NODE_IDS.anyToStringMultiPreview]: {
     title: "Elegant Any to String Multi Preview",
     html: `
-<p>Turns several values into text and joins them with a delimiter.</p>
+<p>Turns several values into text and joins them with a delimiter (<b>concat</b>), or picks one of them by index (<b>switch</b>).</p>
 <p class="elegant-help-subgraph"><b>Works from the subgraph node.</b> After each run the joined text also appears on the subgraph node. Each copy of a subgraph shows its own value.</p>
 <h3>Inputs</h3>
 <table>
 <tr><td><b>source_1, source_2, …</b></td><td>Connect values here. A new input appears each time you connect the last free one (up to 20). Disconnect one and the gap closes.</td></tr>
 <tr><td><b>delimiter</b></td><td>Put between the values. <code>\\n</code> = new line (default), <code>\\t</code> = tab, <code>\\\\</code> = backslash. Anything else is used as typed, e.g. <code>, </code> or <code> | </code>.</td></tr>
 <tr><td><b>wrap_text</b></td><td>Wrap long lines to the box width instead of scrolling sideways.</td></tr>
+<tr><td><b>mode</b></td><td><code>concat</code>: join all sources with the delimiter. <code>switch</code>: use only the source chosen by <b>index</b>. The setting the mode doesn't use is greyed out.</td></tr>
+<tr><td><b>index</b></td><td>switch: which source to use, counting from 1 (<code>source_1</code>). Connect a number to choose it from elsewhere, e.g. an <b>Elegant Random Number</b> for a random pick.</td></tr>
 </table>
-<p>Each value is converted like in <b>Elegant Any to String Preview</b>. The joined text is shown and output as <code>string</code>.</p>`,
+<h3>Outputs</h3>
+<table>
+<tr><td><b>string</b></td><td>The joined text (concat) or the chosen source as text (switch).</td></tr>
+<tr><td><b>value</b></td><td>switch: the chosen source <b>unchanged</b>, so the switch works for images, models, latents… anything. concat: the joined text.</td></tr>
+</table>
+<p>The preview shows which one was picked, e.g. <code>▶ source_2</code>. Note: ComfyUI still computes every connected source, also the ones not picked.</p>
+<h3>Advanced: out of range</h3>
+<p>Shown with the node's advanced inputs. What an <b>index</b> outside the connected sources does:</p>
+<table>
+<tr><td><code>error</code></td><td>(default) stop the run with a message.</td></tr>
+<tr><td><code>clamp</code></td><td>below 1 uses the first source, above the last uses the last.</td></tr>
+<tr><td><code>wrap</code></td><td>count around: with 3 sources, 4 is the first again and 0 the last.</td></tr>
+</table>
+<p>Each value is converted like in <b>Elegant Any to String Preview</b>.</p>`,
+  },
+
+  [NODE_IDS.randomNumber]: {
+    title: "Elegant Random Number",
+    html: `
+<p>A random number between <b>min</b> and <b>max</b>, drawn from a seed: the same seed always gives the same number, so you can get a value back.</p>
+<p class="elegant-help-subgraph"><b>Works from the subgraph node.</b> Promote <code>seed</code> (and optionally <code>mode</code>) and the seed buttons appear on the subgraph node; the value shows there after each run. Each copy of a subgraph keeps its own seed.</p>
+<h3>Controls</h3>
+<table>
+<tr><td><b>mode</b></td><td><code>random</code>: a new seed, and so a new number, for every run. <code>fixed</code>: keep the seed.</td></tr>
+<tr><td><b>seed</b></td><td>The seed the number is drawn from. Type one to use it for the next run.</td></tr>
+<tr><td><b>min</b>, <b>max</b></td><td>The range, both included. Swapped automatically if min is larger.</td></tr>
+<tr><td><b>number_type</b></td><td><code>int</code>: a whole number. <code>float</code>: a decimal number.</td></tr>
+<tr><td><b>🎲 Random</b></td><td>New seed now, and switch to random.</td></tr>
+<tr><td><b>♻️ Last seed → fixed</b></td><td>Put back the seed of the last finished run and switch to fixed, to keep a number you liked.</td></tr>
+<tr><td><b>🎲 Random → fixed</b></td><td>New seed, and switch to fixed.</td></tr>
+</table>
+<p>Random mode follows <i>Settings → Widget control mode</i> (before or after the run), like Elegant Seed.</p>
+<h3>Outputs</h3>
+<p><code>int</code>, <code>float</code> and <code>string</code>. Tip: connect <code>int</code> to the <b>index</b> of a Multi Preview in switch mode for a random pick.</p>`,
   },
 
   [NODE_IDS.anyMathMultiPreview]: {
@@ -130,8 +165,12 @@ const HELP = {
 <tr><td><code>log(a)</code>, <code>log2(a)</code>, <code>log10(a)</code></td><td>logarithms (<code>log(a, base)</code> also works)</td></tr>
 <tr><td><code>sin(a)</code>, <code>cos(a)</code>, <code>tan(a)</code></td><td>trigonometry, in radians</td></tr>
 <tr><td><code>int(a)</code>, <code>float(a)</code>, <code>str(a)</code>, <code>bool(a)</code></td><td>convert</td></tr>
+<tr><td><code>rand(seed)</code></td><td>random decimal from 0 to 1</td></tr>
+<tr><td><code>randint(seed, low, high)</code></td><td>random whole number, low and high included</td></tr>
+<tr><td><code>uniform(seed, low, high)</code></td><td>random decimal between low and high</td></tr>
 </table>
 <p>Constants: <code>pi</code> (3.14159…), <code>tau</code> (2π).</p>
+<p>The random functions are <b>seeded</b>: the same seed always gives the same number, so connect an <b>Elegant Seed</b> (e.g. as <code>a</code>) and use <code>randint(a, 1, 6)</code>. For a standalone random value use <b>Elegant Random Number</b>.</p>
 
 <h3>Outputs</h3>
 <table>

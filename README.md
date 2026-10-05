@@ -44,8 +44,9 @@ the rest follows. Demote them and it goes away.
 | [**Elegant Seed**](#elegant-seed) | A seed with a random/fixed switch and buttons to reuse or re-roll it. | Seed buttons, per copy |
 | [**Elegant Resolution Selector**](#elegant-resolution-selector) | Width and height from an aspect ratio, keeping the pixel count steady. | Live result |
 | [**Elegant Any to String Preview**](#elegant-any-to-string-preview) | Any value as plain text. | Text preview |
-| [**Elegant Any to String Multi Preview**](#elegant-any-to-string-multi-preview) | Several values as text, joined with a delimiter. | Text preview |
+| [**Elegant Any to String Multi Preview**](#elegant-any-to-string-multi-preview) | Several values joined as text, or one picked by index (switch). | Text preview |
 | [**Elegant Any Math Multi Preview**](#elegant-any-math-multi-preview) | A math expression over any number of inputs, with a worked-out preview. | Worked-out result |
+| [**Elegant Random Number**](#elegant-random-number) | A seeded random int or float between min and max, with the seed buttons. | Seed buttons and value, per copy |
 
 All nodes are in the **utilities → elegant** category. Click the cyan **?** in a node's title
 for detailed help on that node.
@@ -140,13 +141,25 @@ last text is saved with the workflow, so it shows again right after loading.
 
 ### Elegant Any to String Multi Preview
 
-The same for several values, joined with a delimiter.
+The same for several values: joined with a delimiter (**concat**), or one of them picked by
+index (**switch**).
 
 - `source_1`, `source_2`, …: a new input appears each time you connect the last free one (up
   to 20). Disconnect one and the gap closes.
 - `delimiter`: default `\n` (new line). `\t` is a tab and `\\` a backslash; anything else is
   used as typed, e.g. `, ` or ` | `.
 - `wrap_text`: wrap long lines to the box width, like the single preview.
+- `mode`: `concat` joins all sources; `switch` uses only the source chosen by `index`. The setting
+  the mode doesn't use is greyed out.
+- `index`: switch mode, which source to use, counting from 1 (`source_1`). Connect a number to
+  choose it from elsewhere, e.g. an Elegant Random Number for a random pick.
+- `out_of_range` (advanced input, hidden by default in the Vue nodes view): what an index outside
+  the connected sources does: `error` (default) stops with a message, `clamp` uses the first
+  source below 1 and the last one above, `wrap` counts around.
+
+Outputs: `string` (the joined text, or the chosen source as text) and `value`: in switch mode the
+chosen source **unchanged**, so the switch works for images, models, latents… anything. ComfyUI
+still computes every connected source, also the ones not picked.
 
 **In a subgraph:** the joined text appears on the subgraph node, like the single preview. The box
 there follows the node's `wrap_text` switch, or the subgraph node's own if you promote it.
@@ -171,6 +184,8 @@ string   -1.0
 - **Operators:** `+ - * / // % **`, `== != < <= > >=`, `and or not`, `x if condition else y`.
 - **Functions:** `sum min max abs round pow sqrt ceil floor log log2 log10 exp sin cos tan
   clamp int float str bool`. **Constants:** `pi`, `tau`.
+- **Seeded random:** `rand(seed)` (0 to 1), `randint(seed, low, high)`, `uniform(seed, low, high)`.
+  The same seed always gives the same number, e.g. `randint(a, 1, 6)` with an Elegant Seed as `a`.
 - **Outputs:** `int` cuts decimals off (1.77 → 1; use `round(…)` to round), `boolean` is False
   for 0 or empty text. If the result is text that isn't a number, `int` and `float` are 0.
 - **Examples:** `a / b`, `round(a / 64) * 64`, `max(a, b)`, `a * b / 1048576` (megapixels),
@@ -181,6 +196,21 @@ ComfyUI's own Math Expression node: only math, no Python code, and huge powers a
 Errors such as division by zero or an unconnected input stop the run with a message.
 
 **In a subgraph:** the worked-out result appears on the subgraph node after each run.
+
+### Elegant Random Number
+
+A random number between **min** and **max** (both included), drawn from a seed: the same seed
+always gives the same number, so you can get a value back.
+
+- **mode**, **seed** and the **🎲 Random**, **♻️ Last seed → fixed** and **🎲 Random → fixed**
+  buttons work exactly like Elegant Seed's, including before/after the run.
+- **number_type**: `int` for a whole number, `float` for a decimal one.
+- Outputs `int`, `float` and `string`; the preview shows the value, range and seed.
+
+Connect its `int` to a Multi Preview's `index` in switch mode for a random pick from a list.
+
+**In a subgraph:** promote `seed` (and optionally `mode`) and the seed buttons appear on the
+subgraph node; the value shows there after each run.
 
 ## Help
 

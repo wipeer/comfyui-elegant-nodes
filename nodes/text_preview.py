@@ -2,6 +2,7 @@ import torch
 
 from comfy_api.latest import io, ui
 
+from ..core.switch import OUT_OF_RANGE_OPTIONS, pick_index
 from ..core.text import to_text, unescape
 
 MAX_SOURCES = 20
@@ -52,36 +53,85 @@ class ElegantAnyToStringPreview(io.ComfyNode):
 
 
 class ElegantAnyToStringMultiPreview(io.ComfyNode):
-    """Several values as text, joined with a delimiter."""
+    """Several values as text: joined with a delimiter (concat), or one picked by index (switch)."""
 
     @classmethod
     def define_schema(cls):
         return io.Schema(
             node_id="ElegantAnyToStringMultiPreview",
             display_name="Elegant Any to String Multi Preview",
-            search_aliases=["any to string", "join", "concatenate", "combine text", "preview", "show text", "debug"],
+            search_aliases=[
+                "any to string", "join", "concatenate", "combine text", "switch", "select", "index",
+                "preview", "show text", "debug",
+            ],
             category="utilities/elegant",
-            description="Converts several values to strings and joins them with a delimiter. "
-            "A new source input appears each time you connect the last one.",
+            description="Converts several values to strings and joins them with a delimiter (concat), or "
+            "picks one of them by index (switch). A new source input appears each time you connect "
+            "the last one.",
             is_output_node=True,
             inputs=[
                 io.Autogrow.Input(
                     "sources",
+                    # Not lazy: ComfyUI (0.38) doesn't apply lazy evaluation to auto-growing
+                    # inputs, so in switch mode every connected source is still computed.
                     template=io.Autogrow.TemplateNames(io.AnyType.Input("source"), names=SOURCE_NAMES, min=1),
                     tooltip="Connect values here; a new input appears each time you connect the last one.",
                 ),
                 io.String.Input(
                     "delimiter",
                     default="\\n",
-                    tooltip="Put between the values. Type \\n for a new line and \\t for a tab.",
+                    tooltip="concat: put between the values. Type \\n for a new line and \\t for a tab.",
                 ),
                 _wrap_input(),
+                io.Combo.Input(
+                    "mode",
+                    options=["concat", "switch"],
+                    default="concat",
+                    tooltip="concat: join all sources. switch: use only the source chosen by index.",
+                ),
+                io.Int.Input(
+                    "index",
+                    default=1,
+                    min=-(2**31),
+                    max=2**31 - 1,
+                    tooltip="switch: which source to use, counting from 1 (source_1). Can be connected.",
+                ),
+                io.Combo.Input(
+                    "out_of_range",
+                    options=OUT_OF_RANGE_OPTIONS,
+                    default="error",
+                    advanced=True,
+                    tooltip="switch: what an index outside the sources does. error: stop with a message. "
+                    "clamp: below 1 uses the first source, above the last uses the last. "
+                    "wrap: count around (one past the last is the first again).",
+                ),
             ],
-            outputs=[io.String.Output(display_name="string")],
+            outputs=[
+                io.String.Output(display_name="string"),
+                io.AnyType.Output(
+                    display_name="value",
+                    tooltip="switch: the chosen source unchanged (image, model, anything). concat: the joined text.",
+                ),
+            ],
         )
 
     @classmethod
-    def execute(cls, sources: io.Autogrow.Type, delimiter: str, wrap_text: bool = False) -> io.NodeOutput:
-        parts = [_to_text(sources[name]) for name in SOURCE_NAMES if name in sources]
-        text = unescape(delimiter).join(parts)
-        return io.NodeOutput(text, ui=ui.PreviewText(text))
+    def execute(
+        cls,
+        sources: io.Autogrow.Type,
+        delimiter: str,
+        wrap_text: bool = False,
+        mode: str = "concat",
+        index: int = 1,
+        out_of_range: str = "error",
+    ) -> io.NodeOutput:
+        names = [name for name in SOURCE_NAMES if name in sources]
+        if mode == "switch":
+            name = names[pick_index(index, len(names), out_of_range)]  # raises if out of range or empty
+            value = sources[name]
+            text = _to_text(value)
+            preview = f"▶ {name}\n{text}"
+            return io.NodeOutput(text, value, ui=ui.PreviewText(preview))
+
+        text = unescape(delimiter).join(_to_text(sources[name]) for name in names)
+        return io.NodeOutput(text, text, ui=ui.PreviewText(text))

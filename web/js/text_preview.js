@@ -18,6 +18,7 @@ const PREVIEW_NODE_TYPES = new Set([
   NODE_IDS.anyToStringPreview,
   NODE_IDS.anyToStringMultiPreview,
   NODE_IDS.anyMathMultiPreview,
+  NODE_IDS.randomNumber,
 ]);
 
 const TEXT_WIDGET = "text";
@@ -241,7 +242,26 @@ function wrapWidgetFor(host, inner) {
   return group ? liveWidget(host, group, WRAP_WIDGET) : inner.widgets?.find((w) => w.name === WRAP_WIDGET);
 }
 
+/** Multi Preview: grey out the setting the current mode doesn't use. */
+function setupModeHints(node) {
+  const find = (name) => node.widgets?.find((w) => w.name === name);
+  const mode = find("mode");
+  if (!mode || !find("index")) return;
+  const apply = () => {
+    const switching = mode.value === "switch";
+    const delimiter = find("delimiter");
+    const index = find("index");
+    if (delimiter) delimiter.disabled = switching;
+    if (index) index.disabled = !switching;
+    node.setDirtyCanvas?.(true, true);
+  };
+  chainMethod(mode, "callback", apply);
+  chainMethod(node, "onConfigure", apply);
+  apply();
+}
+
 function setupPreviewNode(node) {
+  setupModeHints(node);
   const widget = addTextWidget(node, TEXT_WIDGET, () => node.widgets?.find((w) => w.name === WRAP_WIDGET));
   // Show the text saved with the workflow until the next run.
   chainMethod(node, "onConfigure", () => widget.setText(node.properties?.[SAVED_TEXT_PROPERTY] ?? ""));

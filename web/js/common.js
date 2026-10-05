@@ -7,6 +7,7 @@ export const NODE_IDS = {
   anyToStringPreview: "ElegantAnyToStringPreview",
   anyToStringMultiPreview: "ElegantAnyToStringMultiPreview",
   anyMathMultiPreview: "ElegantAnyMathMultiPreview",
+  randomNumber: "ElegantRandomNumber",
 };
 
 /** Runs `after(this, result, args)` after `object[name](...args)`, keeping the original. */
@@ -156,6 +157,21 @@ export function replaceHostWidgets(host, key, build) {
   const state = (host.__elegantWidgets ??= {});
   for (const widget of state[key] ?? []) host.removeWidget?.(widget);
   state[key] = build();
+  keepPreviewsLast(host);
   host.setSize?.(host.computeSize?.() ?? host.size);
   host.setDirtyCanvas?.(true, true);
+}
+
+/**
+ * Moves preview text boxes (web/js/text_preview.js) to the end of a subgraph
+ * node's own widgets, so buttons and results stay next to the promoted fields.
+ */
+export function keepPreviewsLast(host) {
+  const extra = host._extraWidgets; // the subgraph node's non-promoted widgets
+  if (!Array.isArray(extra)) return;
+  const isPreview = (w) => w.name?.startsWith("elegant_text:");
+  const previews = extra.filter(isPreview);
+  if (!previews.length || extra.slice(-previews.length).every(isPreview)) return;
+  const others = extra.filter((w) => !isPreview(w));
+  extra.splice(0, extra.length, ...others, ...previews);
 }
