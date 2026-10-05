@@ -1,5 +1,17 @@
 # Changelog
 
+## Unreleased
+
+- **Elegant Random Number** now uses ComfyUI's standard seed with its **control after
+  generate** (fixed / increment / decrement / randomize), like KSampler. The 🎲 Random,
+  ♻️ Last seed → fixed and 🎲 Random → fixed buttons set the seed and that control.
+  **Breaking:** the random/fixed `mode` switch is gone; re-add the node in workflows saved
+  with 1.3.0.
+- **Elegant Any to String Multi Preview** shows only the setting its mode uses: `delimiter` in
+  concat, `index` in switch. The other one moves to the advanced settings (⚙), greyed out.
+- Hidden advanced inputs no longer leave empty gaps in the classic canvas.
+- New [TODO.md](TODO.md): known limitations, workarounds and plans.
+
 ## 1.3.0
 
 - **New: Elegant Random Number**: a seeded random int or float between min and max, with the same

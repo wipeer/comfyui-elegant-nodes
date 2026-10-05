@@ -18,14 +18,24 @@ const advancedWidgets = (node) => (node.widgets ?? []).filter((w) => w.options?.
 
 /**
  * The classic canvas hides a widget only when `widget.advanced` is set (the
- * frontend only sets `options.advanced`), so mirror it there — unless the
- * global "always show advanced inputs" setting is on.
+ * frontend only sets `options.advanced`), so mirror it there, live — some
+ * widgets become advanced depending on other settings (e.g. Multi Preview's
+ * mode) — unless the global "always show advanced inputs" setting is on.
+ *
+ * The canvas also keeps room for hidden advanced widgets (its layout skips
+ * only `hidden` ones), leaving gaps, so they also report `hidden` while the
+ * advanced inputs are collapsed.
  */
 function markAdvancedForCanvas(node) {
-  for (const widget of advancedWidgets(node)) {
-    Object.defineProperty(widget, "advanced", {
-      get: () => !alwaysShowAdvanced(),
-      set: () => {},
+  for (const widget of node.widgets ?? []) {
+    if (Object.getOwnPropertyDescriptor(widget, "advanced")?.get) continue;
+    const isAdvanced = () => !!widget.options?.advanced && !alwaysShowAdvanced();
+    Object.defineProperty(widget, "advanced", { get: isAdvanced, set: () => {}, configurable: true });
+
+    let hidden = !!widget.hidden;
+    Object.defineProperty(widget, "hidden", {
+      get: () => hidden || (isAdvanced() && !node.showAdvanced),
+      set: (value) => (hidden = value),
       configurable: true,
     });
   }

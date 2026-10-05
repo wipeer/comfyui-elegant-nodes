@@ -46,7 +46,7 @@ the rest follows. Demote them and it goes away.
 | [**Elegant Any to String Preview**](#elegant-any-to-string-preview) | Any value as plain text. | Text preview |
 | [**Elegant Any to String Multi Preview**](#elegant-any-to-string-multi-preview) | Several values joined as text, or one picked by index (switch). | Text preview |
 | [**Elegant Any Math Multi Preview**](#elegant-any-math-multi-preview) | A math expression over any number of inputs, with a worked-out preview. | Worked-out result |
-| [**Elegant Random Number**](#elegant-random-number) | A seeded random int or float between min and max, with the seed buttons. | Seed buttons and value, per copy |
+| [**Elegant Random Number**](#elegant-random-number) | A seeded random int or float between min and max: ComfyUI's standard seed plus the seed buttons. | Seed buttons and value, per copy |
 
 All nodes are in the **utilities → elegant** category. Click the cyan **?** in a node's title
 for detailed help on that node.
@@ -146,11 +146,12 @@ index (**switch**).
 
 - `source_1`, `source_2`, …: a new input appears each time you connect the last free one (up
   to 20). Disconnect one and the gap closes.
-- `delimiter`: default `\n` (new line). `\t` is a tab and `\\` a backslash; anything else is
+- `delimiter`: concat mode, default `\n` (new line). `\t` is a tab and `\\` a backslash; anything else is
   used as typed, e.g. `, ` or ` | `.
 - `wrap_text` (advanced): wrap long lines to the box width, like the single preview.
-- `mode`: `concat` joins all sources; `switch` uses only the source chosen by `index`. The setting
-  the mode doesn't use is greyed out.
+- `mode`: `concat` joins all sources; `switch` uses only the source chosen by `index`. Only the
+  setting the mode uses is shown: `delimiter` in concat, `index` in switch. The other one moves to
+  the [advanced settings](#advanced-settings), greyed out.
 - `index`: switch mode, which source to use, counting from 1 (`source_1`). Connect a number to
   choose it from elsewhere, e.g. an Elegant Random Number for a random pick.
 - `out_of_range` (advanced): what an index outside
@@ -202,19 +203,25 @@ Errors such as division by zero or an unconnected input stop the run with a mess
 A random number between **min** and **max** (both included), drawn from a seed: the same seed
 always gives the same number, so you can get a value back.
 
-- **mode**, **seed** and the **🎲 Random**, **♻️ Last seed → fixed** and **🎲 Random → fixed**
-  buttons work exactly like Elegant Seed's, including before/after the run.
+- **seed** is ComfyUI's standard seed, like KSampler's, with its own **control after generate**
+  (`fixed`, `increment`, `decrement`, `randomize`). ComfyUI changes it before or after each run,
+  per the *Widget control mode* setting.
+- **🎲 Random**: new seed now, control set to `randomize`. **♻️ Last seed → fixed**: the seed of
+  the last finished run, control set to `fixed`. **🎲 Random → fixed**: new seed, control set to
+  `fixed`.
 - **number_type**: `int` for a whole number, `float` for a decimal one.
 - Outputs `int`, `float` and `string`; the preview shows the value, range and seed.
 
 Connect its `int` to a Multi Preview's `index` in switch mode for a random pick from a list.
 
-**In a subgraph:** promote `seed` (and optionally `mode`) and the seed buttons appear on the
-subgraph node; the value shows there after each run.
+**In a subgraph:** `seed` is promoted automatically and the seed buttons appear on the subgraph
+node; the value shows there after each run. *control after generate* stays on the node inside
+(ComfyUI doesn't promote it), and the buttons set it there.
 
 ## Advanced settings
 
-Rarely needed settings (`wrap_text`, `out_of_range`) are advanced inputs, hidden by default. Click
+Rarely needed settings (`wrap_text`, `out_of_range`, and the Multi Preview setting its mode
+doesn't use) are advanced inputs, hidden by default. Click
 the cyan **⚙** in the node's title to show or hide them, in both the classic and the Vue nodes
 view. It uses the node's own "show advanced" state, so it stays in sync with ComfyUI's **Show
 advanced inputs** button and the side panel, and it's saved with the workflow.
@@ -226,7 +233,16 @@ function of the math node.
 
 <img src="docs/images/help.png" width="560" alt="Help dialog of the math node">
 
+## Known limitations and plans
+
+See [TODO.md](TODO.md) for what doesn't work yet (mostly ComfyUI limitations, with workarounds)
+and ideas for later versions.
+
 ## Upgrading from earlier versions
+
+**Elegant Random Number** from 1.3.0 had its own random/fixed `mode` switch; it now uses
+ComfyUI's standard seed control. In workflows saved with 1.3.0 its values land in the wrong
+fields: delete the node and add it again.
 
 Version 1.0.0 renamed some node ids. Workflows saved with an earlier version show those nodes
 as missing; replace them with the new ones:
@@ -242,8 +258,8 @@ as missing; replace them with the new ones:
 ```
 __init__.py        ComfyUI entry point
 nodes/             node definitions (V3 schema)
-core/              logic without ComfyUI imports (resolution, text, math)
-web/js/            frontend: buttons, live result, previews, help
+core/              logic without ComfyUI imports (resolution, text, math, random, switch)
+web/js/            frontend: seed buttons, live result, previews, ⚙ advanced, ? help
 tests/             pytest tests for core/
 ```
 

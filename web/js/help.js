@@ -77,9 +77,9 @@ const HELP = {
 <h3>Inputs</h3>
 <table>
 <tr><td><b>source_1, source_2, …</b></td><td>Connect values here. A new input appears each time you connect the last free one (up to 20). Disconnect one and the gap closes.</td></tr>
-<tr><td><b>delimiter</b></td><td>Put between the values. <code>\\n</code> = new line (default), <code>\\t</code> = tab, <code>\\\\</code> = backslash. Anything else is used as typed, e.g. <code>, </code> or <code> | </code>.</td></tr>
+<tr><td><b>delimiter</b></td><td>concat: put between the values. <code>\\n</code> = new line (default), <code>\\t</code> = tab, <code>\\\\</code> = backslash. Anything else is used as typed, e.g. <code>, </code> or <code> | </code>.</td></tr>
 <tr><td><b>wrap_text</b></td><td>(advanced) Wrap long lines to the box width instead of scrolling sideways.</td></tr>
-<tr><td><b>mode</b></td><td><code>concat</code>: join all sources with the delimiter. <code>switch</code>: use only the source chosen by <b>index</b>. The setting the mode doesn't use is greyed out.</td></tr>
+<tr><td><b>mode</b></td><td><code>concat</code>: join all sources with the delimiter. <code>switch</code>: use only the source chosen by <b>index</b>. Only the setting the mode uses is shown: <b>delimiter</b> in concat, <b>index</b> in switch. The other one moves to the advanced settings (<b>⚙</b>) and is greyed out there.</td></tr>
 <tr><td><b>index</b></td><td>switch: which source to use, counting from 1 (<code>source_1</code>). Connect a number to choose it from elsewhere, e.g. an <b>Elegant Random Number</b> for a random pick.</td></tr>
 </table>
 <h3>Outputs</h3>
@@ -102,18 +102,18 @@ const HELP = {
     title: "Elegant Random Number",
     html: `
 <p>A random number between <b>min</b> and <b>max</b>, drawn from a seed: the same seed always gives the same number, so you can get a value back.</p>
-<p class="elegant-help-subgraph"><b>Works from the subgraph node.</b> Promote <code>seed</code> (and optionally <code>mode</code>) and the seed buttons appear on the subgraph node; the value shows there after each run. Each copy of a subgraph keeps its own seed.</p>
+<p class="elegant-help-subgraph"><b>Works from the subgraph node.</b> <code>seed</code> is promoted automatically and the seed buttons appear on the subgraph node; the value shows there after each run. <i>control after generate</i> stays on the node inside the subgraph. Each copy of a subgraph keeps its own seed.</p>
 <h3>Controls</h3>
 <table>
-<tr><td><b>mode</b></td><td><code>random</code>: a new seed, and so a new number, for every run. <code>fixed</code>: keep the seed.</td></tr>
-<tr><td><b>seed</b></td><td>The seed the number is drawn from. Type one to use it for the next run.</td></tr>
+<tr><td><b>seed</b></td><td>ComfyUI's standard seed, like KSampler's. Type one to use it for the next run.</td></tr>
+<tr><td><b>control after generate</b></td><td>ComfyUI's own: <code>randomize</code> for a new seed (and number) every run, <code>fixed</code> to keep it, or <code>increment</code> / <code>decrement</code>.</td></tr>
 <tr><td><b>min</b>, <b>max</b></td><td>The range, both included. Swapped automatically if min is larger.</td></tr>
 <tr><td><b>number_type</b></td><td><code>int</code>: a whole number. <code>float</code>: a decimal number.</td></tr>
-<tr><td><b>🎲 Random</b></td><td>New seed now, and switch to random.</td></tr>
-<tr><td><b>♻️ Last seed → fixed</b></td><td>Put back the seed of the last finished run and switch to fixed, to keep a number you liked.</td></tr>
-<tr><td><b>🎲 Random → fixed</b></td><td>New seed, and switch to fixed.</td></tr>
+<tr><td><b>🎲 Random</b></td><td>New seed now, and set the control to <code>randomize</code>.</td></tr>
+<tr><td><b>♻️ Last seed → fixed</b></td><td>Put back the seed of the last finished run and set the control to <code>fixed</code>, to keep a number you liked.</td></tr>
+<tr><td><b>🎲 Random → fixed</b></td><td>New seed, and set the control to <code>fixed</code>.</td></tr>
 </table>
-<p>Random mode follows <i>Settings → Widget control mode</i> (before or after the run), like Elegant Seed.</p>
+<p>ComfyUI changes the seed before or after each run, per <i>Settings → Widget control mode</i>.</p>
 <h3>Outputs</h3>
 <p><code>int</code>, <code>float</code> and <code>string</code>. Tip: connect <code>int</code> to the <b>index</b> of a Multi Preview in switch mode for a random pick.</p>`,
   },

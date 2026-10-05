@@ -1,12 +1,10 @@
-import sys
-
 from comfy_api.latest import io, ui
 
 from ..core.random_number import random_number
 
 
 class ElegantRandomNumber(io.ComfyNode):
-    """A random number from a seed, with the same seed controls as Elegant Seed (web/js/seed.js)."""
+    """A random number from a seed: ComfyUI's standard seed plus the Elegant seed buttons (web/js/seed.js)."""
 
     @classmethod
     def define_schema(cls):
@@ -16,24 +14,17 @@ class ElegantRandomNumber(io.ComfyNode):
             search_aliases=["random", "random number", "random int", "random float", "rng", "dice"],
             category="utilities/elegant",
             description="A random number between min and max, drawn from a seed: the same seed always "
-            "gives the same number. Random/fixed switch and seed buttons like Elegant Seed.",
+            "gives the same number. Standard ComfyUI seed, plus the Elegant seed buttons.",
             is_output_node=True,
             inputs=[
-                io.Boolean.Input(
-                    "mode",
-                    default=True,
-                    label_on="random",
-                    label_off="fixed",
-                    tooltip="random: a new seed (and number) for every run, before or after queueing per "
-                    "the 'Widget control mode' setting. fixed: always use the seed below.",
-                ),
+                # ComfyUI's standard seed, like KSampler's: its "control after generate"
+                # randomizes it on queue. web/js/seed.js adds the buttons.
                 io.Int.Input(
                     "seed",
                     default=0,
                     min=0,
-                    max=sys.maxsize,
-                    # The mode switch and buttons replace the automatic seed control widget.
-                    control_after_generate=False,
+                    max=0xFFFFFFFFFFFFFFFF,
+                    control_after_generate=True,
                     tooltip="The seed the number is drawn from. Same seed, same number.",
                 ),
                 io.Float.Input("min", default=1, min=-1e12, max=1e12, step=1, tooltip="Smallest possible number."),
@@ -54,7 +45,7 @@ class ElegantRandomNumber(io.ComfyNode):
         )
 
     @classmethod
-    def execute(cls, mode: bool, seed: int, min: float, max: float, number_type: bool) -> io.NodeOutput:
+    def execute(cls, seed: int, min: float, max: float, number_type: bool) -> io.NodeOutput:
         value = random_number(seed, min, max, integer=number_type)
         kind = "int" if number_type else "float"
         preview = f"{value}\n\n{kind} between {min:g} and {max:g} · seed {seed}"

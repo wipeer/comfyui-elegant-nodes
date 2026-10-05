@@ -1,5 +1,6 @@
-// Seed controls (random/fixed switch, buttons, seed control on queue) for
-// Elegant Seed and Elegant Random Number.
+// Seed buttons (🎲 Random, ♻️ Last seed → fixed, 🎲 Random → fixed) for Elegant
+// Seed (our own random/fixed switch, randomized here on queue) and Elegant Random
+// Number (ComfyUI's standard seed and "control after generate").
 
 import { app } from "../../scripts/app.js";
 import { api } from "../../scripts/api.js";
@@ -17,7 +18,7 @@ import {
   watchSubgraphHost,
 } from "./common.js";
 
-// Nodes with a "mode" switch and a "seed" field that get the seed controls.
+// Nodes with a "seed" field that get the seed buttons.
 const SEED_NODE_TYPES = new Set([NODE_IDS.seed, NODE_IDS.randomNumber]);
 
 // Seed of the last run that finished, saved in the workflow: one value on the
@@ -40,13 +41,61 @@ function controlRunsBefore() {
   return setting === "before";
 }
 
+// ---------------------------------------------------------------------------
+// Modes: how a node says "random" or "fixed"
+// ---------------------------------------------------------------------------
+
+/** Elegant Seed: our own random/fixed switch; this file randomizes the seed on queue. */
+function switchMode(getModeWidget) {
+  return {
+    randomizesOnQueue: true,
+    isRandom: () => !!getModeWidget()?.value,
+    set(random) {
+      const widget = getModeWidget();
+      if (!widget || widget.value === random) return;
+      widget.value = random;
+      widget.callback?.(random);
+    },
+  };
+}
+
+/** The "control after generate" widget ComfyUI adds next to a standard seed. */
+function findControlWidget(node, seedWidget) {
+  const isControl = (w) => Array.isArray(w?.options?.values) && w.options.values.includes("randomize");
+  return seedWidget?.linkedWidgets?.find(isControl) ?? node?.widgets?.find(isControl);
+}
+
 /**
- * Adds the three buttons to `owner` and drives the seed around each queued prompt.
- *
- * The seed and mode widgets are looked up on every use because on a subgraph
- * node they are store-backed projections that the frontend may recreate.
+ * Elegant Random Number: ComfyUI's standard seed with its own "control after
+ * generate" (fixed / increment / decrement / randomize). ComfyUI randomizes on
+ * queue; the buttons just set the seed and switch that control.
  */
-function createSeedController({ owner, getSeedWidget, getModeWidget, isActive, lastSeed, labelSuffix = "" }) {
+function controlMode(getControlWidget) {
+  return {
+    randomizesOnQueue: false,
+    isRandom: () => getControlWidget()?.value === "randomize",
+    set(random) {
+      const widget = getControlWidget();
+      const value = random ? "randomize" : "fixed";
+      if (!widget || widget.value === value) return;
+      widget.value = value;
+      widget.callback?.(value);
+    },
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Buttons and seed control
+// ---------------------------------------------------------------------------
+
+/**
+ * Adds the three buttons to `owner` and, for nodes with our own switch, drives
+ * the seed around each queued prompt.
+ *
+ * Widgets are looked up on every use because on a subgraph node they are
+ * store-backed projections that the frontend may recreate.
+ */
+function createSeedController({ owner, getSeedWidget, mode, isActive, lastSeed, labelSuffix = "" }) {
   // The seed we last left in the field. A different value at queue time means the
   // user typed one, which is then used for the next run as-is.
   let lastSeen = getSeedWidget()?.value;
@@ -56,7 +105,7 @@ function createSeedController({ owner, getSeedWidget, getModeWidget, isActive, l
   let queued = false;
 
   const redraw = () => owner.setDirtyCanvas?.(true, true);
-  const isRandom = () => !!getModeWidget()?.value;
+  const isRandom = mode.isRandom;
 
   const setSeed = (value) => {
     const seedWidget = getSeedWidget();
@@ -67,10 +116,7 @@ function createSeedController({ owner, getSeedWidget, getModeWidget, isActive, l
   };
 
   const setMode = (random) => {
-    const modeWidget = getModeWidget();
-    if (!modeWidget || modeWidget.value === random) return;
-    modeWidget.value = random;
-    modeWidget.callback?.(random);
+    mode.set(random);
     redraw();
   };
 
@@ -122,7 +168,7 @@ function createSeedController({ owner, getSeedWidget, getModeWidget, isActive, l
   // The frontend calls these on every widget around each queued prompt (per batch item).
   randomButton.beforeQueued = () => {
     const seedWidget = getSeedWidget();
-    queued = !!seedWidget && isActive();
+    queued = !!seedWidget && isActive() && mode.randomizesOnQueue;
     if (!queued) return;
     const userChangedSeed = seedWidget.value !== lastSeen;
     if (isRandom() && controlRunsBefore() && !keepNextSeed && !userChangedSeed) {
@@ -150,15 +196,23 @@ function createSeedController({ owner, getSeedWidget, getModeWidget, isActive, l
   return { widgets: [randomButton, lastButton, fixedButton], refresh, recordFinished };
 }
 
+/** The mode of a seed node: our switch if it has a "mode" widget, else ComfyUI's control. */
+function modeFor(node, getSeedWidget) {
+  return node.widgets?.some((w) => w.name === "mode")
+    ? switchMode(() => node.widgets?.find((w) => w.name === "mode"))
+    : controlMode(() => findControlWidget(node, getSeedWidget()));
+}
+
 function setupSeedNode(node) {
   const findWidget = (name) => node.widgets?.find((w) => w.name === name);
-  if (!findWidget("mode") || !findWidget("seed")) return;
+  if (!findWidget("seed")) return;
   node.properties ??= {};
 
+  const getSeedWidget = () => findWidget("seed");
   const controller = createSeedController({
     owner: node,
-    getSeedWidget: () => findWidget("seed"),
-    getModeWidget: () => findWidget("mode"),
+    getSeedWidget,
+    mode: modeFor(node, getSeedWidget),
     // Seed or mode fed by a link (e.g. promoted to a subgraph node): the value
     // here isn't the one used; the subgraph node takes over.
     isActive: () => !inputIsLinked(node, "seed") && !inputIsLinked(node, "mode"),
@@ -190,10 +244,14 @@ function syncSubgraphNode(host) {
     state.byInnerId = new Map();
     state.controllers = groups.map((group) => {
       const { inner, inputs } = group;
+      const getSeedWidget = () => liveWidget(host, group, "seed");
       const controller = createSeedController({
         owner: host,
-        getSeedWidget: () => liveWidget(host, group, "seed"),
-        getModeWidget: () => liveWidget(host, group, "mode"),
+        getSeedWidget,
+        // Our switch can be promoted; ComfyUI's control stays on the node inside.
+        mode: inner.widgets?.some((w) => w.name === "mode")
+          ? switchMode(() => liveWidget(host, group, "mode"))
+          : controlMode(() => findControlWidget(inner, inner.widgets?.find((w) => w.name === "seed"))),
         isActive: () => {
           // Fed from outside this subgraph node (e.g. an outer subgraph): not ours to drive.
           if (inputs.seed && hostInputConnected(host, inputs.seed)) return false;
