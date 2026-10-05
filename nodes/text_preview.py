@@ -16,6 +16,7 @@ def _wrap_input():
         default=False,
         label_on="on",
         label_off="off",
+        advanced=True,
         tooltip="Wrap long lines to the width of the preview box instead of scrolling sideways.",
     )
 

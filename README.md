@@ -132,7 +132,7 @@ as `string`. Uses the same conversion as ComfyUI's
 without the Markdown mode: text stays as is, numbers and booleans become their value, lists and
 dictionaries become indented JSON, and anything else (tensors, latents, …) is printed.
 
-Switch **wrap_text** on to wrap long lines to the width of the box instead of scrolling
+Switch **wrap_text** (an advanced input, off by default) on to wrap long lines to the width of the box instead of scrolling
 sideways; the box grows to fit.
 
 **In a subgraph:** after each run the text also appears on the subgraph node, so you can check a
@@ -148,7 +148,7 @@ index (**switch**).
   to 20). Disconnect one and the gap closes.
 - `delimiter`: default `\n` (new line). `\t` is a tab and `\\` a backslash; anything else is
   used as typed, e.g. `, ` or ` | `.
-- `wrap_text`: wrap long lines to the box width, like the single preview.
+- `wrap_text` (advanced): wrap long lines to the box width, like the single preview.
 - `mode`: `concat` joins all sources; `switch` uses only the source chosen by `index`. The setting
   the mode doesn't use is greyed out.
 - `index`: switch mode, which source to use, counting from 1 (`source_1`). Connect a number to

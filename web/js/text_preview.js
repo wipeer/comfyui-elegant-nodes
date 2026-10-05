@@ -263,6 +263,16 @@ function setupModeHints(node) {
 function setupPreviewNode(node) {
   setupModeHints(node);
   const widget = addTextWidget(node, TEXT_WIDGET, () => node.widgets?.find((w) => w.name === WRAP_WIDGET));
+  // Other extensions (e.g. the seed buttons) add widgets after this one; keep the box last.
+  setTimeout(() => {
+    const widgets = node.widgets;
+    const index = widgets?.indexOf(widget) ?? -1;
+    if (index !== -1 && index !== widgets.length - 1) {
+      widgets.splice(index, 1);
+      widgets.push(widget);
+      node.setDirtyCanvas?.(true, true);
+    }
+  }, 0);
   // Show the text saved with the workflow until the next run.
   chainMethod(node, "onConfigure", () => widget.setText(node.properties?.[SAVED_TEXT_PROPERTY] ?? ""));
 }

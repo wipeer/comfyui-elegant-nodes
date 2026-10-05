@@ -65,7 +65,7 @@ const HELP = {
 <li>Lists and dictionaries become indented JSON.</li>
 <li>Anything else (images, latents, models, …) is printed, with large tensors shortened.</li>
 </ul>
-<p>The box is plain text (no Markdown); you can select and copy from it. Switch <b>wrap_text</b> on to wrap long lines to the box width instead of scrolling sideways.</p>
+<p>The box is plain text (no Markdown); you can select and copy from it. Switch <b>wrap_text</b> on (an advanced input, off by default) to wrap long lines to the box width instead of scrolling sideways.</p>
 <p>The last text is saved with the workflow (up to 10,000 characters), so it shows again after loading.</p>`,
   },
 
@@ -78,7 +78,7 @@ const HELP = {
 <table>
 <tr><td><b>source_1, source_2, …</b></td><td>Connect values here. A new input appears each time you connect the last free one (up to 20). Disconnect one and the gap closes.</td></tr>
 <tr><td><b>delimiter</b></td><td>Put between the values. <code>\\n</code> = new line (default), <code>\\t</code> = tab, <code>\\\\</code> = backslash. Anything else is used as typed, e.g. <code>, </code> or <code> | </code>.</td></tr>
-<tr><td><b>wrap_text</b></td><td>Wrap long lines to the box width instead of scrolling sideways.</td></tr>
+<tr><td><b>wrap_text</b></td><td>(advanced) Wrap long lines to the box width instead of scrolling sideways.</td></tr>
 <tr><td><b>mode</b></td><td><code>concat</code>: join all sources with the delimiter. <code>switch</code>: use only the source chosen by <b>index</b>. The setting the mode doesn't use is greyed out.</td></tr>
 <tr><td><b>index</b></td><td>switch: which source to use, counting from 1 (<code>source_1</code>). Connect a number to choose it from elsewhere, e.g. an <b>Elegant Random Number</b> for a random pick.</td></tr>
 </table>
