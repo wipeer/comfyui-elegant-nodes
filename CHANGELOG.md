@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.4.0
 
 - **Elegant Random Number** now uses ComfyUI's standard seed with its **control after
   generate** (fixed / increment / decrement / randomize), like KSampler. The 🎲 Random,

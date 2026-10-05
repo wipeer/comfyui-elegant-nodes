@@ -2,7 +2,7 @@
 # Registry id: permanent once published. Folder name when installed via ComfyUI-Manager.
 name = "elegant-nodes"
 description = "Utility nodes built to work inside subgraphs: buttons, live results and previews stay usable on the subgraph node. A seed with random/fixed controls, a seeded random number, an aspect-ratio resolution selector, plain-text previews with concat/switch and a math expression node."
-version = "1.3.0"
+version = "1.4.0"
 license = { file = "LICENSE" }
 readme = "README.md"
 requires-python = ">=3.10"
