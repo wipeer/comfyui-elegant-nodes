@@ -3,7 +3,16 @@
 
 import { app } from "../../scripts/app.js";
 import { api } from "../../scripts/api.js";
-import { NODE_IDS, chainMethod, frontendOnly, growToFit, onNodeCreated, watchSubgraphHost } from "./common.js";
+import {
+  NODE_IDS,
+  chainMethod,
+  collectPromoted,
+  frontendOnly,
+  growToFit,
+  liveWidget,
+  onNodeCreated,
+  watchSubgraphHost,
+} from "./common.js";
 
 const PREVIEW_NODE_TYPES = new Set([
   NODE_IDS.anyToStringPreview,
@@ -25,6 +34,18 @@ const MAX_SAVED_LENGTH = 10000;
 const MIN_HEIGHT = 60;
 const MAX_HEIGHT = 240;
 const LINE_HEIGHT = 17; // 12px monospace at line-height 1.4, rounded up
+const CHAR_WIDTH = 7.3; // 12px monospace, rounded up
+const WRAP_WIDGET = "wrap_text";
+
+// Text boxes on screen; refreshed together so they follow the wrap switch and
+// node width in both renderers, also when the switch is promoted.
+const liveBoxes = new Set();
+setInterval(() => {
+  for (const box of liveBoxes) {
+    if (!box.owner.graph || !box.owner.widgets?.includes(box.widget)) liveBoxes.delete(box);
+    else box.update();
+  }
+}, 250);
 
 function toText(text) {
   if (text == null) return "";
@@ -32,7 +53,12 @@ function toText(text) {
   return String(text);
 }
 
-function addTextWidget(owner, name) {
+/**
+ * Adds a read-only text box. `getWrapWidget` returns the widget whose value
+ * decides whether long lines wrap (the node's wrap_text switch, or the
+ * subgraph node's when promoted).
+ */
+function addTextWidget(owner, name, getWrapWidget = () => null) {
   const textarea = document.createElement("textarea");
   textarea.readOnly = true;
   textarea.spellcheck = false;
@@ -66,15 +92,38 @@ function addTextWidget(owner, name) {
     })
   );
 
-  // Shows `text`, growing the box (and node) to fit its lines up to MAX_HEIGHT; longer text scrolls.
+  let wrap = false;
+
+  // Grows the box (and node) to fit the visible lines, up to MAX_HEIGHT; longer text scrolls.
+  const fit = () => {
+    const width = textarea.clientWidth || owner.size[0] - 30;
+    const charsPerLine = Math.max(10, Math.floor((width - 18) / CHAR_WIDTH));
+    const lines = textarea.value
+      .split("\n")
+      .reduce((sum, line) => sum + (wrap ? Math.max(1, Math.ceil(line.length / charsPerLine)) : 1), 0);
+    minHeight = Math.max(MIN_HEIGHT, Math.min(MAX_HEIGHT, lines * LINE_HEIGHT + 20));
+    growToFit(owner);
+  };
+
   widget.setText = (text, tooltip) => {
     widget.value = text;
     textarea.value = text;
     if (tooltip !== undefined) textarea.title = tooltip;
-    const lines = text.split("\n").length;
-    minHeight = Math.max(MIN_HEIGHT, Math.min(MAX_HEIGHT, lines * LINE_HEIGHT + 20));
-    growToFit(owner);
+    fit();
   };
+
+  let lastState = "";
+  const update = () => {
+    wrap = !!getWrapWidget()?.value;
+    const state = `${wrap}:${textarea.clientWidth}`;
+    if (state === lastState) return;
+    lastState = state;
+    textarea.style.whiteSpace = wrap ? "pre-wrap" : "pre";
+    textarea.style.overflowWrap = wrap ? "anywhere" : "normal";
+    fit();
+  };
+  update();
+  liveBoxes.add({ owner, widget, update });
   return widget;
 }
 
@@ -130,7 +179,7 @@ function syncSubgraphNode(host) {
     if (host.widgets?.some((w) => w.name === name)) continue;
     // A node just turned into a subgraph brings along the text it last showed.
     const text = saved?.[path] ?? inner.properties?.[SAVED_TEXT_PROPERTY] ?? "";
-    addTextWidget(host, name).setText(text, inner.title);
+    addTextWidget(host, name, () => wrapWidgetFor(host, inner)).setText(text, inner.title);
   }
 }
 
@@ -161,7 +210,8 @@ function showOnSubgraphNode(host, relativePath, inner, text) {
     [relativePath]: toSavedText(text),
   };
   const name = HOST_WIDGET_PREFIX + relativePath;
-  const widget = host.widgets?.find((w) => w.name === name) ?? addTextWidget(host, name);
+  const widget =
+    host.widgets?.find((w) => w.name === name) ?? addTextWidget(host, name, () => wrapWidgetFor(host, inner));
   widget.setText(text, inner.title);
 }
 
@@ -185,8 +235,14 @@ api.addEventListener("executed", ({ detail }) => {
   hosts.forEach((host, index) => showOnSubgraphNode(host, ids.slice(index + 1).join(":"), node, text));
 });
 
+/** The wrap switch for a preview node shown on a subgraph node: promoted there, or the node's own. */
+function wrapWidgetFor(host, inner) {
+  const group = collectPromoted(host, inner.type).find((g) => g.inner === inner);
+  return group ? liveWidget(host, group, WRAP_WIDGET) : inner.widgets?.find((w) => w.name === WRAP_WIDGET);
+}
+
 function setupPreviewNode(node) {
-  const widget = addTextWidget(node, TEXT_WIDGET);
+  const widget = addTextWidget(node, TEXT_WIDGET, () => node.widgets?.find((w) => w.name === WRAP_WIDGET));
   // Show the text saved with the workflow until the next run.
   chainMethod(node, "onConfigure", () => widget.setText(node.properties?.[SAVED_TEXT_PROPERTY] ?? ""));
 }

@@ -131,6 +131,9 @@ as `string`. Uses the same conversion as ComfyUI's
 without the Markdown mode: text stays as is, numbers and booleans become their value, lists and
 dictionaries become indented JSON, and anything else (tensors, latents, …) is printed.
 
+Switch **wrap_text** on to wrap long lines to the width of the box instead of scrolling
+sideways; the box grows to fit.
+
 **In a subgraph:** after each run the text also appears on the subgraph node, so you can check a
 value without opening it. The box is there as soon as the node is inside a subgraph, and the
 last text is saved with the workflow, so it shows again right after loading.
@@ -143,8 +146,10 @@ The same for several values, joined with a delimiter.
   to 20). Disconnect one and the gap closes.
 - `delimiter`: default `\n` (new line). `\t` is a tab and `\\` a backslash; anything else is
   used as typed, e.g. `, ` or ` | `.
+- `wrap_text`: wrap long lines to the box width, like the single preview.
 
-**In a subgraph:** the joined text appears on the subgraph node, like the single preview.
+**In a subgraph:** the joined text appears on the subgraph node, like the single preview. The box
+there follows the node's `wrap_text` switch, or the subgraph node's own if you promote it.
 
 ### Elegant Any Math Multi Preview
 

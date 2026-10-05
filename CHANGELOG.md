@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- **Elegant Any to String Preview** and **Multi Preview**: new **wrap_text** switch to wrap long
+  lines to the box width; the box grows to fit. The box on a subgraph node follows it too.
 - **Elegant Seed**: ♻️ Last seed → fixed now restores the seed of the last *finished* run (the
   image you see). Before, it took the last *queued* run, so with another run queued or
   generating (Run pressed again, batch count, Instant mode) it gave a newer, unseen seed.

@@ -8,6 +8,17 @@ MAX_SOURCES = 20
 SOURCE_NAMES = [f"source_{i}" for i in range(1, MAX_SOURCES + 1)]
 
 
+def _wrap_input():
+    # Display only: the frontend (web/js/text_preview.js) wraps the preview box.
+    return io.Boolean.Input(
+        "wrap_text",
+        default=False,
+        label_on="on",
+        label_off="off",
+        tooltip="Wrap long lines to the width of the preview box instead of scrolling sideways.",
+    )
+
+
 def _to_text(value) -> str:
     # Show the start and end of each tensor dimension instead of the whole thing.
     torch.set_printoptions(edgeitems=6)
@@ -30,12 +41,12 @@ class ElegantAnyToStringPreview(io.ComfyNode):
             description="Converts any value to a string and shows it as plain text, also on the "
             "subgraph node when used inside a subgraph.",
             is_output_node=True,
-            inputs=[io.AnyType.Input("source")],
+            inputs=[io.AnyType.Input("source"), _wrap_input()],
             outputs=[io.String.Output(display_name="string")],
         )
 
     @classmethod
-    def execute(cls, source=None) -> io.NodeOutput:
+    def execute(cls, source=None, wrap_text: bool = False) -> io.NodeOutput:
         text = _to_text(source)
         return io.NodeOutput(text, ui=ui.PreviewText(text))
 
@@ -64,12 +75,13 @@ class ElegantAnyToStringMultiPreview(io.ComfyNode):
                     default="\\n",
                     tooltip="Put between the values. Type \\n for a new line and \\t for a tab.",
                 ),
+                _wrap_input(),
             ],
             outputs=[io.String.Output(display_name="string")],
         )
 
     @classmethod
-    def execute(cls, sources: io.Autogrow.Type, delimiter: str) -> io.NodeOutput:
+    def execute(cls, sources: io.Autogrow.Type, delimiter: str, wrap_text: bool = False) -> io.NodeOutput:
         parts = [_to_text(sources[name]) for name in SOURCE_NAMES if name in sources]
         text = unescape(delimiter).join(parts)
         return io.NodeOutput(text, ui=ui.PreviewText(text))
