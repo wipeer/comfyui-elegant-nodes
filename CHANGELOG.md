@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.3.0
 
 - **New: Elegant Random Number**: a seeded random int or float between min and max, with the same
   random/fixed switch and seed buttons as Elegant Seed; works from subgraph nodes.
