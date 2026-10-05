@@ -8,7 +8,9 @@
   a **value** output that passes the chosen source through unchanged (images, models, …).
   Advanced **out_of_range** setting: error (default), clamp or wrap.
 - **Elegant Any Math Multi Preview**: seeded `rand`, `randint` and `uniform` functions.
-- **wrap_text** is now an advanced input (hidden by default in the Vue nodes view; still off by default).
+- **wrap_text** is now an advanced input (still off by default).
+- New cyan **⚙** in the title of nodes with advanced inputs: shows or hides them in both the
+  classic and the Vue nodes view, in sync with ComfyUI's "Show advanced inputs" button.
 - Preview boxes stay below buttons and results, on nodes and on subgraph nodes.
 
 ## 1.2.0

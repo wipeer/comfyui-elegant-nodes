@@ -153,7 +153,7 @@ index (**switch**).
   the mode doesn't use is greyed out.
 - `index`: switch mode, which source to use, counting from 1 (`source_1`). Connect a number to
   choose it from elsewhere, e.g. an Elegant Random Number for a random pick.
-- `out_of_range` (advanced input, hidden by default in the Vue nodes view): what an index outside
+- `out_of_range` (advanced): what an index outside
   the connected sources does: `error` (default) stops with a message, `clamp` uses the first
   source below 1 and the last one above, `wrap` counts around.
 
@@ -211,6 +211,13 @@ Connect its `int` to a Multi Preview's `index` in switch mode for a random pick 
 
 **In a subgraph:** promote `seed` (and optionally `mode`) and the seed buttons appear on the
 subgraph node; the value shows there after each run.
+
+## Advanced settings
+
+Rarely needed settings (`wrap_text`, `out_of_range`) are advanced inputs, hidden by default. Click
+the cyan **⚙** in the node's title to show or hide them, in both the classic and the Vue nodes
+view. It uses the node's own "show advanced" state, so it stays in sync with ComfyUI's **Show
+advanced inputs** button and the side panel, and it's saved with the workflow.
 
 ## Help
 

@@ -1,7 +1,7 @@
-// Help: a cyan ? at the right end of each Elegant node's title opens a help dialog.
+// Help: the cyan ? in each Elegant node's title (see title_buttons.js) opens a help dialog.
 
-import { app } from "../../scripts/app.js";
-import { NODE_IDS, onNodeCreated } from "./common.js";
+import { NODE_IDS } from "./common.js";
+import { ICON_COLOR, ensureTitleButtonStyle, registerTitleButton } from "./title_buttons.js";
 
 // Help content per node id. Plain HTML; shown in the dialog below.
 const HELP = {
@@ -65,7 +65,7 @@ const HELP = {
 <li>Lists and dictionaries become indented JSON.</li>
 <li>Anything else (images, latents, models, …) is printed, with large tensors shortened.</li>
 </ul>
-<p>The box is plain text (no Markdown); you can select and copy from it. Switch <b>wrap_text</b> on (an advanced input, off by default) to wrap long lines to the box width instead of scrolling sideways.</p>
+<p>The box is plain text (no Markdown); you can select and copy from it. Switch <b>wrap_text</b> on (an advanced input, off by default: click the <b>⚙</b> in the title to show it) to wrap long lines to the box width instead of scrolling sideways.</p>
 <p>The last text is saved with the workflow (up to 10,000 characters), so it shows again after loading.</p>`,
   },
 
@@ -89,7 +89,7 @@ const HELP = {
 </table>
 <p>The preview shows which one was picked, e.g. <code>▶ source_2</code>. Note: ComfyUI still computes every connected source, also the ones not picked.</p>
 <h3>Advanced: out of range</h3>
-<p>Shown with the node's advanced inputs. What an <b>index</b> outside the connected sources does:</p>
+<p>Click the <b>⚙</b> in the title to show it. What an <b>index</b> outside the connected sources does:</p>
 <table>
 <tr><td><code>error</code></td><td>(default) stop the run with a message.</td></tr>
 <tr><td><code>clamp</code></td><td>below 1 uses the first source, above the last uses the last.</td></tr>
@@ -203,13 +203,8 @@ const HELP = {
 // Dialog
 // ---------------------------------------------------------------------------
 
-const HELP_COLOR = "#22d3ee"; // cyan
-const TITLE_BUTTON_NAME = "elegant_help";
 
 const STYLE = `
-.elegant-help-icon { display: inline-flex; align-items: center; justify-content: center; flex: none;
-  width: 16px; height: 16px; box-sizing: border-box; border: 1.5px solid ${HELP_COLOR}; border-radius: 50%;
-  color: ${HELP_COLOR}; font: bold 11px/1 sans-serif; }
 .elegant-help-overlay { position: fixed; inset: 0; z-index: 10000; display: flex; align-items: center; justify-content: center;
   background: rgba(0, 0, 0, 0.5); }
 .elegant-help { width: min(680px, calc(100vw - 32px)); max-height: min(80vh, 900px); display: flex; flex-direction: column;
@@ -223,7 +218,7 @@ const STYLE = `
 .elegant-help header button:hover { background: var(--comfy-input-bg, #333); }
 .elegant-help .body { padding: 4px 16px 16px; overflow: auto; }
 .elegant-help h3 { margin: 16px 0 6px; font-size: 14px; }
-.elegant-help .elegant-help-subgraph { margin: 10px 0; padding: 8px 12px; border-left: 3px solid ${HELP_COLOR};
+.elegant-help .elegant-help-subgraph { margin: 10px 0; padding: 8px 12px; border-left: 3px solid ${ICON_COLOR};
   background: rgba(34, 211, 238, 0.08); border-radius: 0 6px 6px 0; }
 .elegant-help p, .elegant-help ul { margin: 6px 0; }
 .elegant-help ul { padding-left: 20px; }
@@ -232,10 +227,6 @@ const STYLE = `
 .elegant-help td:first-child { white-space: nowrap; width: 1%; }
 .elegant-help code { font: 12.5px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   background: var(--comfy-input-bg, #2a2a2a); padding: 1px 4px; border-radius: 4px; }
-/* margin-right keeps the button clear of the Vue node's top-right resize handle */
-.elegant-help-button { margin-left: auto; margin-right: 14px; padding: 2px; background: none; border: 0; cursor: pointer;
-  line-height: 0; opacity: 0.85; border-radius: 50%; }
-.elegant-help-button:hover { opacity: 1; background: rgba(34, 211, 238, 0.15); }
 `;
 
 function ensureStyle() {
@@ -250,13 +241,14 @@ function showHelp(nodeId) {
   const help = HELP[nodeId];
   if (!help) return;
   ensureStyle();
+  ensureTitleButtonStyle();
   document.querySelector(".elegant-help-overlay")?.remove();
 
   const overlay = document.createElement("div");
   overlay.className = "elegant-help-overlay";
   overlay.innerHTML = `
 <div class="elegant-help" role="dialog" aria-modal="true" aria-label="${help.title} help">
-  <header><h2><span class="elegant-help-icon">?</span>${help.title}</h2><button type="button" aria-label="Close">✕</button></header>
+  <header><h2><span class="elegant-icon">?</span>${help.title}</h2><button type="button" aria-label="Close">✕</button></header>
   <div class="body">${help.html}</div>
 </div>`;
 
@@ -281,115 +273,11 @@ function showHelp(nodeId) {
   overlay.querySelector("header button").focus();
 }
 
-// ---------------------------------------------------------------------------
-// Classic canvas nodes: a title button
-// ---------------------------------------------------------------------------
-
-function addTitleHelpButton(node, nodeId) {
-  if (!node.addTitleButton || node.title_buttons?.some((b) => b.name === TITLE_BUTTON_NAME)) return;
-  const button = node.addTitleButton({
-    name: TITLE_BUTTON_NAME,
-    text: "?",
-    fontSize: 11,
-    bgColor: "transparent",
-    xOffset: -6,
-  });
-  // Title buttons draw in the title colour; draw a cyan "?" in a ring instead.
-  const SIZE = 16;
-  button.getWidth = () => SIZE;
-  button.draw = function (ctx, x, y) {
-    if (!this.visible) return;
-    const left = x + this.xOffset;
-    const top = y + this.yOffset;
-    this._last_area[0] = left;
-    this._last_area[1] = top;
-    this._last_area[2] = SIZE;
-    this._last_area[3] = this.height;
-
-    const cx = left + SIZE / 2;
-    const cy = top + this.height / 2;
-    ctx.save();
-    ctx.strokeStyle = HELP_COLOR;
-    ctx.fillStyle = HELP_COLOR;
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    ctx.arc(cx, cy, SIZE / 2 - 1, 0, Math.PI * 2);
-    ctx.stroke();
-    ctx.font = "bold 11px sans-serif";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText("?", cx, cy + 0.5);
-    ctx.restore();
-  };
-  const original = node.onTitleButtonClick;
-  node.onTitleButtonClick = function (clicked, canvas) {
-    if (clicked?.name === TITLE_BUTTON_NAME) return showHelp(nodeId);
-    return original?.call(this, clicked, canvas);
-  };
-}
-
-// ---------------------------------------------------------------------------
-// Vue nodes: the frontend doesn't render title buttons there, so add one to the header
-// ---------------------------------------------------------------------------
-
-function nodeForHeader(header) {
-  const id = header.dataset.testid?.slice("node-header-".length);
-  if (!id) return null;
-  const graph = app.canvas?.graph ?? app.graph;
-  return graph?.getNodeById?.(id) ?? graph?.getNodeById?.(Number(id)) ?? null;
-}
-
-function decorateVueHeaders() {
-  for (const header of document.querySelectorAll('[data-testid^="node-header-"]')) {
-    if (header.querySelector(".elegant-help-button")) continue;
-    const node = nodeForHeader(header);
-    if (!node || !HELP[node.type]) continue;
-    // The header row: title group on the left (it has mr-auto), badges on the right.
-    const row = header.firstElementChild;
-    if (!row) continue;
-
-    ensureStyle();
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = "elegant-help-button";
-    button.innerHTML = '<span class="elegant-help-icon">?</span>';
-    button.title = "Help";
-    // Don't start a drag or select the node.
-    for (const type of ["pointerdown", "mousedown", "dblclick"]) {
-      button.addEventListener(type, (e) => e.stopPropagation());
-    }
-    button.addEventListener("click", (e) => {
-      e.stopPropagation();
-      showHelp(node.type);
-    });
-    row.appendChild(button);
-  }
-}
-
-let observer;
-function watchVueNodes() {
-  if (observer) return;
-  // Batch DOM changes to one scan per frame.
-  let scheduled = false;
-  observer = new MutationObserver(() => {
-    if (scheduled) return;
-    scheduled = true;
-    requestAnimationFrame(() => {
-      scheduled = false;
-      decorateVueHeaders();
-    });
-  });
-  observer.observe(document.body, { childList: true, subtree: true });
-  decorateVueHeaders();
-}
-
-app.registerExtension({
-  name: "elegant.help",
-  setup() {
-    watchVueNodes();
-  },
-  // nodeCreated runs before a node's type is set, so hook each node type instead.
-  async beforeRegisterNodeDef(nodeType, nodeData) {
-    if (HELP[nodeData.name]) onNodeCreated(nodeType, (node) => addTitleHelpButton(node, nodeData.name));
-  },
+registerTitleButton({
+  name: "elegant_help",
+  order: 0, // rightmost
+  glyph: "?",
+  tooltip: "Help",
+  appliesTo: (nodeId) => !!HELP[nodeId],
+  onClick: (node, nodeId) => showHelp(nodeId),
 });
