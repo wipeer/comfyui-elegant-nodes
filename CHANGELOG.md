@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.2.0
 
 - **Elegant Any to String Preview** and **Multi Preview**: new **wrap_text** switch to wrap long
   lines to the box width; the box grows to fit. The box on a subgraph node follows it too.
