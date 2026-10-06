@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.5.0
 
 - **New: Elegant Load Image (from Folder)**: ComfyUI's Load Image (from Folder) plus a
   `filename` output; the advanced `filename_format` picks file name, name without extension or
