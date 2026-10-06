@@ -67,9 +67,8 @@ def _affix_inputs(name: str, where: str):
         io.String.Input(
             name,
             default="",
-            multiline=True,
-            tooltip=f"concat, when use_{name} is on: text added {where} the joined text, exactly as typed "
-            "(new lines included).",
+            tooltip=f"concat, when use_{name} is on: text added {where} the joined text. "
+            "Type \\n for a new line and \\t for a tab.",
         ),
     ]
 
@@ -163,5 +162,5 @@ class ElegantAnyToStringMultiPreview(io.ComfyNode):
             return io.NodeOutput(text, value, ui=ui.PreviewText(preview))
 
         text = unescape(delimiter).join(_to_text(sources[name]) for name in names)
-        text = (prefix if use_prefix else "") + text + (suffix if use_suffix else "")
+        text = (unescape(prefix) if use_prefix else "") + text + (unescape(suffix) if use_suffix else "")
         return io.NodeOutput(text, text, ui=ui.PreviewText(text))

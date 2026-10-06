@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- **Elegant Any to String Multi Preview**: **prefix** and **suffix** are single-line fields now,
+  with `\n` / `\t` like the delimiter, so they hide and grey out reliably like the other settings.
+
 ## 1.6.0
 
 - **Elegant Any to String Multi Preview**: optional **prefix** and **suffix** (multi-line, as

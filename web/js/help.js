@@ -82,7 +82,7 @@ const HELP = {
 <tr><td><b>mode</b></td><td><code>concat</code>: join all sources with the delimiter. <code>switch</code>: use only the source chosen by <b>index</b>. Only the settings the mode uses are shown: <b>delimiter</b> (and <b>prefix</b> / <b>suffix</b> when switched on) in concat, <b>index</b> in switch. The others move to the advanced settings (<b>⚙</b>) and are greyed out there.</td></tr>
 <tr><td><b>index</b></td><td>switch: which source to use, counting from 1 (<code>source_1</code>). Connect a number to choose it from elsewhere, e.g. an <b>Elegant Random Number</b> for a random pick.</td></tr>
 <tr><td><b>use_prefix</b>, <b>use_suffix</b></td><td>(advanced) concat: switch on to show the <b>prefix</b> / <b>suffix</b> field.</td></tr>
-<tr><td><b>prefix</b>, <b>suffix</b></td><td>concat: text added before / after the joined text, exactly as typed (press Enter for a new line, no <code>\\n</code> needed).</td></tr>
+<tr><td><b>prefix</b>, <b>suffix</b></td><td>concat: text added before / after the joined text. <code>\\n</code> = new line, <code>\\t</code> = tab, like the delimiter.</td></tr>
 </table>
 <h3>Outputs</h3>
 <table>

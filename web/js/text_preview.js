@@ -243,22 +243,6 @@ function wrapWidgetFor(host, inner) {
   return group ? liveWidget(host, group, WRAP_WIDGET) : inner.widgets?.find((w) => w.name === WRAP_WIDGET);
 }
 
-/**
- * Greys a widget out. The classic canvas hides disabled text boxes (DOM widgets)
- * entirely, so there they are only dimmed; the Vue nodes view draws its own box
- * and greys it out when disabled.
- */
-function setGreyedOut(widget, greyed) {
-  if (widget.element instanceof HTMLElement) {
-    widget.element.style.opacity = greyed ? "0.45" : "";
-    widget.element.readOnly = greyed;
-    widget.disabled = greyed && vueNodesEnabled();
-  } else {
-    widget.disabled = greyed;
-  }
-}
-
-const vueNodesEnabled = () => !!app.extensionManager?.setting?.get?.("Comfy.VueNodes.Enabled");
 
 /**
  * Multi Preview: only the settings the current mode uses are shown — delimiter,
@@ -280,14 +264,14 @@ function setupModeHints(node) {
     for (const [name, used] of Object.entries(shown)) {
       const widget = find(name);
       if (!widget) continue;
-      setGreyedOut(widget, !used);
+      widget.disabled = !used;
       widget.options ??= {};
       widget.options.advanced = !used;
     }
     // The prefix / suffix switches are always advanced; they only matter for concat.
     for (const name of ["use_prefix", "use_suffix"]) {
       const widget = find(name);
-      if (widget) setGreyedOut(widget, !concat);
+      if (widget) widget.disabled = !concat;
     }
     node.setSize?.([node.size[0], node.computeSize?.()[1] ?? node.size[1]]);
     node.setDirtyCanvas?.(true, true);

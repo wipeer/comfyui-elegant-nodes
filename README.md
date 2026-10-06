@@ -154,9 +154,9 @@ index (**switch**).
   settings the mode uses are shown: `delimiter` (and `prefix` / `suffix` when switched on) in
   concat, `index` in switch. The others move to the [advanced settings](#advanced-settings),
   greyed out.
-- `use_prefix` / `use_suffix` (advanced, concat): switch on to show a multi-line `prefix` /
-  `suffix` field. Its text is added before / after the joined text exactly as typed, new lines
-  included: e.g. prefix `Fruits:` + new line gives `Fruits:`, `apple`, `banana` on separate lines.
+- `use_prefix` / `use_suffix` (advanced, concat): switch on to show a `prefix` / `suffix` field.
+  Its text is added before / after the joined text, with `\n` and `\t` like the delimiter: e.g.
+  prefix `Fruits:\n` gives `Fruits:`, `apple`, `banana` on separate lines.
 - `index`: switch mode, which source to use, counting from 1 (`source_1`). Connect a number to
   choose it from elsewhere, e.g. an Elegant Random Number for a random pick.
 - `out_of_range` (advanced): what an index outside
