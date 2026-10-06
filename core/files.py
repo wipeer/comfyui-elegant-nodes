@@ -1,5 +1,6 @@
 """Listing image files and naming them (Elegant Load Image from Folder)."""
 
+import fnmatch
 import os
 import re
 
@@ -14,14 +15,27 @@ def natural_key(name: str):
     return [int(part) if part.isdigit() else part.lower() for part in re.split(r"(\d+)", name)]
 
 
-def list_images(folder: str) -> list[str]:
-    """Full paths of the image files directly in `folder` (not in subfolders), in natural order."""
-    names = [
-        name
-        for name in os.listdir(folder)
-        if name.lower().endswith(IMAGE_EXTENSIONS) and os.path.isfile(os.path.join(folder, name))
-    ]
-    return [os.path.join(folder, name) for name in sorted(names, key=natural_key)]
+def matches(name: str, pattern: str) -> bool:
+    """Whether file name `name` matches wildcard `pattern` (* ? [abc]), ignoring case. Empty matches all."""
+    pattern = pattern.strip()
+    return not pattern or fnmatch.fnmatchcase(name.lower(), pattern.lower())
+
+
+def list_images(folder: str, pattern: str = "", subfolders: bool = False) -> list[str]:
+    """
+    Full paths of the image files in `folder` whose file name matches `pattern`,
+    in natural order of their path inside `folder`. With `subfolders`, also those
+    in its subfolders, at any depth.
+    """
+    relative = []
+    for root, dirs, files in os.walk(folder):
+        dirs.sort()
+        for name in files:
+            if name.lower().endswith(IMAGE_EXTENSIONS) and matches(name, pattern):
+                relative.append(os.path.relpath(os.path.join(root, name), folder))
+        if not subfolders:
+            break
+    return [os.path.join(folder, rel) for rel in sorted(relative, key=lambda rel: natural_key(rel.replace(os.sep, "/")))]
 
 
 def format_filename(path: str, fmt: str) -> str:

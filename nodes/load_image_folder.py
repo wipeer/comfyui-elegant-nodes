@@ -50,8 +50,8 @@ class ElegantLoadImageFromFolder(io.ComfyNode):
                 io.Combo.Input(
                     "folder",
                     options=folder_paths.get_input_subfolders(),
-                    tooltip="Folder inside ComfyUI's input directory. Images directly in it are loaded "
-                    "(PNG, JPG, WEBP, BMP, TIFF), not those in its subfolders.",
+                    tooltip="Folder inside ComfyUI's input directory. Its images are loaded "
+                    "(PNG, JPG, WEBP, BMP, TIFF); those in subfolders only with include_subfolders on.",
                 ),
                 io.Combo.Input(
                     "filename_format",
@@ -60,6 +60,25 @@ class ElegantLoadImageFromFolder(io.ComfyNode):
                     advanced=True,
                     tooltip="What the filename output holds: the file name (photo.png), the name without "
                     "extension (photo) or the full path on the server.",
+                ),
+                # Added in 1.7.0: last, so workflows saved before keep their widget values, and
+                # optional, so prompts saved before (API format) stay valid.
+                io.String.Input(
+                    "filter",
+                    default="",
+                    optional=True,
+                    tooltip="Load only images whose file name matches, e.g. *train_??5.* "
+                    "(* = anything, ? = one character, [abc] = one of a, b, c; case is ignored). Empty: all images.",
+                ),
+                io.Boolean.Input(
+                    "include_subfolders",
+                    default=False,
+                    optional=True,
+                    label_on="on",
+                    label_off="off",
+                    advanced=True,
+                    tooltip="Also load images in the folder's subfolders, at any depth. The filter still "
+                    "matches only the file name.",
                 ),
             ],
             outputs=[
@@ -71,23 +90,32 @@ class ElegantLoadImageFromFolder(io.ComfyNode):
         )
 
     @classmethod
-    def fingerprint_inputs(cls, folder: str, filename_format: str):
-        # Run again when files in the folder are added, removed or changed.
+    def fingerprint_inputs(cls, folder: str, filename_format: str, filter: str = "", include_subfolders: bool = False):
+        # Run again when matching files in the folder are added, removed or changed.
         try:
-            return [(path, os.path.getmtime(path)) for path in list_images(_input_folder(folder))]
+            paths = list_images(_input_folder(folder), filter, include_subfolders)
+            return [(path, os.path.getmtime(path)) for path in paths]
         except (OSError, ValueError):
             return float("nan")  # never equal: let execute report the problem
 
     @classmethod
-    def execute(cls, folder: str, filename_format: str) -> io.NodeOutput:
-        paths = list_images(_input_folder(folder))
+    def execute(
+        cls, folder: str, filename_format: str, filter: str = "", include_subfolders: bool = False
+    ) -> io.NodeOutput:
+        folder_path = _input_folder(folder)
+        paths = list_images(folder_path, filter, include_subfolders)
+        where = f"{folder} and its subfolders" if include_subfolders else folder
         if not paths:
-            raise ValueError(f"No images found in {folder!r}.")
+            matching = f" matching {filter.strip()!r}" if filter.strip() else ""
+            raise ValueError(f"No images{matching} in {where}.")
         images = [_load_image(path) for path in paths]
         names = [format_filename(path, filename_format) for path in paths]
 
         listed = "\n".join(names[:MAX_LISTED])
         if len(names) > MAX_LISTED:
             listed += f"\n… and {len(names) - MAX_LISTED} more"
-        count = f"{len(names)} image{'s' if len(names) != 1 else ''} from {folder}"
+        count = f"{len(names)} image{'s' if len(names) != 1 else ''} from {where}"
+        if filter.strip():
+            total = len(list_images(folder_path, "", include_subfolders))
+            count = f"{len(names)} of {total} images in {where} match {filter.strip()}"
         return io.NodeOutput(images, names, ui=ui.PreviewText(f"{count}\n\n{listed}"))

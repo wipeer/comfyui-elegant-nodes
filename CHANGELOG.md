@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- **Elegant Load Image (from Folder)**: **filter** by file name with wildcards, e.g.
+  `*train_??5.*` (case is ignored), and an advanced **include_subfolders** switch. The preview
+  shows how many images matched.
+- New inputs added since 1.5.0 are optional, so prompts saved in API format before keep working.
 - **Elegant Any to String Multi Preview**: **prefix** and **suffix** are single-line fields now,
   with `\n` / `\t` like the delimiter, so they hide and grey out reliably like the other settings.
 

@@ -59,6 +59,7 @@ def _affix_inputs(name: str, where: str):
         io.Boolean.Input(
             f"use_{name}",
             default=False,
+            optional=True,
             label_on="on",
             label_off="off",
             advanced=True,
@@ -67,6 +68,7 @@ def _affix_inputs(name: str, where: str):
         io.String.Input(
             name,
             default="",
+            optional=True,
             tooltip=f"concat, when use_{name} is on: text added {where} the joined text. "
             "Type \\n for a new line and \\t for a tab.",
         ),
@@ -126,7 +128,8 @@ class ElegantAnyToStringMultiPreview(io.ComfyNode):
                     "clamp: below 1 uses the first source, above the last uses the last. "
                     "wrap: count around (one past the last is the first again).",
                 ),
-                # Added in 1.6.0, last so workflows saved before keep their widget values.
+                # Added in 1.6.0: last, so workflows saved before keep their widget values, and
+                # optional, so prompts saved before (API format) stay valid.
                 *_affix_inputs("prefix", "before"),
                 *_affix_inputs("suffix", "after"),
             ],

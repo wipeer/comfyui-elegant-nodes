@@ -46,7 +46,7 @@ the rest follows. Demote them and it goes away.
 | [**Elegant Any to String Preview**](#elegant-any-to-string-preview) | Any value as plain text. | Text preview |
 | [**Elegant Any to String Multi Preview**](#elegant-any-to-string-multi-preview) | Several values joined as text, or one picked by index (switch). | Text preview |
 | [**Elegant Any Math Multi Preview**](#elegant-any-math-multi-preview) | A math expression over any number of inputs, with a worked-out preview. | Worked-out result |
-| [**Elegant Load Image (from Folder)**](#elegant-load-image-from-folder) | Every image in a folder, plus each file's name (or name without extension, or full path). | List of loaded files |
+| [**Elegant Load Image (from Folder)**](#elegant-load-image-from-folder) | The images in a folder, optionally filtered (`*train_??5.*`), plus each file's name (or name without extension, or full path). | List of loaded files |
 | [**Elegant Random Number**](#elegant-random-number) | A seeded random int or float between min and max: ComfyUI's standard seed plus the seed buttons. | Seed buttons and value, per copy |
 
 All nodes are in the **utilities → elegant** category. Click the cyan **?** in a node's title
@@ -230,7 +230,9 @@ plus the file name of each image.
 
 | Control | What it does |
 |---------|--------------|
-| **folder** | A folder inside ComfyUI's `input` directory. Images directly in it are loaded (PNG, JPG, WEBP, BMP, TIFF), not those in its subfolders. Press **R** to refresh the list after adding one. |
+| **folder** | A folder inside ComfyUI's `input` directory. Its images are loaded (PNG, JPG, WEBP, BMP, TIFF). Press **R** to refresh the list after adding one. |
+| **filter** | Load only images whose **file name** matches, e.g. `*train_??5.*`: `*` is anything, `?` one character, `[abc]` one of a, b, c. Upper/lower case is ignored. Empty: all images. |
+| **include_subfolders** | Advanced (⚙). Also load images in subfolders, at any depth. The filter still matches only the file name. |
 | **filename_format** | Advanced (⚙). What `filename` holds: `file name` (`photo.png`, default), `name without extension` (`photo`) or `full path` (the file's path on the ComfyUI server). |
 
 Outputs, both lists in the same order, so the nodes after it run once per image:
@@ -239,15 +241,17 @@ Outputs, both lists in the same order, so the nodes after it run once per image:
 - `filename`: each image's name, e.g. into a Save Image prefix to keep the original names.
 
 Compared to ComfyUI's node, files load in name order with numbers by value (`img2` before
-`img10`), camera rotation (EXIF) is applied, and the node runs again when files in the folder are
-added, removed or changed. The preview lists the loaded files.
+`img10`; with subfolders, by path inside the folder), camera rotation (EXIF) is applied, and the
+node runs again when files in the folder are added, removed or changed. The preview lists the
+loaded files, e.g. `3 of 120 images in pets match *train_??5.*`. No matching image stops the run
+with a message.
 
 **In a subgraph:** the list of loaded files appears on the subgraph node after each run.
 
 ## Advanced settings
 
 Rarely needed settings (`wrap_text`, `out_of_range`, `use_prefix`, `use_suffix`,
-`filename_format`, and the Multi Preview settings its mode doesn't use) are advanced inputs, hidden by default. Click
+`filename_format`, `include_subfolders`, and the Multi Preview settings its mode doesn't use) are advanced inputs, hidden by default. Click
 the cyan **⚙** in the node's title to show or hide them, in both the classic and the Vue nodes
 view. It uses the node's own "show advanced" state, so it stays in sync with ComfyUI's **Show
 advanced inputs** button and the side panel, and it's saved with the workflow.

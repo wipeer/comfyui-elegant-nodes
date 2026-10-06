@@ -107,7 +107,9 @@ const HELP = {
 <p class="elegant-help-subgraph"><b>Works from the subgraph node.</b> After each run the list of loaded files also appears on the subgraph node. Each copy of a subgraph shows its own.</p>
 <h3>Inputs</h3>
 <table>
-<tr><td><b>folder</b></td><td>A folder inside ComfyUI's <code>input</code> directory. Images directly in it are loaded (PNG, JPG, WEBP, BMP, TIFF), not those in its subfolders. Press <b>R</b> to refresh the list after adding a folder.</td></tr>
+<tr><td><b>folder</b></td><td>A folder inside ComfyUI's <code>input</code> directory. Its images are loaded (PNG, JPG, WEBP, BMP, TIFF). Press <b>R</b> to refresh the list after adding a folder.</td></tr>
+<tr><td><b>filter</b></td><td>Load only images whose <b>file name</b> matches, e.g. <code>*train_??5.*</code>: <code>*</code> = anything, <code>?</code> = one character, <code>[abc]</code> = one of a, b, c. Upper/lower case is ignored. Empty: all images.</td></tr>
+<tr><td><b>include_subfolders</b></td><td>(advanced) Also load images in subfolders, at any depth. The filter still matches only the file name.</td></tr>
 <tr><td><b>filename_format</b></td><td>(advanced, click the <b>⚙</b>) What <b>filename</b> holds: <code>file name</code> (photo.png, default), <code>name without extension</code> (photo) or <code>full path</code> (the file's path on the ComfyUI server).</td></tr>
 </table>
 <h3>Outputs</h3>
@@ -115,7 +117,7 @@ const HELP = {
 <tr><td><b>images</b></td><td>The images as a list: the nodes after it run once per image, so images may have different sizes.</td></tr>
 <tr><td><b>filename</b></td><td>The file name of each image, in the same order, e.g. into a Save Image prefix to keep the names.</td></tr>
 </table>
-<p>Files are loaded in name order, with numbers by value (img2 before img10). Camera rotation (EXIF) is applied. The node runs again when files in the folder are added, removed or changed.</p>`,
+<p>Files are loaded in name order, with numbers by value (img2 before img10); with subfolders, by their path inside the folder. Camera rotation (EXIF) is applied. The node runs again when files in the folder are added, removed or changed. If no image matches, the run stops with a message.</p>`,
   },
 
   [NODE_IDS.randomNumber]: {
