@@ -53,6 +53,27 @@ class ElegantAnyToStringPreview(io.ComfyNode):
         return io.NodeOutput(text, ui=ui.PreviewText(text))
 
 
+def _affix_inputs(name: str, where: str):
+    # web/js/text_preview.js shows the text field only when its switch is on and the mode is concat.
+    return [
+        io.Boolean.Input(
+            f"use_{name}",
+            default=False,
+            label_on="on",
+            label_off="off",
+            advanced=True,
+            tooltip=f"concat: add the {name} text {where} the joined text.",
+        ),
+        io.String.Input(
+            name,
+            default="",
+            multiline=True,
+            tooltip=f"concat, when use_{name} is on: text added {where} the joined text, exactly as typed "
+            "(new lines included).",
+        ),
+    ]
+
+
 class ElegantAnyToStringMultiPreview(io.ComfyNode):
     """Several values as text: joined with a delimiter (concat), or one picked by index (switch)."""
 
@@ -106,6 +127,9 @@ class ElegantAnyToStringMultiPreview(io.ComfyNode):
                     "clamp: below 1 uses the first source, above the last uses the last. "
                     "wrap: count around (one past the last is the first again).",
                 ),
+                # Added in 1.6.0, last so workflows saved before keep their widget values.
+                *_affix_inputs("prefix", "before"),
+                *_affix_inputs("suffix", "after"),
             ],
             outputs=[
                 io.String.Output(display_name="string"),
@@ -125,6 +149,10 @@ class ElegantAnyToStringMultiPreview(io.ComfyNode):
         mode: str = "concat",
         index: int = 1,
         out_of_range: str = "error",
+        use_prefix: bool = False,
+        prefix: str = "",
+        use_suffix: bool = False,
+        suffix: str = "",
     ) -> io.NodeOutput:
         names = [name for name in SOURCE_NAMES if name in sources]
         if mode == "switch":
@@ -135,4 +163,5 @@ class ElegantAnyToStringMultiPreview(io.ComfyNode):
             return io.NodeOutput(text, value, ui=ui.PreviewText(preview))
 
         text = unescape(delimiter).join(_to_text(sources[name]) for name in names)
+        text = (prefix if use_prefix else "") + text + (suffix if use_suffix else "")
         return io.NodeOutput(text, text, ui=ui.PreviewText(text))

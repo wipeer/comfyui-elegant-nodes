@@ -244,27 +244,58 @@ function wrapWidgetFor(host, inner) {
 }
 
 /**
- * Multi Preview: only the setting the current mode uses is shown — delimiter for
- * concat, index for switch. The other one becomes an advanced input (shown with
- * the ⚙) and is greyed out.
+ * Greys a widget out. The classic canvas hides disabled text boxes (DOM widgets)
+ * entirely, so there they are only dimmed; the Vue nodes view draws its own box
+ * and greys it out when disabled.
+ */
+function setGreyedOut(widget, greyed) {
+  if (widget.element instanceof HTMLElement) {
+    widget.element.style.opacity = greyed ? "0.45" : "";
+    widget.element.readOnly = greyed;
+    widget.disabled = greyed && vueNodesEnabled();
+  } else {
+    widget.disabled = greyed;
+  }
+}
+
+const vueNodesEnabled = () => !!app.extensionManager?.setting?.get?.("Comfy.VueNodes.Enabled");
+
+/**
+ * Multi Preview: only the settings the current mode uses are shown — delimiter,
+ * and prefix / suffix when switched on, for concat; index for switch. The others
+ * become advanced inputs (shown with the ⚙) and are greyed out.
  */
 function setupModeHints(node) {
   const find = (name) => node.widgets?.find((w) => w.name === name);
   const mode = find("mode");
   if (!mode || !find("index")) return;
   const apply = () => {
-    const switching = mode.value === "switch";
-    for (const [name, used] of [["delimiter", !switching], ["index", switching]]) {
+    const concat = mode.value !== "switch";
+    const shown = {
+      delimiter: concat,
+      index: !concat,
+      prefix: concat && !!find("use_prefix")?.value,
+      suffix: concat && !!find("use_suffix")?.value,
+    };
+    for (const [name, used] of Object.entries(shown)) {
       const widget = find(name);
       if (!widget) continue;
-      widget.disabled = !used;
+      setGreyedOut(widget, !used);
       widget.options ??= {};
       widget.options.advanced = !used;
+    }
+    // The prefix / suffix switches are always advanced; they only matter for concat.
+    for (const name of ["use_prefix", "use_suffix"]) {
+      const widget = find(name);
+      if (widget) setGreyedOut(widget, !concat);
     }
     node.setSize?.([node.size[0], node.computeSize?.()[1] ?? node.size[1]]);
     node.setDirtyCanvas?.(true, true);
   };
-  chainMethod(mode, "callback", apply);
+  for (const name of ["mode", "use_prefix", "use_suffix"]) {
+    const widget = find(name);
+    if (widget) chainMethod(widget, "callback", apply);
+  }
   chainMethod(node, "onConfigure", apply);
   apply();
 }

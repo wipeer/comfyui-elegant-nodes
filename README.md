@@ -151,8 +151,12 @@ index (**switch**).
   used as typed, e.g. `, ` or ` | `.
 - `wrap_text` (advanced): wrap long lines to the box width, like the single preview.
 - `mode`: `concat` joins all sources; `switch` uses only the source chosen by `index`. Only the
-  setting the mode uses is shown: `delimiter` in concat, `index` in switch. The other one moves to
-  the [advanced settings](#advanced-settings), greyed out.
+  settings the mode uses are shown: `delimiter` (and `prefix` / `suffix` when switched on) in
+  concat, `index` in switch. The others move to the [advanced settings](#advanced-settings),
+  greyed out.
+- `use_prefix` / `use_suffix` (advanced, concat): switch on to show a multi-line `prefix` /
+  `suffix` field. Its text is added before / after the joined text exactly as typed, new lines
+  included: e.g. prefix `Fruits:` + new line gives `Fruits:`, `apple`, `banana` on separate lines.
 - `index`: switch mode, which source to use, counting from 1 (`source_1`). Connect a number to
   choose it from elsewhere, e.g. an Elegant Random Number for a random pick.
 - `out_of_range` (advanced): what an index outside
@@ -242,8 +246,8 @@ added, removed or changed. The preview lists the loaded files.
 
 ## Advanced settings
 
-Rarely needed settings (`wrap_text`, `out_of_range`, `filename_format`, and the Multi Preview
-setting its mode doesn't use) are advanced inputs, hidden by default. Click
+Rarely needed settings (`wrap_text`, `out_of_range`, `use_prefix`, `use_suffix`,
+`filename_format`, and the Multi Preview settings its mode doesn't use) are advanced inputs, hidden by default. Click
 the cyan **⚙** in the node's title to show or hide them, in both the classic and the Vue nodes
 view. It uses the node's own "show advanced" state, so it stays in sync with ComfyUI's **Show
 advanced inputs** button and the side panel, and it's saved with the workflow.

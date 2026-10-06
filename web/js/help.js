@@ -79,8 +79,10 @@ const HELP = {
 <tr><td><b>source_1, source_2, …</b></td><td>Connect values here. A new input appears each time you connect the last free one (up to 20). Disconnect one and the gap closes.</td></tr>
 <tr><td><b>delimiter</b></td><td>concat: put between the values. <code>\\n</code> = new line (default), <code>\\t</code> = tab, <code>\\\\</code> = backslash. Anything else is used as typed, e.g. <code>, </code> or <code> | </code>.</td></tr>
 <tr><td><b>wrap_text</b></td><td>(advanced) Wrap long lines to the box width instead of scrolling sideways.</td></tr>
-<tr><td><b>mode</b></td><td><code>concat</code>: join all sources with the delimiter. <code>switch</code>: use only the source chosen by <b>index</b>. Only the setting the mode uses is shown: <b>delimiter</b> in concat, <b>index</b> in switch. The other one moves to the advanced settings (<b>⚙</b>) and is greyed out there.</td></tr>
+<tr><td><b>mode</b></td><td><code>concat</code>: join all sources with the delimiter. <code>switch</code>: use only the source chosen by <b>index</b>. Only the settings the mode uses are shown: <b>delimiter</b> (and <b>prefix</b> / <b>suffix</b> when switched on) in concat, <b>index</b> in switch. The others move to the advanced settings (<b>⚙</b>) and are greyed out there.</td></tr>
 <tr><td><b>index</b></td><td>switch: which source to use, counting from 1 (<code>source_1</code>). Connect a number to choose it from elsewhere, e.g. an <b>Elegant Random Number</b> for a random pick.</td></tr>
+<tr><td><b>use_prefix</b>, <b>use_suffix</b></td><td>(advanced) concat: switch on to show the <b>prefix</b> / <b>suffix</b> field.</td></tr>
+<tr><td><b>prefix</b>, <b>suffix</b></td><td>concat: text added before / after the joined text, exactly as typed (press Enter for a new line, no <code>\\n</code> needed).</td></tr>
 </table>
 <h3>Outputs</h3>
 <table>

@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- **Elegant Any to String Multi Preview**: optional **prefix** and **suffix** (multi-line, as
+  typed) around the joined text in concat mode. Switch them on with the advanced `use_prefix` /
+  `use_suffix`; the fields then show with the normal settings, otherwise they're advanced and
+  greyed out. Workflows saved before keep their values.
+
 ## 1.5.0
 
 - **New: Elegant Load Image (from Folder)**: ComfyUI's Load Image (from Folder) plus a
