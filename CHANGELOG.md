@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.7.0
 
 - **Elegant Load Image (from Folder)**: **filter** by file name with wildcards, e.g.
   `*train_??5.*` (case is ignored), and an advanced **include_subfolders** switch. The preview
