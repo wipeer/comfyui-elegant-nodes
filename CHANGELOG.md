@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.6.0
 
 - **Elegant Any to String Multi Preview**: optional **prefix** and **suffix** (multi-line, as
   typed) around the joined text in concat mode. Switch them on with the advanced `use_prefix` /
