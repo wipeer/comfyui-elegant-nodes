@@ -1,5 +1,6 @@
 """ComfyUI node definitions (V3 schema). The logic they use lives in ../core."""
 
+from .load_image_folder import ElegantLoadImageFromFolder
 from .math_expression import ElegantAnyMathMultiPreview
 from .random_number import ElegantRandomNumber
 from .resolution_selector import ElegantResolutionSelector
@@ -13,4 +14,5 @@ NODES = [
     ElegantAnyToStringMultiPreview,
     ElegantAnyMathMultiPreview,
     ElegantRandomNumber,
+    ElegantLoadImageFromFolder,
 ]

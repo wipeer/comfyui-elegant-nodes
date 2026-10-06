@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+- **New: Elegant Load Image (from Folder)**: ComfyUI's Load Image (from Folder) plus a
+  `filename` output; the advanced `filename_format` picks file name, name without extension or
+  full path. Loads in natural name order, applies EXIF rotation, reruns when the folder changes,
+  and lists the loaded files on the node and on subgraph nodes.
+- Vue nodes view: the ? / ⚙ title buttons no longer stick to another node when Vue reuses a
+  removed node's header (e.g. after converting a selection to a subgraph).
+
 ## 1.4.0
 
 - **Elegant Random Number** now uses ComfyUI's standard seed with its **control after

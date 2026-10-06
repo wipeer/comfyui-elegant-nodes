@@ -39,7 +39,7 @@ they're listed with the workaround in place, so they can be revisited when Comfy
 ### Comfy Registry
 
 - **The registry page shows "No nodes found".** The node list is extracted by the registry's
-  build, not by this repo; the same query run locally finds all six nodes, and installing works.
+  build, not by this repo; the same query run locally finds all the nodes, and installing works.
   Reported upstream; nothing to change here unless the registry asks for something.
 
 ### Releases
@@ -59,7 +59,9 @@ they're listed with the workaround in place, so they can be revisited when Comfy
 - [ ] Frontend tests in CI. `tests/` covers the Python logic in `core/`; the frontend (buttons,
       subgraph sync, previews, ⚙) is tested by hand in the classic and Vue nodes views.
 - [ ] Refresh the screenshots in `docs/images/` (the Random Number now shows ComfyUI's seed
-      control instead of the random/fixed switch).
+      control instead of the random/fixed switch; add Load Image from Folder).
+- [ ] Load Image (from Folder): optional `mask` output from the alpha channel, and a sort option
+      (name / date).
 
 ## Release checklist
 

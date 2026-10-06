@@ -113,16 +113,24 @@ function nodeForHeader(header) {
 function decorateVueHeaders() {
   for (const header of document.querySelectorAll('[data-testid^="node-header-"]')) {
     const node = nodeForHeader(header);
-    if (!node || !ELEGANT_NODE_TYPES.has(node.type)) continue;
     // The header row: title group on the left (it has mr-auto), badges on the right.
     const row = header.firstElementChild;
     if (!row) continue;
 
     let container = row.querySelector(":scope > .elegant-title-buttons");
+    // Vue may reuse a removed node's header for another node: drop buttons made for another node.
+    if (container && (container.dataset.nodeId !== String(node?.id) || container.__elegantNode !== node)) {
+      container.remove();
+      container = null;
+    }
+    if (!node || !ELEGANT_NODE_TYPES.has(node.type)) continue;
+
     if (!container) {
       ensureTitleButtonStyle();
       container = document.createElement("span");
       container.className = "elegant-title-buttons";
+      container.dataset.nodeId = String(node.id);
+      container.__elegantNode = node;
       row.appendChild(container);
     }
 
@@ -165,9 +173,10 @@ function scheduleDecorate() {
 let observer;
 function watchVueNodes() {
   if (observer) return;
-  // Re-check on DOM changes (Vue re-renders headers), batched to one scan per frame.
+  // Re-check on DOM changes (Vue re-renders headers, or reuses one for another node),
+  // batched to one scan per frame.
   observer = new MutationObserver(scheduleDecorate);
-  observer.observe(document.body, { childList: true, subtree: true });
+  observer.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ["data-testid"] });
   scheduleDecorate();
 }
 

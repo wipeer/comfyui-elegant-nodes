@@ -8,6 +8,7 @@ export const NODE_IDS = {
   anyToStringMultiPreview: "ElegantAnyToStringMultiPreview",
   anyMathMultiPreview: "ElegantAnyMathMultiPreview",
   randomNumber: "ElegantRandomNumber",
+  loadImageFromFolder: "ElegantLoadImageFromFolder",
 };
 
 /** Runs `after(this, result, args)` after `object[name](...args)`, keeping the original. */
