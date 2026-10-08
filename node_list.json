@@ -1,0 +1,9 @@
+{
+  "ElegantSeed": "Seed with random/fixed controls",
+  "ElegantResolutionSelector": "Resolution from aspect ratio",
+  "ElegantAnyToStringPreview": "Preview any value as text",
+  "ElegantAnyToStringMultiPreview": "Combine or select values",
+  "ElegantAnyMathMultiPreview": "Evaluate and preview math expressions",
+  "ElegantRandomNumber": "Seeded random integer or float",
+  "ElegantLoadImageFromFolder": "Load images from a folder"
+}

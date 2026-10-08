@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Ships `node_list.json`, the explicit node list ComfyUI-Manager's scanner reads, so Manager can
+  show the pack's nodes instead of "No nodes found".
+
 ## 1.7.0
 
 - **Elegant Load Image (from Folder)**: **filter** by file name with wildcards, e.g.

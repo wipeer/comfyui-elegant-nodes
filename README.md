@@ -287,10 +287,11 @@ as missing; replace them with the new ones:
 
 ```
 __init__.py        ComfyUI entry point
+node_list.json     node ids and short descriptions, for ComfyUI-Manager
 nodes/             node definitions (V3 schema)
 core/              logic without ComfyUI imports (resolution, text, math, random, switch, files)
 web/js/            frontend: seed buttons, live result, previews, ⚙ advanced, ? help
-tests/             pytest tests for core/
+tests/             pytest tests for core/ (and that node_list.json is complete)
 ```
 
 Run the tests (they need only `simpleeval` and `pytest`; Node.js enables one extra check):

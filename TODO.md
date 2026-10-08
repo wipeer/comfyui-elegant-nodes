@@ -38,9 +38,12 @@ they're listed with the workaround in place, so they can be revisited when Comfy
 
 ### Comfy Registry
 
-- **The registry page shows "No nodes found".** The node list is extracted by the registry's
+- **ComfyUI-Manager shows "No nodes found".** The node list is extracted by the registry's
   build, not by this repo; the same query run locally finds all the nodes, and installing works.
-  Reported upstream; nothing to change here unless the registry asks for something.
+  Since 1.7.1 the pack ships `node_list.json`, the explicit node list Manager's scanner reads
+  (`tests/test_node_list.py` keeps it in sync with the nodes). If the list stays empty after that
+  release, ask the registry maintainers to re-run the node extraction (Comfy Discord, or an issue
+  on `Comfy-Org/registry-backend`).
 
 ### Releases
 
@@ -65,7 +68,8 @@ they're listed with the workaround in place, so they can be revisited when Comfy
 
 ## Release checklist
 
-1. Update `CHANGELOG.md` (move *Unreleased* to the new version).
+1. Update `CHANGELOG.md` (move *Unreleased* to the new version). A new node also goes into
+   `node_list.json` (the tests fail otherwise) and the README table.
 2. Bump `version` in `pyproject.toml` and push to `main`; GitHub Actions publishes to the
    registry.
 3. Create the `vX.Y.Z` release on GitHub with the changelog section as notes.
