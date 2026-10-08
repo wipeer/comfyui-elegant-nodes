@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.7.1
 
 - Ships `node_list.json`, the explicit node list ComfyUI-Manager's scanner reads, so Manager can
   show the pack's nodes instead of "No nodes found".
