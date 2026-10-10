@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.8.0
 
 - **Elegant Load Image (from Folder)**: **start_index** (counting from 1) and **limit** (0: no
   limit) pick a range of the matching images, e.g. images 5 to 8. The preview shows the range.
