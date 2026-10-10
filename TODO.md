@@ -38,12 +38,17 @@ they're listed with the workaround in place, so they can be revisited when Comfy
 
 ### Comfy Registry
 
-- **ComfyUI-Manager shows "No nodes found".** The node list is extracted by the registry's
-  build, not by this repo; the same query run locally finds all the nodes, and installing works.
-  Since 1.7.1 the pack ships `node_list.json`, the explicit node list Manager's scanner reads
-  (`tests/test_node_list.py` keeps it in sync with the nodes). If the list stays empty after that
-  release, ask the registry maintainers to re-run the node extraction (Comfy Discord, or an issue
-  on `Comfy-Org/registry-backend`).
+- **ComfyUI-Manager shows "No nodes found".** Manager takes a pack's node list from the
+  registry, which extracts it per version: a cloud build installs the package into ComfyUI and
+  reads `/object_info`. Every version so far has passed the security check
+  (`status: NodeVersionStatusActive`) but its extraction stays at
+  `comfy_node_extract_status: "pending"`: the job never reported back, as for other packs
+  (registry-backend issue #225). Run locally the same way, the extraction finds all 7 nodes, so
+  nothing in this repo blocks it. `node_list.json` (since 1.7.1) is only read by Manager's
+  GitHub-based scanner, not by the registry. Check with
+  `https://api.comfy.org/versions?nodeId=elegant-nodes&include_status_reason=true&pageSize=3`;
+  until it changes, ask the registry maintainers (Comfy Discord or `Comfy-Org/registry-backend`)
+  to run the extraction.
 
 ### Releases
 
