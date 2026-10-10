@@ -8,7 +8,7 @@ import folder_paths
 import node_helpers
 from comfy_api.latest import io, ui
 
-from ..core.files import FILENAME_FORMATS, format_filename, list_images
+from ..core.files import FILENAME_FORMATS, format_filename, list_images, select_range
 
 MAX_LISTED = 50  # file names shown in the preview
 
@@ -80,6 +80,23 @@ class ElegantLoadImageFromFolder(io.ComfyNode):
                     tooltip="Also load images in the folder's subfolders, at any depth. The filter still "
                     "matches only the file name.",
                 ),
+                # Added in 1.8.0, last and optional like the inputs above.
+                io.Int.Input(
+                    "start_index",
+                    default=1,
+                    min=1,
+                    max=1_000_000,
+                    optional=True,
+                    tooltip="Number of the first image to load, counting from 1, after filtering and sorting.",
+                ),
+                io.Int.Input(
+                    "limit",
+                    default=0,
+                    min=0,
+                    max=1_000_000,
+                    optional=True,
+                    tooltip="Most images to load from start_index on. 0: no limit.",
+                ),
             ],
             outputs=[
                 io.Image.Output(display_name="images", is_output_list=True, tooltip="The images, one by one."),
@@ -90,32 +107,42 @@ class ElegantLoadImageFromFolder(io.ComfyNode):
         )
 
     @classmethod
-    def fingerprint_inputs(cls, folder: str, filename_format: str, filter: str = "", include_subfolders: bool = False):
-        # Run again when matching files in the folder are added, removed or changed.
+    def fingerprint_inputs(
+        cls, folder: str, filename_format: str, filter: str = "", include_subfolders: bool = False,
+        start_index: int = 1, limit: int = 0,
+    ):
+        # Run again when the images to load are added, removed or changed.
         try:
             paths = list_images(_input_folder(folder), filter, include_subfolders)
+            paths = select_range(paths, start_index, limit)
             return [(path, os.path.getmtime(path)) for path in paths]
         except (OSError, ValueError):
             return float("nan")  # never equal: let execute report the problem
 
     @classmethod
     def execute(
-        cls, folder: str, filename_format: str, filter: str = "", include_subfolders: bool = False
+        cls, folder: str, filename_format: str, filter: str = "", include_subfolders: bool = False,
+        start_index: int = 1, limit: int = 0,
     ) -> io.NodeOutput:
         folder_path = _input_folder(folder)
-        paths = list_images(folder_path, filter, include_subfolders)
+        pattern = filter.strip()
+        matching = list_images(folder_path, pattern, include_subfolders)
         where = f"{folder} and its subfolders" if include_subfolders else folder
-        if not paths:
-            matching = f" matching {filter.strip()!r}" if filter.strip() else ""
-            raise ValueError(f"No images{matching} in {where}.")
+        if not matching:
+            raise ValueError(f"No images{f' matching {pattern!r}' if pattern else ''} in {where}.")
+        paths = select_range(matching, start_index, limit)
         images = [_load_image(path) for path in paths]
         names = [format_filename(path, filename_format) for path in paths]
 
+        # e.g. "4 images from pets · 12 of 120 match *train_* · #5–#8 of 12"
+        summary = [f"{len(paths)} image{'s' if len(paths) != 1 else ''} from {where}"]
+        if pattern:
+            total = len(list_images(folder_path, "", include_subfolders))
+            summary.append(f"{len(matching)} of {total} match {pattern}")
+        if len(paths) < len(matching):
+            first, last = max(1, start_index), max(1, start_index) + len(paths) - 1
+            summary.append(f"#{first}{f'–#{last}' if last > first else ''} of {len(matching)}")
         listed = "\n".join(names[:MAX_LISTED])
         if len(names) > MAX_LISTED:
             listed += f"\n… and {len(names) - MAX_LISTED} more"
-        count = f"{len(names)} image{'s' if len(names) != 1 else ''} from {where}"
-        if filter.strip():
-            total = len(list_images(folder_path, "", include_subfolders))
-            count = f"{len(names)} of {total} images in {where} match {filter.strip()}"
-        return io.NodeOutput(images, names, ui=ui.PreviewText(f"{count}\n\n{listed}"))
+        return io.NodeOutput(images, names, ui=ui.PreviewText(" · ".join(summary) + "\n\n" + listed))

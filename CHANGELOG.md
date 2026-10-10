@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- **Elegant Load Image (from Folder)**: **start_index** (counting from 1) and **limit** (0: no
+  limit) pick a range of the matching images, e.g. images 5 to 8. The preview shows the range.
+
 ## 1.7.1
 
 - Ships `node_list.json`, the explicit node list ComfyUI-Manager's scanner reads, so Manager can

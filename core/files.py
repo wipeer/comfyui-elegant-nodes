@@ -38,6 +38,18 @@ def list_images(folder: str, pattern: str = "", subfolders: bool = False) -> lis
     return [os.path.join(folder, rel) for rel in sorted(relative, key=lambda rel: natural_key(rel.replace(os.sep, "/")))]
 
 
+def select_range(items: list, start: int = 1, limit: int = 0) -> list:
+    """
+    `limit` items (0: all the rest) from item number `start`, counting from 1.
+    Raises ValueError when `start` is past the last item.
+    """
+    start = max(1, int(start))
+    if items and start > len(items):
+        raise ValueError(f"start_index {start} is past the last image ({len(items)}).")
+    selected = items[start - 1 :]
+    return selected[: int(limit)] if limit and limit > 0 else selected
+
+
 def format_filename(path: str, fmt: str) -> str:
     """The file at `path` as text, per one of FILENAME_FORMATS."""
     if fmt == "full path":

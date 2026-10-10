@@ -233,6 +233,8 @@ plus the file name of each image.
 | **folder** | A folder inside ComfyUI's `input` directory. Its images are loaded (PNG, JPG, WEBP, BMP, TIFF). Press **R** to refresh the list after adding one. |
 | **filter** | Load only images whose **file name** matches, e.g. `*train_??5.*`: `*` is anything, `?` one character, `[abc]` one of a, b, c. Upper/lower case is ignored. Empty: all images. |
 | **include_subfolders** | Advanced (⚙). Also load images in subfolders, at any depth. The filter still matches only the file name. |
+| **start_index** | Number of the first image to load, counting from 1, after filtering and sorting. Past the last image, the run stops with a message. |
+| **limit** | Most images to load from `start_index` on; `0` (default) loads all the rest. E.g. start 5, limit 4: images 5 to 8. |
 | **filename_format** | Advanced (⚙). What `filename` holds: `file name` (`photo.png`, default), `name without extension` (`photo`) or `full path` (the file's path on the ComfyUI server). |
 
 Outputs, both lists in the same order, so the nodes after it run once per image:
@@ -243,7 +245,7 @@ Outputs, both lists in the same order, so the nodes after it run once per image:
 Compared to ComfyUI's node, files load in name order with numbers by value (`img2` before
 `img10`; with subfolders, by path inside the folder), camera rotation (EXIF) is applied, and the
 node runs again when files in the folder are added, removed or changed. The preview lists the
-loaded files, e.g. `3 of 120 images in pets match *train_??5.*`. No matching image stops the run
+loaded files, e.g. `4 images from pets · 12 of 120 match *train_* · #5–#8 of 12`. No matching image stops the run
 with a message.
 
 **In a subgraph:** the list of loaded files appears on the subgraph node after each run.

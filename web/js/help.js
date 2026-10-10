@@ -110,6 +110,8 @@ const HELP = {
 <tr><td><b>folder</b></td><td>A folder inside ComfyUI's <code>input</code> directory. Its images are loaded (PNG, JPG, WEBP, BMP, TIFF). Press <b>R</b> to refresh the list after adding a folder.</td></tr>
 <tr><td><b>filter</b></td><td>Load only images whose <b>file name</b> matches, e.g. <code>*train_??5.*</code>: <code>*</code> = anything, <code>?</code> = one character, <code>[abc]</code> = one of a, b, c. Upper/lower case is ignored. Empty: all images.</td></tr>
 <tr><td><b>include_subfolders</b></td><td>(advanced) Also load images in subfolders, at any depth. The filter still matches only the file name.</td></tr>
+<tr><td><b>start_index</b></td><td>Number of the first image to load, counting from 1, after filtering and sorting. Past the last image, the run stops with a message.</td></tr>
+<tr><td><b>limit</b></td><td>Most images to load from <b>start_index</b> on; <code>0</code> = all the rest. E.g. start 5, limit 4: images 5 to 8.</td></tr>
 <tr><td><b>filename_format</b></td><td>(advanced, click the <b>⚙</b>) What <b>filename</b> holds: <code>file name</code> (photo.png, default), <code>name without extension</code> (photo) or <code>full path</code> (the file's path on the ComfyUI server).</td></tr>
 </table>
 <h3>Outputs</h3>

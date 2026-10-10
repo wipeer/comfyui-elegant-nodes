@@ -2,7 +2,7 @@ import os
 
 import pytest
 
-from core.files import FILENAME_FORMATS, format_filename, list_images, matches, natural_key
+from core.files import FILENAME_FORMATS, format_filename, list_images, matches, natural_key, select_range
 
 
 def test_natural_order():
@@ -49,3 +49,16 @@ def test_list_images_filter_and_subfolders(tmp_path):
         "a_train_015.png", "day2/b_train_115.jpg", "day2/deep/d_train_315.webp", "day10/c_train_215.png"]
     assert len(list_images(str(tmp_path), "", subfolders=True)) == 5
     assert list_images(str(tmp_path), "*.gif") == []
+
+
+def test_select_range():
+    items = list("abcdefgh")
+    assert select_range(items) == items
+    assert select_range(items, 5) == list("efgh")
+    assert select_range(items, 5, 2) == ["e", "f"]
+    assert select_range(items, 1, 3) == list("abc")
+    assert select_range(items, 7, 10) == ["g", "h"]  # limit past the end: the rest
+    assert select_range(items, 0, 0) == items  # below 1 counts as 1
+    assert select_range([], 3) == []
+    with pytest.raises(ValueError, match="past the last image"):
+        select_range(items, 9)
