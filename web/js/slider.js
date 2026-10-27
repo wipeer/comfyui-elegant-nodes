@@ -5,6 +5,63 @@ import { app } from "../../scripts/app.js";
 import { syncClassicAdvanced } from "./advanced_toggle.js";
 import { NODE_IDS, chainMethod, onNodeCreated } from "./common.js";
 
+// Nodes 2.0 puts every widget's name in a column to the left of the widget, which leaves the
+// slider half the width. On Elegant Sliders the slider row loses its name and fills the node,
+// and the other rows (the advanced range settings) get their name above them. Vue's markup has
+// no names for these parts, so the label and field of each row are tagged and styled here; if
+// the markup changes the tags simply don't match and the node looks as Vue draws it.
+const VUE_NODE = "data-elegant-slider";
+const VUE_SLIDER_ROW = "data-elegant-slider-row";
+const VUE_LABEL = "data-elegant-label";
+const VUE_FIELD = "data-elegant-field";
+const VUE_STYLE = `
+[${VUE_NODE}] [${VUE_FIELD}] { display: flex !important; flex-direction: column; align-items: stretch; gap: 2px; }
+[${VUE_NODE}] [${VUE_FIELD}] > * { grid-column: auto !important; min-width: 0; }
+[${VUE_NODE}] [${VUE_LABEL}] { font-size: 11px; opacity: 0.65; line-height: 1.2; padding-left: 2px; }
+[${VUE_SLIDER_ROW}] [${VUE_LABEL}] { display: none; }
+`;
+
+const liveSliders = new Set();
+
+function ensureVueStyle() {
+  if (document.getElementById("elegant-slider-style")) return;
+  const style = document.createElement("style");
+  style.id = "elegant-slider-style";
+  style.textContent = VUE_STYLE;
+  document.head.appendChild(style);
+}
+
+/** The element holding a widget row's label and field: the innermost grid with two or more children. */
+function fieldOf(row) {
+  const grids = [...row.querySelectorAll(":scope div")].filter((div) => {
+    return div.children.length >= 2 && getComputedStyle(div).display === "grid" && div.className.includes("subgrid");
+  });
+  return grids.at(-1) ?? null;
+}
+
+function tagVueSliders() {
+  const graph = app.canvas?.graph ?? app.graph;
+  const wanted = new Set();
+  for (const node of liveSliders) {
+    if (node.graph && node.graph === graph) wanted.add(String(node.id));
+  }
+  for (const element of document.querySelectorAll("[data-node-id]")) {
+    const isSlider = wanted.has(element.dataset.nodeId);
+    element.toggleAttribute(VUE_NODE, isSlider);
+    if (!isSlider) continue;
+    for (const row of element.querySelectorAll(".lg-node-widget")) {
+      const field = fieldOf(row);
+      if (!field) continue;
+      field.setAttribute(VUE_FIELD, "");
+      field.firstElementChild?.setAttribute(VUE_LABEL, "");
+      row.toggleAttribute(VUE_SLIDER_ROW, !!row.querySelector('[role="slider"]'));
+    }
+  }
+}
+
+ensureVueStyle();
+setInterval(tagVueSliders, 250);
+
 const FREE_STEP = 0.01; // step 0 (any value): the slider still needs a size for one drag step
 
 const MAX_DECIMALS = 6;
@@ -67,6 +124,9 @@ function setupSlider(node) {
   // The range settings are advanced: the classic canvas needs help hiding them behind the ⚙.
   chainMethod(node, "onDrawBackground", () => syncClassicAdvanced(node));
   syncClassicAdvanced(node);
+
+  chainMethod(node, "onRemoved", () => liveSliders.delete(node));
+  liveSliders.add(node);
 }
 
 app.registerExtension({
