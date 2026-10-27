@@ -52,7 +52,7 @@ the rest follows. Demote them and it goes away.
 | [**Elegant Group Bypasser**](#elegant-group-bypasser) | One toggle per group to bypass or enable everything inside it. A port of rgthree's Fast Groups Bypasser that also works in the Vue nodes view. | Lists the groups of its own (sub)graph |
 
 All nodes are in the top-level **elegant** category. Click the cyan **?** in a node's title
-for detailed help on that node (Elegant Simple Reroute and Elegant Group Bypasser have none).
+for detailed help on that node (Elegant Simple Reroute has none: it stays bare).
 
 ## Installation
 

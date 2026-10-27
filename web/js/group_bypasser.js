@@ -14,6 +14,7 @@ import { addCanvasButtons } from "./title_buttons.js";
 const NODE_TYPE = "ElegantGroupBypasser";
 const TITLE = "Elegant Group Bypasser";
 const CATEGORY = "elegant";
+const DESCRIPTION = "One toggle per group in the graph, to bypass or enable all nodes inside it.";
 
 const MODE_ON = 0; // LiteGraph.ALWAYS
 const MODE_OFF = 4; // bypass
@@ -271,6 +272,7 @@ function registerNode() {
     static type = NODE_TYPE;
     static title = TITLE;
     static category = CATEGORY;
+    static description = DESCRIPTION;
 
     constructor(title = TITLE) {
       super(title);
@@ -333,5 +335,14 @@ app.registerExtension({
   name: "elegant.group_bypasser",
   registerCustomNodes() {
     registerNode();
+  },
+  // The Vue app lists frontend-only nodes by their type id; give this one its title.
+  beforeRegisterVueAppNodeDefs(nodeDefs) {
+    for (const def of nodeDefs) {
+      if (def.name !== NODE_TYPE) continue;
+      def.display_name = TITLE;
+      def.description = DESCRIPTION;
+      def.search_aliases = ["group", "groups", "bypass", "toggle groups", "fast groups bypasser", "rgthree"];
+    }
   },
 });

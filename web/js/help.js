@@ -221,6 +221,34 @@ const HELP = {
 <h3>Safety</h3>
 <p>Expressions are evaluated with <i>simpleeval</i>, like ComfyUI's own Math Expression node: only math, no Python code, and very large powers are refused.</p>`,
   },
+
+  [NODE_IDS.groupBypasser]: {
+    title: "Elegant Group Bypasser",
+    html: `
+<p>One toggle per group, to bypass or enable everything inside the group at once. A port of <b>Fast Groups Bypasser</b> from rgthree-comfy that also works in the Vue nodes view.</p>
+<p>Add it and it lists the groups of the graph it sits in (inside a subgraph: the groups of that subgraph). <b>yes</b> enables every node inside the group, <b>no</b> bypasses them, nodes inside subgraph nodes too. The toggles follow changes made elsewhere, live. It never runs: it isn't part of the prompt.</p>
+<h3>Settings</h3>
+<p>Advanced: click the <b>⚙</b> in the title to show them.</p>
+<table>
+<tr><td><b>match_title</b></td><td>Only list groups whose title matches. Plain text, or a regular expression; upper/lower case is ignored. Empty: all groups.</td></tr>
+<tr><td><b>match_colors</b></td><td>Only list groups of these colours, comma separated: ComfyUI colour names (<code>red</code>, <code>green</code>, <code>blue</code>, <code>pale_blue</code>, <code>cyan</code>, <code>purple</code>, <code>yellow</code>, <code>brown</code>, <code>black</code>) or hex codes (<code>#a4d399</code>, <code>#f00</code>). The colour must match exactly; groups without a colour are left out. Together with <b>match_title</b>, a group must pass both. Empty: all colours.</td></tr>
+<tr><td><b>sort</b></td><td><code>position</code>: top to bottom, then left to right. <code>alphanumeric</code>: by title, numbers by value (18 before 100), case ignored.</td></tr>
+<tr><td><b>restriction</b></td><td><code>default</code>: any number of groups on. <code>max one</code>: switching a group on switches the others off. <code>always one</code>: also keeps one group on. Only enforced by clicks on this node; changing nodes some other way can break it.</td></tr>
+</table>
+<h3>Right-click menu</h3>
+<table>
+<tr><td><b>Bypass all</b></td><td>Bypass every listed group (with <b>always one</b>, the first stays on).</td></tr>
+<tr><td><b>Enable all</b></td><td>Enable every listed group (with a <b>max one</b> restriction, only the first).</td></tr>
+<tr><td><b>Toggle all</b></td><td>Flip every listed group.</td></tr>
+<tr><td><b>Go to group: …</b></td><td>Pan and zoom to a group (the first 20 listed).</td></tr>
+</table>
+<h3>Good to know</h3>
+<ul>
+<li>A node counts as inside a group when its centre is. A node in two overlapping groups follows whichever toggle was used last.</li>
+<li>A group with no nodes shows <b>no</b>.</li>
+<li>The node never changes itself, even if it sits inside a group.</li>
+</ul>`,
+  },
 };
 
 // ---------------------------------------------------------------------------
