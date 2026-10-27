@@ -70,7 +70,7 @@ function drawIcon(ctx, left, top, height, glyph, active) {
   ctx.restore();
 }
 
-function addCanvasButtons(node, nodeId) {
+export function addCanvasButtons(node, nodeId) {
   if (!node.addTitleButton) return;
   for (const spec of BUTTONS) {
     if (!spec.appliesTo(nodeId, node) || node.title_buttons?.some((b) => b.name === spec.name)) continue;

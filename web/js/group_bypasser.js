@@ -7,16 +7,18 @@
 // the Vue nodes view. Frontend only: it never enters the prompt.
 
 import { app } from "../../scripts/app.js";
+import { markAdvancedForCanvas } from "./advanced_toggle.js";
 import { frontendOnly } from "./common.js";
+import { addCanvasButtons } from "./title_buttons.js";
 
 const NODE_TYPE = "ElegantGroupBypasser";
 const TITLE = "Elegant Group Bypasser";
-const CATEGORY = "utilities/elegant";
+const CATEGORY = "elegant";
 
 const MODE_ON = 0; // LiteGraph.ALWAYS
 const MODE_OFF = 4; // bypass
 
-const SORTS = ["position", "alphanumeric"];
+const SORTS = ["position", "alphanumeric"]; // alphanumeric: numbers by value, so 18 comes before 100
 const RESTRICTIONS = ["default", "max one", "always one"];
 const SETTINGS = { title: "match_title", colors: "match_colors", sort: "sort", restriction: "restriction" };
 
@@ -86,7 +88,7 @@ function listedGroups(node) {
   );
 
   if (setting(node, SETTINGS.sort) === "alphanumeric") {
-    return listed.sort((a, b) => a.title.localeCompare(b.title));
+    return listed.sort((a, b) => a.title.localeCompare(b.title, undefined, { numeric: true, sensitivity: "base" }));
   }
   // Top to bottom, then left to right, in rows 30 units high.
   return listed.sort((a, b) => {
@@ -94,6 +96,28 @@ function listedGroups(node) {
     const rowB = Math.floor(b._pos[1] / 30);
     return rowA - rowB || Math.floor(a._pos[0] / 30) - Math.floor(b._pos[0] / 30);
   });
+}
+
+// ---------------------------------------------------------------------------
+// Advanced settings
+// ---------------------------------------------------------------------------
+
+const settingWidgets = (node) => (node.widgets ?? []).filter((w) => !w.__elegantGroup);
+
+/**
+ * The Vue nodes view hides advanced widgets itself. The classic canvas shows them and keeps
+ * room for any widget that isn't `hidden`, so there the settings are hidden (and the node
+ * resized) while the ⚙ is off, unless ComfyUI's "always show advanced inputs" is on.
+ */
+function syncAdvanced(node) {
+  const setting = app.extensionManager?.setting;
+  const vue = !!setting?.get?.("Comfy.VueNodes.Enabled");
+  const show = vue || !!node.showAdvanced || !!setting?.get?.("Comfy.Node.AlwaysShowAdvancedWidgets");
+  if (node.__elegantShowAdvanced === show) return;
+  node.__elegantShowAdvanced = show;
+  for (const widget of settingWidgets(node)) widget.hidden = !show;
+  if (!vue) node.setSize?.([node.size[0], node.computeSize()[1]]);
+  node.setDirtyCanvas?.(true, true);
 }
 
 // ---------------------------------------------------------------------------
@@ -137,6 +161,7 @@ function addToggle(node, group) {
 /** Brings the toggles in line with the groups: adds, removes, orders, and shows their state. */
 function refresh(node) {
   if (!node.graph || !node.widgets) return;
+  syncAdvanced(node);
 
   // Don't recompute nodes in groups while one is being dragged (the lists would flicker).
   const busy = !!app.canvas?.selected_group_moving;
@@ -253,18 +278,26 @@ function registerNode() {
       this.serialize_widgets = true; // saves the four settings; the group toggles opt out themselves
       this.properties ??= {};
       this.addWidget("text", SETTINGS.title, "", () => refresh(this), {
+        advanced: true,
         tooltip: "Only list groups whose title matches (text or regular expression).",
       });
       this.addWidget("text", SETTINGS.colors, "", () => refresh(this), {
+        advanced: true,
         tooltip: "Only list groups of these colours: names (red, pale_blue) or hex codes (#a4d399), comma separated.",
       });
-      this.addWidget("combo", SETTINGS.sort, SORTS[0], () => refresh(this), { values: SORTS });
+      this.addWidget("combo", SETTINGS.sort, SORTS[0], () => refresh(this), { values: SORTS, advanced: true });
       this.addWidget("combo", SETTINGS.restriction, RESTRICTIONS[0], () => refresh(this), {
         values: RESTRICTIONS,
+        advanced: true,
         tooltip:
           "max one: switching a group on switches the others off. always one: also keeps one group on. " +
           "Only enforced by clicks on this node.",
       });
+      // The settings are advanced inputs (set when created), shown with the cyan ⚙ (see advanced_toggle.js). Nodes
+      // with a Python definition get the classic canvas wiring from their extensions; this one
+      // is frontend only, so it does the same itself.
+      markAdvancedForCanvas(this);
+      addCanvasButtons(this, NODE_TYPE);
       this.size = [260, this.computeSize()[1]];
       liveNodes.add(this);
       setTimeout(() => refresh(this), 0);
@@ -272,6 +305,11 @@ function registerNode() {
 
     onAdded() {
       liveNodes.add(this);
+    }
+
+    // Classic canvas: follow the ⚙ at once instead of at the next refresh.
+    onDrawBackground() {
+      syncAdvanced(this);
     }
 
     onRemoved() {

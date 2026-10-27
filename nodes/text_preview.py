@@ -39,7 +39,7 @@ class ElegantAnyToStringPreview(io.ComfyNode):
             node_id="ElegantAnyToStringPreview",
             display_name="Elegant Any to String Preview",
             search_aliases=["any to string", "preview", "preview text", "show text", "debug", "inspect", "to string"],
-            category="utilities/elegant",
+            category="elegant",
             description="Converts any value to a string and shows it as plain text, also on the "
             "subgraph node when used inside a subgraph.",
             is_output_node=True,
@@ -87,7 +87,7 @@ class ElegantAnyToStringMultiPreview(io.ComfyNode):
                 "any to string", "join", "concatenate", "combine text", "switch", "select", "index",
                 "preview", "show text", "debug",
             ],
-            category="utilities/elegant",
+            category="elegant",
             description="Converts several values to strings and joins them with a delimiter (concat), or "
             "picks one of them by index (switch). A new source input appears each time you connect "
             "the last one.",

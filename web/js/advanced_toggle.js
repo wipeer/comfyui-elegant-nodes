@@ -26,7 +26,7 @@ const advancedWidgets = (node) => (node.widgets ?? []).filter((w) => w.options?.
  * only `hidden` ones), leaving gaps, so they also report `hidden` while the
  * advanced inputs are collapsed.
  */
-function markAdvancedForCanvas(node) {
+export function markAdvancedForCanvas(node) {
   for (const widget of node.widgets ?? []) {
     if (Object.getOwnPropertyDescriptor(widget, "advanced")?.get) continue;
     const isAdvanced = () => !!widget.options?.advanced && !alwaysShowAdvanced();

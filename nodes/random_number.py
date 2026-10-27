@@ -12,7 +12,7 @@ class ElegantRandomNumber(io.ComfyNode):
             node_id="ElegantRandomNumber",
             display_name="Elegant Random Number",
             search_aliases=["random", "random number", "random int", "random float", "rng", "dice"],
-            category="utilities/elegant",
+            category="elegant",
             description="A random number between min and max, drawn from a seed: the same seed always "
             "gives the same number. Standard ComfyUI seed, plus the Elegant seed buttons.",
             is_output_node=True,

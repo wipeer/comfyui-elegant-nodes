@@ -14,7 +14,7 @@ class ElegantAnyMathMultiPreview(io.ComfyNode):
             node_id="ElegantAnyMathMultiPreview",
             display_name="Elegant Any Math Multi Preview",
             search_aliases=["math", "expression", "formula", "calculate", "calculator", "eval"],
-            category="utilities/elegant",
+            category="elegant",
             description="Evaluates a math expression over the inputs a, b, c, … and outputs the "
             "result as int, float, boolean and string. A new input appears each time you "
             "connect the last one.",

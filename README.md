@@ -48,11 +48,11 @@ the rest follows. Demote them and it goes away.
 | [**Elegant Any Math Multi Preview**](#elegant-any-math-multi-preview) | A math expression over any number of inputs, with a worked-out preview. | Worked-out result |
 | [**Elegant Load Image (from Folder)**](#elegant-load-image-from-folder) | The images in a folder, optionally filtered (`*train_??5.*`), plus each file's name (or name without extension, or full path). | List of loaded files |
 | [**Elegant Random Number**](#elegant-random-number) | A seeded random int or float between min and max: ComfyUI's standard seed plus the seed buttons. | Seed buttons and value, per copy |
-| [**Elegant Reroute**](#elegant-reroute) | Passes any value through unchanged. Rename it, resize it down to a small square. | None needed |
+| [**Elegant Simple Reroute**](#elegant-simple-reroute) | Passes any value through unchanged. Rename it, resize it down to a small square. | None needed |
 | [**Elegant Group Bypasser**](#elegant-group-bypasser) | One toggle per group to bypass or enable everything inside it. A port of rgthree's Fast Groups Bypasser that also works in the Vue nodes view. | Lists the groups of its own (sub)graph |
 
-All nodes are in the **utilities → elegant** category. Click the cyan **?** in a node's title
-for detailed help on that node (Elegant Reroute and Elegant Group Bypasser have none).
+All nodes are in the top-level **elegant** category. Click the cyan **?** in a node's title
+for detailed help on that node (Elegant Simple Reroute and Elegant Group Bypasser have none).
 
 ## Installation
 
@@ -225,7 +225,7 @@ Connect its `int` to a Multi Preview's `index` in switch mode for a random pick 
 node; the value shows there after each run. *control after generate* stays on the node inside
 (ComfyUI doesn't promote it), and the buttons set it there.
 
-### Elegant Reroute
+### Elegant Simple Reroute
 
 A bare pass-through for tidying links: one input, one output, any type. The output takes the
 type of what's connected, so a `MODEL` stays a `MODEL` (same link colour, same type checks).
@@ -233,7 +233,7 @@ type of what's connected, so a `MODEL` stays a `MODEL` (same link colour, same t
 - **Rename** it by double-clicking the title.
 - **Resize** it with the corner handle, down to a small square (the title is cut off to fit).
   The input and output names are hidden; the title is the label.
-- In the Vue nodes view, Elegant Reroutes alone are allowed below the 225 px minimum width
+- In the Vue nodes view, Elegant Simple Reroutes alone are allowed below the 225 px minimum width
   ComfyUI gives other nodes.
 
 ### Elegant Group Bypasser
@@ -248,10 +248,10 @@ are ordinary widgets, so it works in both views.
 
 | Setting | What it does |
 |---------|--------------|
-| **match_title** | Only list groups whose title matches (text or regular expression, case ignored). |
-| **match_colors** | Only list groups of these colours: names (`red`, `pale_blue`) or hex codes (`#a4d399`), comma separated. |
-| **sort** | `position` (top to bottom, then left to right) or `alphanumeric`. |
-| **restriction** | `default`: any number on. `max one`: switching a group on switches the others off. `always one`: also keeps one group on. Only enforced by clicks on this node. |
+| **match_title** | Advanced (⚙). Only list groups whose title matches (text or regular expression, case ignored). |
+| **match_colors** | Advanced (⚙). Only list groups of these colours: names (`red`, `pale_blue`) or hex codes (`#a4d399`), comma separated. |
+| **sort** | Advanced (⚙). `position` (top to bottom, then left to right) or `alphanumeric` (numbers by value: 18 before 100). |
+| **restriction** | Advanced (⚙). `default`: any number on. `max one`: switching a group on switches the others off. `always one`: also keeps one group on. Only enforced by clicks on this node. |
 
 Right-click the node for **Bypass all**, **Enable all**, **Toggle all** and **Go to group: …**
 (the original's arrow button).

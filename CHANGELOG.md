@@ -2,7 +2,8 @@
 
 ## Unreleased
 
-- **New: Elegant Reroute**: passes any value through unchanged (the output takes the type of the
+- All nodes moved from the **utilities → elegant** category to a top-level **elegant** one.
+- **New: Elegant Simple Reroute**: passes any value through unchanged (the output takes the type of the
   input). Rename it by double-clicking the title, resize it down to a small square.
 - **New: Elegant Group Bypasser**: one toggle per group to bypass or enable its nodes; a port of
   rgthree's Fast Groups Bypasser that also works in the Vue nodes view (frontend only).

@@ -16,7 +16,7 @@ class ElegantSeed(io.ComfyNode):
             node_id="ElegantSeed",
             display_name="Elegant Seed",
             search_aliases=["seed", "random", "elegant seed"],
-            category="utilities/elegant",
+            category="elegant",
             description="A seed you can keep fixed or have regenerated on every run, before or "
             "after queueing per the 'Widget control mode' setting.",
             inputs=[

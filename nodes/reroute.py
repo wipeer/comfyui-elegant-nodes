@@ -11,9 +11,9 @@ class ElegantReroute(io.ComfyNode):
         template = io.MatchType.Template("value_type")
         return io.Schema(
             node_id="ElegantReroute",
-            display_name="Elegant Reroute",
+            display_name="Elegant Simple Reroute",
             search_aliases=["reroute", "passthrough", "pass through", "any", "relay", "dot", "junction"],
-            category="utilities/elegant",
+            category="elegant",
             description="Passes any value through unchanged, to tidy links. Rename it by double-clicking "
             "the title; resize it down to a small square.",
             inputs=[io.MatchType.Input("value", template=template)],

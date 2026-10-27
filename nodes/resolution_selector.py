@@ -12,7 +12,7 @@ class ElegantResolutionSelector(io.ComfyNode):
             node_id="ElegantResolutionSelector",
             display_name="Elegant Resolution Selector",
             search_aliases=["resolution", "aspect ratio", "size", "width height", "elegant resolution"],
-            category="utilities/elegant",
+            category="elegant",
             description="Width and height for an aspect ratio, keeping about the same pixel count "
             "as a base x base square.",
             inputs=[

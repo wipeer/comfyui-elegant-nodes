@@ -42,7 +42,7 @@ class ElegantLoadImageFromFolder(io.ComfyNode):
             node_id="ElegantLoadImageFromFolder",
             display_name="Elegant Load Image (from Folder)",
             search_aliases=["load folder", "load from folder", "load images", "batch images", "file name"],
-            category="utilities/elegant",
+            category="elegant",
             description="Loads every image in a folder of ComfyUI's input directory, in name order, "
             "with each image's file name.",
             is_output_node=True,
