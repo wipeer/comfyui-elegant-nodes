@@ -2,7 +2,7 @@
 # Registry id: permanent once published. Folder name when installed via ComfyUI-Manager.
 name = "elegant-nodes"
 description = "Utility nodes built to work inside subgraphs: buttons, live results and previews stay usable on the subgraph node. A seed with random/fixed controls, a seeded random number, an aspect-ratio resolution selector, plain-text previews with concat/switch, a math expression node, an image folder loader with file names and filtering, a minimal reroute, a resolution reroute with a RESOLUTION type, a slider with a range you set, and a group bypasser and muter that work in the Vue nodes view."
-version = "1.10.0"
+version = "1.10.1"
 license = { file = "LICENSE" }
 readme = "README.md"
 requires-python = ">=3.10"

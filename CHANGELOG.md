@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.10.1
 
 - **Preview box on/off:** the nodes with a preview box (Any to String Preview, Multi Preview, Any Math Multi
   Preview, Random Number, Load Image from Folder) have an advanced **show_preview** switch (⚙). Off hides the
