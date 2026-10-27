@@ -157,10 +157,13 @@ export function watchSubgraphHost(host, sync) {
 /** Replaces the widgets previously added under `key` on the subgraph node with `build()`'s. */
 export function replaceHostWidgets(host, key, build) {
   const state = (host.__elegantWidgets ??= {});
-  for (const widget of state[key] ?? []) host.removeWidget?.(widget);
+  const previous = state[key] ?? [];
+  for (const widget of previous) host.removeWidget?.(widget);
   state[key] = build();
   keepPreviewsLast(host);
-  host.setSize?.(host.computeSize?.() ?? host.size);
+  // Only grow, and only when there is something of ours: a subgraph node keeps the size the
+  // user gave it (it was reset to the minimum on every workflow load before 1.9.1).
+  if (previous.length || state[key].length) growToFit(host);
   host.setDirtyCanvas?.(true, true);
 }
 

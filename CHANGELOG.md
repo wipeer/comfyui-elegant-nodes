@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- **Fix:** subgraph nodes no longer shrink to their minimum size when a workflow is loaded or you
+  switch workflow tabs (this hit every subgraph node, whether or not it contained Elegant nodes).
+  Subgraph nodes that do show Elegant widgets now only grow to fit them. The Multi Preview node
+  also keeps its saved height on load.
+
 ## 1.9.0
 
 - All nodes moved from the **utilities → elegant** category to a top-level **elegant** one.

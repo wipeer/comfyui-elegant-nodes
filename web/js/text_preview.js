@@ -253,7 +253,7 @@ function setupModeHints(node) {
   const find = (name) => node.widgets?.find((w) => w.name === name);
   const mode = find("mode");
   if (!mode || !find("index")) return;
-  const apply = () => {
+  const apply = (resize = true) => {
     const concat = mode.value !== "switch";
     const shown = {
       delimiter: concat,
@@ -273,14 +273,15 @@ function setupModeHints(node) {
       const widget = find(name);
       if (widget) widget.disabled = !concat;
     }
-    node.setSize?.([node.size[0], node.computeSize?.()[1] ?? node.size[1]]);
+    // Not when a workflow loads: the node keeps the height it was saved with.
+    if (resize) node.setSize?.([node.size[0], node.computeSize?.()[1] ?? node.size[1]]);
     node.setDirtyCanvas?.(true, true);
   };
   for (const name of ["mode", "use_prefix", "use_suffix"]) {
     const widget = find(name);
-    if (widget) chainMethod(widget, "callback", apply);
+    if (widget) chainMethod(widget, "callback", () => apply());
   }
-  chainMethod(node, "onConfigure", apply);
+  chainMethod(node, "onConfigure", () => apply(false));
   apply();
 }
 
