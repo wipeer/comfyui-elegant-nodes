@@ -289,7 +289,7 @@ const HELP = {
 <table>
 <tr><td><b>width</b>, <b>height</b></td><td>The two numbers (INT), e.g. into Empty Latent Image.</td></tr>
 <tr><td><b>resolution</b></td><td>Both together, as a new <b>RESOLUTION</b> type that only this node's <b>resolution</b> input accepts. It lets one link carry width and height.</td></tr>
-<tr><td><b>text</b></td><td>The size as text, like <code>1024x1024</code> (STRING), for file names or prompts.</td></tr>
+<tr><td><b>text</b></td><td>The size as text, like <code>1024x1024</code> (STRING), for file names or prompts. Optional: it only shows when <b>text_output</b> (advanced, click the <b>⚙</b>) is on. Switching it off removes the output and its links.</td></tr>
 </table>
 <p>If neither a resolution nor both a width and a height can be worked out, the run stops with a message. A width or height of 0 or less is refused.</p>`,
   },

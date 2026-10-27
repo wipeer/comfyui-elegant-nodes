@@ -299,8 +299,9 @@ Width and height on one link, in any combination.
 | **width**, **height** | Connect a number; it replaces that side of the resolution. |
 | **resolution** | Type a size or connect text or a **RESOLUTION**. Read leniently: `1024x1024`, `1024 x 1024`, `1024 1024`, `1024, 1024`, `1024*1024`, `(1024, 1024)`; one number is a square. `16:9` is refused (it's a ratio, not a size). |
 
-Outputs `width` and `height` (INT), `resolution` (a new **RESOLUTION** type carrying both, accepted
-by this node's `resolution` input) and `text` (like `1024x1024`). With nothing connected it turns
+Outputs `width` and `height` (INT) and `resolution` (a new **RESOLUTION** type carrying both, accepted
+by this node's `resolution` input). A `text` output (like `1024x1024`) is optional: switch **text_output**
+on (advanced, ⚙) to show it. With nothing connected it turns
 `1024x1024` into 1024 and 1024.
 
 ### Elegant Load Image (from Folder)

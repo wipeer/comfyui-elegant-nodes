@@ -43,16 +43,30 @@ class ElegantResolutionReroute(io.ComfyNode):
                     ),
                     types=[ResolutionType],
                 ),
+                # Advanced: web/js/resolution_reroute.js shows the text output only when this is on.
+                io.Boolean.Input(
+                    "text_output",
+                    default=False,
+                    optional=True,
+                    label_on="on",
+                    label_off="off",
+                    advanced=True,
+                    tooltip="Show the text output (the size as text, like 1024x1024).",
+                ),
             ],
             outputs=[
                 io.Int.Output(display_name="width"),
                 io.Int.Output(display_name="height"),
                 ResolutionType.Output(display_name="resolution"),
-                io.String.Output(display_name="text", tooltip='The size as text, like "1024x1024".'),
+                io.String.Output(
+                    display_name="text",
+                    tooltip='The size as text, like "1024x1024". Switch it on with text_output (advanced, ⚙).',
+                ),
             ],
         )
 
     @classmethod
-    def execute(cls, width=None, height=None, resolution=None) -> io.NodeOutput:
+    def execute(cls, width=None, height=None, resolution=None, text_output: bool = False) -> io.NodeOutput:
+        # text_output only shows or hides the text output on the node; the text is always made.
         size = resolve_resolution(width, height, resolution)
         return io.NodeOutput(size.width, size.height, size, str(size))

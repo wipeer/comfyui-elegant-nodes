@@ -9,7 +9,8 @@
   **step**, advanced inputs: ⚙); outputs `int` and `float`.
 - **New: Elegant Resolution Reroute**: width and height on one link. Takes a width and a height, or a
   resolution typed or connected as text (`1024x1024`, `1024 x 1024`, `1024 1024`, `1024, 1024`) or as
-  the new **RESOLUTION** type; outputs `width`, `height`, `resolution` and `text`.
+  the new **RESOLUTION** type; outputs `width`, `height` and `resolution`, and `text` when the advanced
+  **text_output** switch is on.
 - **Fix:** the preview text box no longer grows the node back after you made it smaller. It only
   enlarges the node for a new result (or when you switch `wrap_text`), not when a workflow loads
   (switching tabs) or when you resize it. Applies to all preview nodes, also on subgraph nodes.
