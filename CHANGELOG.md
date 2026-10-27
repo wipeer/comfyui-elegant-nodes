@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+- **Fix:** bypassing a node that feeds an Elegant node's any-type input (`source`, `source_N`, math
+  values), such as a text, number or loader node with no inputs of its own, no longer fails with
+  `SlotIndexError: No input found for flattened id …` when the workflow runs. The link is simply
+  dropped, as for other inputs. (ComfyUI's frontend skips the type check for any-type inputs and
+  takes input 0 of the bypassed node even when it has none.)
+
 ## 1.9.1
 
 - **Elegant Simple Reroute** names its output after the type that comes through (`LATENT`, `MODEL`, …),
