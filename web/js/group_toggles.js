@@ -127,9 +127,11 @@ const settingWidgets = (node) => (node.widgets ?? []).filter((w) => !w.__elegant
  * room for any widget that isn't `hidden`, so there the settings are hidden (and the node
  * resized) while the ⚙ is off, unless ComfyUI's "always show advanced inputs" is on.
  */
+const vueNodes = () => !!app.extensionManager?.setting?.get?.("Comfy.VueNodes.Enabled");
+
 function syncAdvanced(node) {
   const setting = app.extensionManager?.setting;
-  const vue = !!setting?.get?.("Comfy.VueNodes.Enabled");
+  const vue = vueNodes();
   const show = vue || !!node.showAdvanced || !!setting?.get?.("Comfy.Node.AlwaysShowAdvancedWidgets");
   if (node.__elegantShowAdvanced === show) return;
   node.__elegantShowAdvanced = show;
@@ -166,13 +168,26 @@ function onToggleClicked(node, widget, value) {
   applyToggle(node, widget, value);
 }
 
+/**
+ * The Vue nodes view draws a switch when the toggle has no on / off text (and a yes / no button
+ * pair when it has); the classic canvas would write true / false, so it gets on / off.
+ */
+function syncToggleText(widget) {
+  widget.options ??= {};
+  if (vueNodes()) {
+    delete widget.options.on;
+    delete widget.options.off;
+  } else {
+    widget.options.on = "on";
+    widget.options.off = "off";
+  }
+}
+
 function addToggle(node, group) {
-  const widget = node.addWidget("toggle", `group:${group.id}`, false, (value) => onToggleClicked(node, widget, value), {
-    on: "yes",
-    off: "no",
-  });
+  const widget = node.addWidget("toggle", `group:${group.id}`, false, (value) => onToggleClicked(node, widget, value));
   frontendOnly(widget);
   widget.__elegantGroup = group;
+  syncToggleText(widget);
   return widget;
 }
 

@@ -10,7 +10,7 @@ function groupHelp({ name, original, verb, Verb, off }) {
     title: `Elegant Group ${name}`,
     html: `
 <p>One toggle per group, to ${verb} or enable everything inside the group at once. A port of <b>${original}</b> from rgthree-comfy that also works in the Vue nodes view.</p>
-<p>Add it and it lists the groups of the graph it sits in (inside a subgraph: the groups of that subgraph). <b>yes</b> enables every node inside the group, <b>no</b> ${off} them, nodes inside subgraph nodes too. The toggles follow changes made elsewhere, live. It never runs: it isn't part of the prompt.</p>
+<p>Add it and it lists the groups of the graph it sits in (inside a subgraph: the groups of that subgraph). switching it <b>on</b> enables every node inside the group, <b>off</b> ${off} them, nodes inside subgraph nodes too. The toggles follow changes made elsewhere, live. It never runs: it isn't part of the prompt.</p>
 <h3>Settings</h3>
 <p>Advanced: click the <b>⚙</b> in the title to show them.</p>
 <table>
@@ -29,7 +29,7 @@ function groupHelp({ name, original, verb, Verb, off }) {
 <h3>Good to know</h3>
 <ul>
 <li>A node counts as inside a group when its centre is. A node in two overlapping groups follows whichever toggle was used last.</li>
-<li>A group with no nodes shows <b>no</b>.</li>
+<li>A group with no nodes shows as <b>off</b>.</li>
 <li>The node never changes itself, even if it sits inside a group.</li>
 </ul>`,
   };

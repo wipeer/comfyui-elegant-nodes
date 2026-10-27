@@ -1,7 +1,10 @@
 # Changelog
 
-## Unreleased
+## 1.9.1
 
+- **Elegant Simple Reroute** names its output after the type that comes through (`LATENT`, `MODEL`, …),
+  when the node is wide enough to show it.
+- **Group Bypasser / Muter**: the group toggles are switches (in the classic canvas: on / off).
 - **New: Elegant Group Muter**: the Group Bypasser with mute instead of bypass; a port of rgthree's
   Fast Groups Muter (frontend only, works in the Vue nodes view).
 - **Fix:** subgraph nodes no longer shrink to their minimum size when a workflow is loaded or you

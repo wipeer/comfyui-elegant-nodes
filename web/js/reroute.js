@@ -7,7 +7,11 @@ import { chainMethod, onNodeCreated } from "./common.js";
 const REROUTE_NODE_TYPE = "ElegantReroute";
 
 const MIN_SIZE = [34, 26];
-const DEFAULT_SIZE = [100, 26];
+const DEFAULT_SIZE = [120, 26];
+
+// Room the type name needs: padding plus about this much per character (14px text).
+const LABEL_PADDING = 24;
+const LABEL_CHAR_WIDTH = 7.5;
 
 // The Vue nodes view gives every node a minimum width of 225px (--min-node-width) and
 // doesn't expose the node type in the DOM. Reroutes are tagged, and a rule with !important
@@ -17,16 +21,26 @@ const VUE_STYLE = `[${VUE_ATTRIBUTE}] { --min-node-width: ${MIN_SIZE[0]}px !impo
 
 const liveReroutes = new Set();
 
-// The slots carry no names: the title is the label.
-function hideSlotLabels(node) {
-  for (const slot of [...(node.inputs ?? []), ...(node.outputs ?? [])]) slot.label = " ";
+// The input has no name; the output is named after the type that comes through (LATENT,
+// MODEL, ...), or nothing while nothing is connected or the node is too small to hold it.
+function syncSlotLabels(node) {
+  for (const input of node.inputs ?? []) input.label = " ";
+  for (const output of node.outputs ?? []) {
+    const type = output.type && output.type !== "*" ? String(output.type) : "";
+    const fits = node.size[0] >= LABEL_PADDING + LABEL_CHAR_WIDTH * type.length;
+    const label = type && fits ? type : " ";
+    if (output.label === label) continue;
+    output.label = label;
+    node.setDirtyCanvas?.(true, true);
+  }
 }
 
 function setupReroute(node) {
   node.computeSize = () => [...MIN_SIZE]; // the smallest size the node can be resized to
   node.setSize?.([...DEFAULT_SIZE]);
-  hideSlotLabels(node);
-  chainMethod(node, "onConfigure", hideSlotLabels);
+  syncSlotLabels(node);
+  chainMethod(node, "onConfigure", syncSlotLabels);
+  chainMethod(node, "onConnectionsChange", syncSlotLabels);
   chainMethod(node, "onRemoved", () => liveReroutes.delete(node));
   liveReroutes.add(node);
 }
@@ -41,6 +55,7 @@ function ensureVueStyle() {
 
 // Vue may reuse an element for another node, so tags are set and cleared on every pass.
 function tagVueNodes() {
+  for (const node of liveReroutes) syncSlotLabels(node); // the type can change from upstream
   const graph = app.canvas?.graph ?? app.graph;
   const wanted = new Set();
   for (const node of liveReroutes) {

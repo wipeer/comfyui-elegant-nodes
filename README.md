@@ -233,15 +233,16 @@ type of what's connected, so a `MODEL` stays a `MODEL` (same link colour, same t
 
 - **Rename** it by double-clicking the title.
 - **Resize** it with the corner handle, down to a small square (the title is cut off to fit).
-  The input and output names are hidden; the title is the label.
+  The input has no name; the output is named after the type that comes through (`LATENT`,
+  `MODEL`, …) once something is connected, if the node is wide enough to show it.
 - In the Vue nodes view, Elegant Simple Reroutes alone are allowed below the 225 px minimum width
   ComfyUI gives other nodes.
 
 ### Elegant Group Bypasser
 
 A port of **Fast Groups Bypasser** from [rgthree-comfy](https://github.com/rgthree/rgthree-comfy)
-(MIT). Add it and it lists the groups of the graph it sits in, one toggle each: **yes** enables
-every node inside the group, **no** bypasses them (nodes in subgraph nodes too). The toggles
+(MIT). Add it and it lists the groups of the graph it sits in, one switch each: **on** enables
+every node inside the group, **off** bypasses them (nodes in subgraph nodes too). The toggles
 follow changes made elsewhere, live. It never runs: it isn't part of the prompt.
 
 The original draws its rows on the canvas, which the Vue nodes view can't show. Here the rows
@@ -263,9 +264,9 @@ properties. Frontend only, so it isn't in `node_list.json`.
 
 ### Elegant Group Muter
 
-The [Elegant Group Bypasser](#elegant-group-bypasser) with **mute** instead of **bypass**: **no**
+The [Elegant Group Bypasser](#elegant-group-bypasser) with **mute** instead of **bypass**: **off**
 mutes every node inside the group (they don't run, and what is connected after them gets nothing),
-**yes** enables them again. Same settings, right-click menu (**Mute all**, **Enable all**,
+**on** enables them again. Same settings, right-click menu (**Mute all**, **Enable all**,
 **Toggle all**, **Go to group**) and help. A port of **Fast Groups Muter** from rgthree-comfy.
 
 Bypass lets values pass through a node unchanged; mute stops the node and everything that
