@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.10.0
 
 - **Elegant Resolution Selector** also outputs **resolution** (the new RESOLUTION type: width and height on
   one link, for the Elegant Resolution Reroute). It is the third output, so workflows saved before keep
