@@ -70,6 +70,9 @@ they're listed with the workaround in place, so they can be revisited when Comfy
       control instead of the random/fixed switch; add Load Image from Folder).
 - [ ] Load Image (from Folder): optional `mask` output from the alpha channel, and a sort option
       (name / date).
+- [ ] Elegant Reroute with an input and an output on each of the four sides (the Vue nodes view
+      only draws slots on the left and right).
+- [ ] Elegant Group Muter (the Group Bypasser with mute instead of bypass).
 
 ## Release checklist
 

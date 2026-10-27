@@ -49,9 +49,10 @@ the rest follows. Demote them and it goes away.
 | [**Elegant Load Image (from Folder)**](#elegant-load-image-from-folder) | The images in a folder, optionally filtered (`*train_??5.*`), plus each file's name (or name without extension, or full path). | List of loaded files |
 | [**Elegant Random Number**](#elegant-random-number) | A seeded random int or float between min and max: ComfyUI's standard seed plus the seed buttons. | Seed buttons and value, per copy |
 | [**Elegant Reroute**](#elegant-reroute) | Passes any value through unchanged. Rename it, resize it down to a small square. | None needed |
+| [**Elegant Group Bypasser**](#elegant-group-bypasser) | One toggle per group to bypass or enable everything inside it. A port of rgthree's Fast Groups Bypasser that also works in the Vue nodes view. | Lists the groups of its own (sub)graph |
 
 All nodes are in the **utilities → elegant** category. Click the cyan **?** in a node's title
-for detailed help on that node (Elegant Reroute has none: it stays bare).
+for detailed help on that node (Elegant Reroute and Elegant Group Bypasser have none).
 
 ## Installation
 
@@ -234,6 +235,30 @@ type of what's connected, so a `MODEL` stays a `MODEL` (same link colour, same t
   The input and output names are hidden; the title is the label.
 - In the Vue nodes view, Elegant Reroutes alone are allowed below the 225 px minimum width
   ComfyUI gives other nodes.
+
+### Elegant Group Bypasser
+
+A port of **Fast Groups Bypasser** from [rgthree-comfy](https://github.com/rgthree/rgthree-comfy)
+(MIT). Add it and it lists the groups of the graph it sits in, one toggle each: **yes** enables
+every node inside the group, **no** bypasses them (nodes in subgraph nodes too). The toggles
+follow changes made elsewhere, live. It never runs: it isn't part of the prompt.
+
+The original draws its rows on the canvas, which the Vue nodes view can't show. Here the rows
+are ordinary widgets, so it works in both views.
+
+| Setting | What it does |
+|---------|--------------|
+| **match_title** | Only list groups whose title matches (text or regular expression, case ignored). |
+| **match_colors** | Only list groups of these colours: names (`red`, `pale_blue`) or hex codes (`#a4d399`), comma separated. |
+| **sort** | `position` (top to bottom, then left to right) or `alphanumeric`. |
+| **restriction** | `default`: any number on. `max one`: switching a group on switches the others off. `always one`: also keeps one group on. Only enforced by clicks on this node. |
+
+Right-click the node for **Bypass all**, **Enable all**, **Toggle all** and **Go to group: …**
+(the original's arrow button).
+
+Differences from the original: only groups in the node's own graph are listed (no option to
+include other subgraphs), no custom sort alphabet, and the settings are widgets rather than
+properties. Frontend only, so it isn't in `node_list.json`.
 
 ### Elegant Load Image (from Folder)
 
