@@ -1,8 +1,7 @@
-// Elegant Group Bypasser and Elegant Group Muter: one toggle per group, to bypass (or mute)
-// and enable all nodes inside it. One implementation, two variants.
+// Elegant Group Bypasser: one toggle per group, to bypass or enable all nodes inside it.
 //
-// A port of "Fast Groups Bypasser" and "Fast Groups Muter" from rgthree-comfy (MIT, Copyright
-// (c) 2023 Regis Gaughan, III): https://github.com/rgthree/rgthree-comfy. The originals paint their rows on
+// A port of "Fast Groups Bypasser" from rgthree-comfy (MIT, Copyright (c) 2023 Regis
+// Gaughan, III): https://github.com/rgthree/rgthree-comfy. The original paints its rows on
 // the canvas, which the Vue nodes view cannot draw. Here the rows are ordinary toggle
 // widgets and the settings ordinary widgets, so it works in both the classic canvas and
 // the Vue nodes view. Frontend only: it never enters the prompt.
@@ -12,29 +11,13 @@ import { markAdvancedForCanvas } from "./advanced_toggle.js";
 import { frontendOnly } from "./common.js";
 import { addCanvasButtons } from "./title_buttons.js";
 
+const NODE_TYPE = "ElegantGroupBypasser";
+const TITLE = "Elegant Group Bypasser";
 const CATEGORY = "elegant";
+const DESCRIPTION = "One toggle per group in the graph, to bypass or enable all nodes inside it.";
 
 const MODE_ON = 0; // LiteGraph.ALWAYS
-
-/** The two nodes: they differ only in the mode "no" puts nodes in, and in wording. */
-const VARIANTS = [
-  {
-    type: "ElegantGroupBypasser",
-    title: "Elegant Group Bypasser",
-    verb: "bypass",
-    offMode: 4, // bypass
-    description: "One toggle per group in the graph, to bypass or enable all nodes inside it.",
-    aliases: ["group", "groups", "bypass", "toggle groups", "fast groups bypasser", "rgthree"],
-  },
-  {
-    type: "ElegantGroupMuter",
-    title: "Elegant Group Muter",
-    verb: "mute",
-    offMode: 2, // LiteGraph.NEVER: muted
-    description: "One toggle per group in the graph, to mute or enable all nodes inside it.",
-    aliases: ["group", "groups", "mute", "toggle groups", "fast groups muter", "rgthree"],
-  },
-];
+const MODE_OFF = 4; // bypass
 
 const SORTS = ["position", "alphanumeric"]; // alphanumeric: numbers by value, so 18 comes before 100
 const RESTRICTIONS = ["default", "max one", "always one"];
@@ -52,7 +35,7 @@ const liveNodes = new Set();
 // Groups hold nodes, other groups and link reroutes; only nodes have a mode.
 const isNode = (item) => typeof item?.mode === "number" && "type" in item;
 
-/** The nodes inside a group, without the toggling node `self`. */
+/** The nodes inside a group, without the bypasser `self`. */
 function nodesIn(group, self) {
   return [...(group._children ?? [])].filter((item) => isNode(item) && item !== self);
 }
@@ -145,11 +128,11 @@ function syncAdvanced(node) {
 const isToggle = (widget) => !!widget.__elegantGroup;
 const toggles = (node) => (node.widgets ?? []).filter(isToggle);
 
-/** Switches off (false: bypass or mute) or enables (true) the nodes in the toggle's group, and shows it. */
+/** Bypasses (false) or enables (true) the nodes in the toggle's group, and shows it. */
 function applyToggle(node, widget, active) {
   const group = widget.__elegantGroup;
   group.recomputeInsideNodes?.();
-  setMode(nodesIn(group, node), active ? MODE_ON : node.__variant.offMode);
+  setMode(nodesIn(group, node), active ? MODE_ON : MODE_OFF);
   widget.value = active;
   node.graph?.setDirtyCanvas?.(true, false);
 }
@@ -244,7 +227,7 @@ function setAll(node, mode) {
   const all = toggles(node);
   all.forEach((widget, index) => {
     let active;
-    if (mode === "off") active = setting(node, SETTINGS.restriction) === "always one" && index === 0;
+    if (mode === "bypass") active = setting(node, SETTINGS.restriction) === "always one" && index === 0;
     else if (mode === "enable") active = setting(node, SETTINGS.restriction) === "default" || index === 0;
     else active = !widget.value;
     applyToggle(node, widget, active);
@@ -264,7 +247,7 @@ function goToGroup(group) {
 function extraMenuOptions(node, options) {
   options.push(
     null,
-    { content: `${node.__variant.verb[0].toUpperCase()}${node.__variant.verb.slice(1)} all`, callback: () => setAll(node, "off") },
+    { content: "Bypass all", callback: () => setAll(node, "bypass") },
     { content: "Enable all", callback: () => setAll(node, "enable") },
     { content: "Toggle all", callback: () => setAll(node, "toggle") }
   );
@@ -281,19 +264,18 @@ function extraMenuOptions(node, options) {
 // Node
 // ---------------------------------------------------------------------------
 
-function registerNode(variant) {
+function registerNode() {
   const { LiteGraph, LGraphNode } = globalThis;
   if (!LiteGraph || !LGraphNode) return;
 
-  class ElegantGroupToggles extends LGraphNode {
-    static type = variant.type;
-    static title = variant.title;
+  class ElegantGroupBypasser extends LGraphNode {
+    static type = NODE_TYPE;
+    static title = TITLE;
     static category = CATEGORY;
-    static description = variant.description;
+    static description = DESCRIPTION;
 
-    constructor(title = variant.title) {
+    constructor(title = TITLE) {
       super(title);
-      this.__variant = variant;
       this.isVirtualNode = true; // frontend only: not part of the prompt
       this.serialize_widgets = true; // saves the four settings; the group toggles opt out themselves
       this.properties ??= {};
@@ -317,7 +299,7 @@ function registerNode(variant) {
       // with a Python definition get the classic canvas wiring from their extensions; this one
       // is frontend only, so it does the same itself.
       markAdvancedForCanvas(this);
-      addCanvasButtons(this, variant.type);
+      addCanvasButtons(this, NODE_TYPE);
       this.size = [260, this.computeSize()[1]];
       liveNodes.add(this);
       setTimeout(() => refresh(this), 0);
@@ -345,23 +327,22 @@ function registerNode(variant) {
     }
   }
 
-  LiteGraph.registerNodeType(variant.type, ElegantGroupToggles);
-  ElegantGroupToggles.category = CATEGORY;
+  LiteGraph.registerNodeType(NODE_TYPE, ElegantGroupBypasser);
+  ElegantGroupBypasser.category = CATEGORY;
 }
 
 app.registerExtension({
-  name: "elegant.group_toggles",
+  name: "elegant.group_bypasser",
   registerCustomNodes() {
-    VARIANTS.forEach(registerNode);
+    registerNode();
   },
-  // The Vue app lists frontend-only nodes by their type id; give these their titles.
+  // The Vue app lists frontend-only nodes by their type id; give this one its title.
   beforeRegisterVueAppNodeDefs(nodeDefs) {
     for (const def of nodeDefs) {
-      const variant = VARIANTS.find((v) => v.type === def.name);
-      if (!variant) continue;
-      def.display_name = variant.title;
-      def.description = variant.description;
-      def.search_aliases = variant.aliases;
+      if (def.name !== NODE_TYPE) continue;
+      def.display_name = TITLE;
+      def.description = DESCRIPTION;
+      def.search_aliases = ["group", "groups", "bypass", "toggle groups", "fast groups bypasser", "rgthree"];
     }
   },
 });

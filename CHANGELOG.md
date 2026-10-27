@@ -2,8 +2,6 @@
 
 ## Unreleased
 
-- **New: Elegant Group Muter**: the Group Bypasser with mute instead of bypass; a port of rgthree's
-  Fast Groups Muter (frontend only, works in the Vue nodes view).
 - **Fix:** subgraph nodes no longer shrink to their minimum size when a workflow is loaded or you
   switch workflow tabs (this hit every subgraph node, whether or not it contained Elegant nodes).
   Subgraph nodes that do show Elegant widgets now only grow to fit them. The Multi Preview node
