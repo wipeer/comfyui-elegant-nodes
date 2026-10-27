@@ -1,6 +1,6 @@
 // Shared helpers for the Elegant nodes' frontend code.
 
-/** Node ids: as defined in ../../nodes/*.py, plus the frontend-only group bypasser. */
+/** Node ids: as defined in ../../nodes/*.py, plus the frontend-only group bypasser and muter. */
 export const NODE_IDS = {
   seed: "ElegantSeed",
   resolutionSelector: "ElegantResolutionSelector",
@@ -10,6 +10,7 @@ export const NODE_IDS = {
   randomNumber: "ElegantRandomNumber",
   loadImageFromFolder: "ElegantLoadImageFromFolder",
   groupBypasser: "ElegantGroupBypasser",
+  groupMuter: "ElegantGroupMuter",
 };
 
 /** Runs `after(this, result, args)` after `object[name](...args)`, keeping the original. */

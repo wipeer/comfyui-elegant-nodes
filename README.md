@@ -50,6 +50,7 @@ the rest follows. Demote them and it goes away.
 | [**Elegant Random Number**](#elegant-random-number) | A seeded random int or float between min and max: ComfyUI's standard seed plus the seed buttons. | Seed buttons and value, per copy |
 | [**Elegant Simple Reroute**](#elegant-simple-reroute) | Passes any value through unchanged. Rename it, resize it down to a small square. | None needed |
 | [**Elegant Group Bypasser**](#elegant-group-bypasser) | One toggle per group to bypass or enable everything inside it. A port of rgthree's Fast Groups Bypasser that also works in the Vue nodes view. | Lists the groups of its own (sub)graph |
+| [**Elegant Group Muter**](#elegant-group-muter) | The Group Bypasser with mute instead of bypass. A port of rgthree's Fast Groups Muter. | Lists the groups of its own (sub)graph |
 
 All nodes are in the top-level **elegant** category. Click the cyan **?** in a node's title
 for detailed help on that node (Elegant Simple Reroute has none: it stays bare).
@@ -259,6 +260,16 @@ Right-click the node for **Bypass all**, **Enable all**, **Toggle all** and **Go
 Differences from the original: only groups in the node's own graph are listed (no option to
 include other subgraphs), no custom sort alphabet, and the settings are widgets rather than
 properties. Frontend only, so it isn't in `node_list.json`.
+
+### Elegant Group Muter
+
+The [Elegant Group Bypasser](#elegant-group-bypasser) with **mute** instead of **bypass**: **no**
+mutes every node inside the group (they don't run, and what is connected after them gets nothing),
+**yes** enables them again. Same settings, right-click menu (**Mute all**, **Enable all**,
+**Toggle all**, **Go to group**) and help. A port of **Fast Groups Muter** from rgthree-comfy.
+
+Bypass lets values pass through a node unchanged; mute stops the node and everything that
+depends only on it. Pick whichever the group needs.
 
 ### Elegant Load Image (from Folder)
 

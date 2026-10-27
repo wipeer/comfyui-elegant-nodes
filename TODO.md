@@ -72,7 +72,6 @@ they're listed with the workaround in place, so they can be revisited when Comfy
       (name / date).
 - [ ] Elegant Simple Reroute with an input and an output on each of the four sides (the Vue nodes view
       only draws slots on the left and right).
-- [ ] Elegant Group Muter (the Group Bypasser with mute instead of bypass).
 
 ## Release checklist
 
