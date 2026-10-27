@@ -6,5 +6,7 @@
   "ElegantAnyMathMultiPreview": "Evaluate and preview math expressions",
   "ElegantRandomNumber": "Seeded random integer or float",
   "ElegantLoadImageFromFolder": "Load images from a folder",
-  "ElegantReroute": "Minimal pass-through for any value"
+  "ElegantReroute": "Minimal pass-through for any value",
+  "ElegantResolutionReroute": "Width, height and resolution in any combination",
+  "ElegantSlider": "Slider with a range you set"
 }

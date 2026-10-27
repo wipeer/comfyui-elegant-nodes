@@ -49,6 +49,8 @@ the rest follows. Demote them and it goes away.
 | [**Elegant Load Image (from Folder)**](#elegant-load-image-from-folder) | The images in a folder, optionally filtered (`*train_??5.*`), plus each file's name (or name without extension, or full path). | List of loaded files |
 | [**Elegant Random Number**](#elegant-random-number) | A seeded random int or float between min and max: ComfyUI's standard seed plus the seed buttons. | Seed buttons and value, per copy |
 | [**Elegant Simple Reroute**](#elegant-simple-reroute) | Passes any value through unchanged. Rename it, resize it down to a small square. | None needed |
+| [**Elegant Slider**](#elegant-slider) | ComfyUI's own slider with a range you set on the node (min, max, step); outputs int and float. | None needed |
+| [**Elegant Resolution Reroute**](#elegant-resolution-reroute) | Width and height on one link: take a width and height, or a resolution like `1024 x 1024`, and give both back plus a RESOLUTION and its text. | None needed |
 | [**Elegant Group Bypasser**](#elegant-group-bypasser) | One toggle per group to bypass or enable everything inside it. A port of rgthree's Fast Groups Bypasser that also works in the Vue nodes view. | Lists the groups of its own (sub)graph |
 | [**Elegant Group Muter**](#elegant-group-muter) | The Group Bypasser with mute instead of bypass. A port of rgthree's Fast Groups Muter. | Lists the groups of its own (sub)graph |
 
@@ -271,6 +273,34 @@ mutes every node inside the group (they don't run, and what is connected after t
 
 Bypass lets values pass through a node unchanged; mute stops the node and everything that
 depends only on it. Pick whichever the group needs.
+
+### Elegant Slider
+
+A slider whose range you set yourself. ComfyUI's number boxes have a fixed range; here **min** and
+**max** are fields on the node and the slider follows them.
+
+| Control | What it does |
+|---------|--------------|
+| **value** | The slider. Its range is **min** to **max**. |
+| **min**, **max** | Smallest and largest value. A value outside a new range is moved into it; a **min** above **max** is swapped. |
+| **step** | Size of one step: `1` whole numbers, `0.01` hundredths. `0`: any value. Steps count from **min** (0 to 10 in steps of 3: 0, 3, 6, 9). |
+
+Outputs `int` (rounded) and `float`. The range is also enforced when the workflow runs, so a value
+outside it sent through the API is moved into the range. If you promote **value** to a subgraph
+node, the slider there keeps the range it had when promoted.
+
+### Elegant Resolution Reroute
+
+Width and height on one link, in any combination.
+
+| Input | What it does |
+|-------|--------------|
+| **width**, **height** | Connect a number; it replaces that side of the resolution. |
+| **resolution** | Type a size or connect text or a **RESOLUTION**. Read leniently: `1024x1024`, `1024 x 1024`, `1024 1024`, `1024, 1024`, `1024*1024`, `(1024, 1024)`; one number is a square. `16:9` is refused (it's a ratio, not a size). |
+
+Outputs `width` and `height` (INT), `resolution` (a new **RESOLUTION** type carrying both, accepted
+by this node's `resolution` input) and `text` (like `1024x1024`). With nothing connected it turns
+`1024x1024` into 1024 and 1024.
 
 ### Elegant Load Image (from Folder)
 

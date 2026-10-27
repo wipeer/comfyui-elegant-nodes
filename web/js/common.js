@@ -11,6 +11,8 @@ export const NODE_IDS = {
   loadImageFromFolder: "ElegantLoadImageFromFolder",
   groupBypasser: "ElegantGroupBypasser",
   groupMuter: "ElegantGroupMuter",
+  slider: "ElegantSlider",
+  resolutionReroute: "ElegantResolutionReroute",
 };
 
 /** Runs `after(this, result, args)` after `object[name](...args)`, keeping the original. */

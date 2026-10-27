@@ -255,6 +255,43 @@ const HELP = {
 
   [NODE_IDS.groupBypasser]: groupHelp({ name: "Bypasser", original: "Fast Groups Bypasser", verb: "bypass", Verb: "Bypass", off: "bypasses" }),
   [NODE_IDS.groupMuter]: groupHelp({ name: "Muter", original: "Fast Groups Muter", verb: "mute", Verb: "Mute", off: "mutes" }),
+
+  [NODE_IDS.slider]: {
+    title: "Elegant Slider",
+    html: `
+<p>ComfyUI's own slider for a number, with the range set on the node: no fixed 0 to 100 like in other nodes.</p>
+<h3>Controls</h3>
+<table>
+<tr><td><b>value</b></td><td>The slider. Drag it, or double-click to type a number. Its range is <b>min</b> to <b>max</b>.</td></tr>
+<tr><td><b>min</b>, <b>max</b></td><td>The smallest and largest value on the slider. Change them and the slider follows; a value outside the new range is moved into it. If <b>min</b> is above <b>max</b> they are swapped.</td></tr>
+<tr><td><b>step</b></td><td>The size of one step: <code>1</code> for whole numbers, <code>0.01</code> for hundredths, <code>0.25</code> for quarters. <code>0</code>: any value. Steps count from <b>min</b>, so 0 to 10 in steps of 3 gives 0, 3, 6, 9.</td></tr>
+</table>
+<h3>Outputs</h3>
+<table>
+<tr><td><b>int</b></td><td>The value rounded to a whole number (INT).</td></tr>
+<tr><td><b>float</b></td><td>The value (FLOAT).</td></tr>
+</table>
+<p>The value is also kept inside the range and on the step when the workflow runs, e.g. when it is sent through the API with a value outside the range.</p>`,
+  },
+
+  [NODE_IDS.resolutionReroute]: {
+    title: "Elegant Resolution Reroute",
+    html: `
+<p>Width and height on <b>one link</b>. Give a width and a height, or a resolution as one piece, and get width, height, the resolution and its text back, whichever way you need them.</p>
+<h3>Inputs</h3>
+<table>
+<tr><td><b>width</b>, <b>height</b></td><td>Connect a number. It replaces that side of the resolution, so a <b>width</b> alone with <code>1024x768</code> in <b>resolution</b> gives 512 x 768 if the width is 512.</td></tr>
+<tr><td><b>resolution</b></td><td>Type a size, or connect a <b>RESOLUTION</b> (from another Elegant Resolution Reroute) or any text. Typed or connected text is read leniently:
+<code>1024x1024</code>, <code>1024 x 1024</code>, <code>1024 1024</code>, <code>1024, 1024</code>, <code>1024*1024</code>, <code>(1024, 1024)</code>. One number is a square: <code>512</code> is 512 x 512. Aspect ratios such as <code>16:9</code> aren't sizes and are refused.</td></tr>
+</table>
+<h3>Outputs</h3>
+<table>
+<tr><td><b>width</b>, <b>height</b></td><td>The two numbers (INT), e.g. into Empty Latent Image.</td></tr>
+<tr><td><b>resolution</b></td><td>Both together, as a new <b>RESOLUTION</b> type that only this node's <b>resolution</b> input accepts. It lets one link carry width and height.</td></tr>
+<tr><td><b>text</b></td><td>The size as text, like <code>1024x1024</code> (STRING), for file names or prompts.</td></tr>
+</table>
+<p>If neither a resolution nor both a width and a height can be worked out, the run stops with a message. A width or height of 0 or less is refused.</p>`,
+  },
 };
 
 // ---------------------------------------------------------------------------
