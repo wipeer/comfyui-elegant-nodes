@@ -1,9 +1,7 @@
 from comfy_api.latest import io
 
 from ..core.resolution import resolve_resolution
-
-# A width and a height on one link: the value is a core.resolution.Resolution.
-ResolutionType = io.Custom("RESOLUTION")
+from .types import ResolutionType
 
 
 class ElegantResolutionReroute(io.ComfyNode):

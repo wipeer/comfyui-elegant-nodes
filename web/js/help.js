@@ -81,7 +81,7 @@ const HELP = {
 <tr><td>3:2</td><td>1248 × 832</td></tr><tr><td>16:9</td><td>1360 × 768</td></tr><tr><td>21:9</td><td>1568 × 672</td></tr>
 </table>
 <h3>Outputs</h3>
-<p><code>width</code> and <code>height</code> (INT), e.g. into Empty Latent Image.</p>`,
+<p><code>width</code> and <code>height</code> (INT), e.g. into Empty Latent Image, and <code>resolution</code>: both together as a RESOLUTION on one link, for the <b>Elegant Resolution Reroute</b> (it turns it back into width, height and text).</p>`,
   },
 
   [NODE_IDS.anyToStringPreview]: {

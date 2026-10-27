@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- **Elegant Resolution Selector** also outputs **resolution** (the new RESOLUTION type: width and height on
+  one link, for the Elegant Resolution Reroute). It is the third output, so workflows saved before keep
+  their links.
 - **New: Elegant Slider**: ComfyUI's own slider with a range you set on the node (**min**, **max**,
   **step**); outputs `int` and `float`.
 - **New: Elegant Resolution Reroute**: width and height on one link. Takes a width and a height, or a

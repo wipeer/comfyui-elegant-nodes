@@ -1,10 +1,11 @@
 from comfy_api.latest import io
 
-from ..core.resolution import ASPECT_RATIOS, ROUND_TO_OPTIONS, compute_resolution
+from ..core.resolution import ASPECT_RATIOS, ROUND_TO_OPTIONS, Resolution, compute_resolution
+from .types import ResolutionType
 
 
 class ElegantResolutionSelector(io.ComfyNode):
-    """Width and height from an aspect ratio. The live result line is in web/js/resolution_selector.js."""
+    """Width, height and RESOLUTION from an aspect ratio. The live result line is in web/js/resolution_selector.js."""
 
     @classmethod
     def define_schema(cls):
@@ -49,10 +50,15 @@ class ElegantResolutionSelector(io.ComfyNode):
             outputs=[
                 io.Int.Output(display_name="width"),
                 io.Int.Output(display_name="height"),
+                # Added after width and height, as the last output, so workflows saved before keep their links.
+                ResolutionType.Output(
+                    display_name="resolution",
+                    tooltip="Width and height on one link, for the Elegant Resolution Reroute.",
+                ),
             ],
         )
 
     @classmethod
     def execute(cls, aspect_ratio: str, orientation: bool, base: int, round_to: str) -> io.NodeOutput:
         width, height = compute_resolution(aspect_ratio, orientation, base, int(round_to))
-        return io.NodeOutput(width, height)
+        return io.NodeOutput(width, height, Resolution(width, height))

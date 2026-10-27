@@ -121,7 +121,8 @@ node. Promote `mode` too to get the switch there; otherwise the switch inside is
 | **round_to** | Width and height become multiples of 8, 16 (default), 32 or 64. 16 suits Flux/SD3, 64 matches SDXL training sizes. |
 | **result** | Read-only, live: e.g. `1360 × 768 · 1.00 MP · 1.77:1` (ratio after rounding; 1 MP = 1024 × 1024). |
 
-Outputs: `width` and `height` (INT), e.g. into Empty Latent Image.
+Outputs: `width` and `height` (INT), e.g. into Empty Latent Image, and `resolution`: both together as a
+**RESOLUTION** on one link, for the [Elegant Resolution Reroute](#elegant-resolution-reroute).
 
 The size is `width = base × √ratio` and `height = base ÷ √ratio`, each rounded. At base 1024
 and round to 16: 1:1 → 1024 × 1024, 4:3 → 1184 × 880, 3:2 → 1248 × 832, 16:9 → 1360 × 768,
