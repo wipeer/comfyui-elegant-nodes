@@ -97,7 +97,11 @@ function addTextWidget(owner, name, getWrapWidget = () => null) {
   let wrap = false;
 
   // Grows the box (and node) to fit the visible lines, up to MAX_HEIGHT; longer text scrolls.
-  const fit = () => {
+  // Only a new result or the wrap switch should do that (`grow`). Restoring saved text or a
+  // resize must not: ComfyUI raises every node to its minimum size after loading a workflow,
+  // so a minimum set from the restored text would undo a node the user made smaller.
+  const fit = (grow = true) => {
+    if (!grow) return;
     const width = textarea.clientWidth || owner.size[0] - 30;
     const charsPerLine = Math.max(10, Math.floor((width - 18) / CHAR_WIDTH));
     const lines = textarea.value
@@ -107,14 +111,16 @@ function addTextWidget(owner, name, getWrapWidget = () => null) {
     growToFit(owner);
   };
 
-  widget.setText = (text, tooltip) => {
+  // `grow` false: the text is restored (workflow load), not a new result.
+  widget.setText = (text, tooltip, grow = true) => {
     widget.value = text;
     textarea.value = text;
     if (tooltip !== undefined) textarea.title = tooltip;
-    fit();
+    fit(grow);
   };
 
   let lastState = "";
+  let lastWrap = null;
   const update = () => {
     wrap = !!getWrapWidget()?.value;
     const state = `${wrap}:${textarea.clientWidth}`;
@@ -122,7 +128,10 @@ function addTextWidget(owner, name, getWrapWidget = () => null) {
     lastState = state;
     textarea.style.whiteSpace = wrap ? "pre-wrap" : "pre";
     textarea.style.overflowWrap = wrap ? "anywhere" : "normal";
-    fit();
+    // Grow only when the wrap switch was flipped, not when the width changed (a resize).
+    const wrapFlipped = lastWrap !== null && lastWrap !== wrap;
+    lastWrap = wrap;
+    fit(wrapFlipped);
   };
   update();
   liveBoxes.add({ owner, widget, update });
@@ -181,7 +190,7 @@ function syncSubgraphNode(host) {
     if (host.widgets?.some((w) => w.name === name)) continue;
     // A node just turned into a subgraph brings along the text it last showed.
     const text = saved?.[path] ?? inner.properties?.[SAVED_TEXT_PROPERTY] ?? "";
-    addTextWidget(host, name, () => wrapWidgetFor(host, inner)).setText(text, inner.title);
+    addTextWidget(host, name, () => wrapWidgetFor(host, inner)).setText(text, inner.title, false);
   }
 }
 
@@ -299,7 +308,7 @@ function setupPreviewNode(node) {
     }
   }, 0);
   // Show the text saved with the workflow until the next run.
-  chainMethod(node, "onConfigure", () => widget.setText(node.properties?.[SAVED_TEXT_PROPERTY] ?? ""));
+  chainMethod(node, "onConfigure", () => widget.setText(node.properties?.[SAVED_TEXT_PROPERTY] ?? "", undefined, false));
 }
 
 app.registerExtension({

@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- **Fix:** the preview text box no longer grows the node back after you made it smaller. It only
+  enlarges the node for a new result (or when you switch `wrap_text`), not when a workflow loads
+  (switching tabs) or when you resize it. Applies to all preview nodes, also on subgraph nodes.
 - **Fix:** bypassing a node that feeds an Elegant node's any-type input (`source`, `source_N`, math
   values), such as a text, number or loader node with no inputs of its own, no longer fails with
   `SlotIndexError: No input found for flattened id …` when the workflow runs. The link is simply
