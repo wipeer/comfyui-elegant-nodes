@@ -283,8 +283,8 @@ A slider whose range you set yourself. ComfyUI's number boxes have a fixed range
 | Control | What it does |
 |---------|--------------|
 | **value** | The slider. Its range is **min** to **max**. |
-| **min**, **max** | Smallest and largest value. A value outside a new range is moved into it; a **min** above **max** is swapped. |
-| **step** | Size of one step: `1` whole numbers, `0.01` hundredths. `0`: any value. Steps count from **min** (0 to 10 in steps of 3: 0, 3, 6, 9). |
+| **min**, **max** | Advanced (⚙). Smallest and largest value. A value outside a new range is moved into it; a **min** above **max** is swapped. |
+| **step** | Advanced (⚙). Size of one step: `1` whole numbers, `0.01` hundredths. `0`: any value. Steps count from **min** (0 to 10 in steps of 3: 0, 3, 6, 9). |
 
 Outputs `int` (rounded) and `float`. The range is also enforced when the workflow runs, so a value
 outside it sent through the API is moved into the range. If you promote **value** to a subgraph

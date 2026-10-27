@@ -2,6 +2,7 @@
 // the node's min, max and step; the Python side keeps the value there for runs from the API.
 
 import { app } from "../../scripts/app.js";
+import { syncClassicAdvanced } from "./advanced_toggle.js";
 import { NODE_IDS, chainMethod, onNodeCreated } from "./common.js";
 
 const FREE_STEP = 0.01; // step 0 (any value): the slider still needs a size for one drag step
@@ -62,6 +63,10 @@ function setupSlider(node) {
   for (const widget of [min, max, step]) chainMethod(widget, "callback", () => apply(true));
   chainMethod(node, "onConfigure", () => apply(false));
   apply(false);
+
+  // The range settings are advanced: the classic canvas needs help hiding them behind the ⚙.
+  chainMethod(node, "onDrawBackground", () => syncClassicAdvanced(node));
+  syncClassicAdvanced(node);
 }
 
 app.registerExtension({

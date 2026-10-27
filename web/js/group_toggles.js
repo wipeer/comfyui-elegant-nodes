@@ -8,7 +8,7 @@
 // the Vue nodes view. Frontend only: it never enters the prompt.
 
 import { app } from "../../scripts/app.js";
-import { markAdvancedForCanvas } from "./advanced_toggle.js";
+import { markAdvancedForCanvas, syncClassicAdvanced, vueNodesEnabled } from "./advanced_toggle.js";
 import { frontendOnly } from "./common.js";
 import { addCanvasButtons } from "./title_buttons.js";
 
@@ -122,23 +122,8 @@ function listedGroups(node) {
 
 const settingWidgets = (node) => (node.widgets ?? []).filter((w) => !w.__elegantGroup);
 
-/**
- * The Vue nodes view hides advanced widgets itself. The classic canvas shows them and keeps
- * room for any widget that isn't `hidden`, so there the settings are hidden (and the node
- * resized) while the ⚙ is off, unless ComfyUI's "always show advanced inputs" is on.
- */
-const vueNodes = () => !!app.extensionManager?.setting?.get?.("Comfy.VueNodes.Enabled");
-
-function syncAdvanced(node) {
-  const setting = app.extensionManager?.setting;
-  const vue = vueNodes();
-  const show = vue || !!node.showAdvanced || !!setting?.get?.("Comfy.Node.AlwaysShowAdvancedWidgets");
-  if (node.__elegantShowAdvanced === show) return;
-  node.__elegantShowAdvanced = show;
-  for (const widget of settingWidgets(node)) widget.hidden = !show;
-  if (!vue) node.setSize?.([node.size[0], node.computeSize()[1]]);
-  node.setDirtyCanvas?.(true, true);
-}
+// The settings are the advanced widgets; the classic canvas needs help hiding them.
+const syncAdvanced = (node) => syncClassicAdvanced(node, settingWidgets(node));
 
 // ---------------------------------------------------------------------------
 // Toggles
@@ -174,7 +159,7 @@ function onToggleClicked(node, widget, value) {
  */
 function syncToggleText(widget) {
   widget.options ??= {};
-  if (vueNodes()) {
+  if (vueNodesEnabled()) {
     delete widget.options.on;
     delete widget.options.off;
   } else {

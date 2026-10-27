@@ -16,6 +16,25 @@ function alwaysShowAdvanced() {
 
 const advancedWidgets = (node) => (node.widgets ?? []).filter((w) => w.options?.advanced);
 
+export const vueNodesEnabled = () => !!app.extensionManager?.setting?.get?.("Comfy.VueNodes.Enabled");
+
+/**
+ * Hides the given advanced widgets in the classic canvas while the node's ⚙ is off (and shows
+ * them with it), resizing the node when that changes; call it every frame or tick. Newer
+ * frontends show advanced widgets in the classic canvas whatever `options.advanced` says, and
+ * keep room for any widget that isn't `hidden`. The Vue nodes view hides them itself, so
+ * there the widgets are left alone.
+ */
+export function syncClassicAdvanced(node, widgets = advancedWidgets(node)) {
+  const vue = vueNodesEnabled();
+  const show = vue || !!node.showAdvanced || alwaysShowAdvanced();
+  if (node.__elegantShowAdvanced === show) return;
+  node.__elegantShowAdvanced = show;
+  for (const widget of widgets) widget.hidden = !show;
+  if (!vue) node.setSize?.([node.size[0], node.computeSize()[1]]);
+  node.setDirtyCanvas?.(true, true);
+}
+
 /**
  * The classic canvas hides a widget only when `widget.advanced` is set (the
  * frontend only sets `options.advanced`), so mirror it there, live — some

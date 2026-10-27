@@ -261,6 +261,7 @@ const HELP = {
     html: `
 <p>ComfyUI's own slider for a number, with the range set on the node: no fixed 0 to 100 like in other nodes.</p>
 <h3>Controls</h3>
+<p><b>min</b>, <b>max</b> and <b>step</b> are advanced: click the <b>⚙</b> in the title to show them.</p>
 <table>
 <tr><td><b>value</b></td><td>The slider. Drag it, or double-click to type a number. Its range is <b>min</b> to <b>max</b>.</td></tr>
 <tr><td><b>min</b>, <b>max</b></td><td>The smallest and largest value on the slider. Change them and the slider follows; a value outside the new range is moved into it. If <b>min</b> is above <b>max</b> they are swapped.</td></tr>
