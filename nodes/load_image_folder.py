@@ -9,6 +9,7 @@ import node_helpers
 from comfy_api.latest import io, ui
 
 from ..core.files import FILENAME_FORMATS, format_filename, list_images, select_range
+from .preview_option import show_preview_input
 
 MAX_LISTED = 50  # file names shown in the preview
 
@@ -97,6 +98,7 @@ class ElegantLoadImageFromFolder(io.ComfyNode):
                     optional=True,
                     tooltip="Most images to load from start_index on. 0: no limit.",
                 ),
+                show_preview_input(),
             ],
             outputs=[
                 io.Image.Output(display_name="images", is_output_list=True, tooltip="The images, one by one."),
@@ -109,7 +111,7 @@ class ElegantLoadImageFromFolder(io.ComfyNode):
     @classmethod
     def fingerprint_inputs(
         cls, folder: str, filename_format: str, filter: str = "", include_subfolders: bool = False,
-        start_index: int = 1, limit: int = 0,
+        start_index: int = 1, limit: int = 0, show_preview: bool = True,
     ):
         # Run again when the images to load are added, removed or changed.
         try:
@@ -122,7 +124,7 @@ class ElegantLoadImageFromFolder(io.ComfyNode):
     @classmethod
     def execute(
         cls, folder: str, filename_format: str, filter: str = "", include_subfolders: bool = False,
-        start_index: int = 1, limit: int = 0,
+        start_index: int = 1, limit: int = 0, show_preview: bool = True,
     ) -> io.NodeOutput:
         folder_path = _input_folder(folder)
         pattern = filter.strip()

@@ -123,7 +123,7 @@ function listedGroups(node) {
 const settingWidgets = (node) => (node.widgets ?? []).filter((w) => !w.__elegantGroup);
 
 // The settings are the advanced widgets; the classic canvas needs help hiding them.
-const syncAdvanced = (node) => syncClassicAdvanced(node, settingWidgets(node));
+const syncAdvanced = (node, options) => syncClassicAdvanced(node, settingWidgets(node), options);
 
 // ---------------------------------------------------------------------------
 // Toggles
@@ -318,6 +318,7 @@ function registerNode(variant) {
       // is frontend only, so it does the same itself.
       markAdvancedForCanvas(this);
       addCanvasButtons(this, variant.type);
+      syncAdvanced(this, { resize: true });
       this.size = [260, this.computeSize()[1]];
       liveNodes.add(this);
       setTimeout(() => refresh(this), 0);

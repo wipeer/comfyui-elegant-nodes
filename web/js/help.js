@@ -295,6 +295,20 @@ const HELP = {
   },
 };
 
+// The nodes with a preview box all have the show_preview switch.
+const PREVIEW_BOX_HELP = `
+<h3>Hiding the preview</h3>
+<p>Switch <b>show_preview</b> (advanced, click the <b>⚙</b>) off to hide the text box, on the node and on the subgraph node when it is inside one. The node gets smaller; the result is still made and output.</p>`;
+for (const id of [
+  NODE_IDS.anyToStringPreview,
+  NODE_IDS.anyToStringMultiPreview,
+  NODE_IDS.anyMathMultiPreview,
+  NODE_IDS.randomNumber,
+  NODE_IDS.loadImageFromFolder,
+]) {
+  HELP[id].html += PREVIEW_BOX_HELP;
+}
+
 // ---------------------------------------------------------------------------
 // Dialog
 // ---------------------------------------------------------------------------

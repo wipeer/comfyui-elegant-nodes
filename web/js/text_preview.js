@@ -38,6 +38,7 @@ const MAX_HEIGHT = 240;
 const LINE_HEIGHT = 17; // 12px monospace at line-height 1.4, rounded up
 const CHAR_WIDTH = 7.3; // 12px monospace, rounded up
 const WRAP_WIDGET = "wrap_text";
+const SHOW_WIDGET = "show_preview";
 
 // Text boxes on screen; refreshed together so they follow the wrap switch and
 // node width in both renderers, also when the switch is promoted.
@@ -58,9 +59,10 @@ function toText(text) {
 /**
  * Adds a read-only text box. `getWrapWidget` returns the widget whose value
  * decides whether long lines wrap (the node's wrap_text switch, or the
- * subgraph node's when promoted).
+ * subgraph node's when promoted), and `getShowWidget` the one that shows or
+ * hides the box (show_preview).
  */
-function addTextWidget(owner, name, getWrapWidget = () => null) {
+function addTextWidget(owner, name, getWrapWidget = () => null, getShowWidget = () => null) {
   const textarea = document.createElement("textarea");
   textarea.readOnly = true;
   textarea.spellcheck = false;
@@ -95,13 +97,33 @@ function addTextWidget(owner, name, getWrapWidget = () => null) {
   );
 
   let wrap = false;
+  let shown = true;
+  let shownKnown = false;
+
+  // Shows or hides the box as the show_preview switch says. The node shrinks when the box
+  // goes and grows when it comes back, but only for a click (`resize`): a workflow that loads
+  // keeps the size it was saved with.
+  const syncShown = (resize = true) => {
+    const show = getShowWidget()?.value !== false;
+    if (shownKnown && show === shown) return;
+    const first = !shownKnown;
+    shownKnown = true;
+    shown = show;
+    widget.hidden = !show;
+    textarea.style.display = show ? "" : "none";
+    if (first || !resize) return owner.setDirtyCanvas?.(true, true);
+    if (show) fit(true);
+    else owner.setSize?.([owner.size[0], owner.computeSize?.()[1] ?? owner.size[1]]);
+    owner.setDirtyCanvas?.(true, true);
+  };
+  widget.syncShown = syncShown;
 
   // Grows the box (and node) to fit the visible lines, up to MAX_HEIGHT; longer text scrolls.
   // Only a new result or the wrap switch should do that (`grow`). Restoring saved text or a
   // resize must not: ComfyUI raises every node to its minimum size after loading a workflow,
   // so a minimum set from the restored text would undo a node the user made smaller.
   const fit = (grow = true) => {
-    if (!grow) return;
+    if (!grow || !shown) return;
     const width = textarea.clientWidth || owner.size[0] - 30;
     const charsPerLine = Math.max(10, Math.floor((width - 18) / CHAR_WIDTH));
     const lines = textarea.value
@@ -122,6 +144,7 @@ function addTextWidget(owner, name, getWrapWidget = () => null) {
   let lastState = "";
   let lastWrap = null;
   const update = () => {
+    syncShown(true);
     wrap = !!getWrapWidget()?.value;
     const state = `${wrap}:${textarea.clientWidth}`;
     if (state === lastState) return;
@@ -190,7 +213,12 @@ function syncSubgraphNode(host) {
     if (host.widgets?.some((w) => w.name === name)) continue;
     // A node just turned into a subgraph brings along the text it last showed.
     const text = saved?.[path] ?? inner.properties?.[SAVED_TEXT_PROPERTY] ?? "";
-    addTextWidget(host, name, () => wrapWidgetFor(host, inner)).setText(text, inner.title, false);
+    addTextWidget(
+      host,
+      name,
+      () => wrapWidgetFor(host, inner),
+      () => showWidgetFor(host, inner)
+    ).setText(text, inner.title, false);
   }
 }
 
@@ -222,7 +250,8 @@ function showOnSubgraphNode(host, relativePath, inner, text) {
   };
   const name = HOST_WIDGET_PREFIX + relativePath;
   const widget =
-    host.widgets?.find((w) => w.name === name) ?? addTextWidget(host, name, () => wrapWidgetFor(host, inner));
+    host.widgets?.find((w) => w.name === name) ??
+    addTextWidget(host, name, () => wrapWidgetFor(host, inner), () => showWidgetFor(host, inner));
   widget.setText(text, inner.title);
 }
 
@@ -248,8 +277,17 @@ api.addEventListener("executed", ({ detail }) => {
 
 /** The wrap switch for a preview node shown on a subgraph node: promoted there, or the node's own. */
 function wrapWidgetFor(host, inner) {
+  return promotedOrOwn(host, inner, WRAP_WIDGET);
+}
+
+/** The show_preview switch for a preview node shown on a subgraph node: promoted there, or the node's own. */
+function showWidgetFor(host, inner) {
+  return promotedOrOwn(host, inner, SHOW_WIDGET);
+}
+
+function promotedOrOwn(host, inner, widgetName) {
   const group = collectPromoted(host, inner.type).find((g) => g.inner === inner);
-  return group ? liveWidget(host, group, WRAP_WIDGET) : inner.widgets?.find((w) => w.name === WRAP_WIDGET);
+  return group ? liveWidget(host, group, widgetName) : inner.widgets?.find((w) => w.name === widgetName);
 }
 
 
@@ -296,7 +334,10 @@ function setupModeHints(node) {
 
 function setupPreviewNode(node) {
   setupModeHints(node);
-  const widget = addTextWidget(node, TEXT_WIDGET, () => node.widgets?.find((w) => w.name === WRAP_WIDGET));
+  const findWidget = (name) => () => node.widgets?.find((w) => w.name === name);
+  const widget = addTextWidget(node, TEXT_WIDGET, findWidget(WRAP_WIDGET), findWidget(SHOW_WIDGET));
+  const showSwitch = findWidget(SHOW_WIDGET)();
+  if (showSwitch) chainMethod(showSwitch, "callback", () => widget.syncShown(true));
   // Other extensions (e.g. the seed buttons) add widgets after this one; keep the box last.
   setTimeout(() => {
     const widgets = node.widgets;
@@ -308,7 +349,10 @@ function setupPreviewNode(node) {
     }
   }, 0);
   // Show the text saved with the workflow until the next run.
-  chainMethod(node, "onConfigure", () => widget.setText(node.properties?.[SAVED_TEXT_PROPERTY] ?? "", undefined, false));
+  chainMethod(node, "onConfigure", () => {
+    widget.setText(node.properties?.[SAVED_TEXT_PROPERTY] ?? "", undefined, false);
+    widget.syncShown(false);
+  });
 }
 
 app.registerExtension({

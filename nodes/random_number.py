@@ -1,6 +1,7 @@
 from comfy_api.latest import io, ui
 
 from ..core.random_number import random_number
+from .preview_option import show_preview_input
 
 
 class ElegantRandomNumber(io.ComfyNode):
@@ -36,6 +37,7 @@ class ElegantRandomNumber(io.ComfyNode):
                     label_off="float",
                     tooltip="int: a whole number (min and max included). float: a decimal number.",
                 ),
+                show_preview_input(),
             ],
             outputs=[
                 io.Int.Output(display_name="int"),
@@ -45,7 +47,7 @@ class ElegantRandomNumber(io.ComfyNode):
         )
 
     @classmethod
-    def execute(cls, seed: int, min: float, max: float, number_type: bool) -> io.NodeOutput:
+    def execute(cls, seed: int, min: float, max: float, number_type: bool, show_preview: bool = True) -> io.NodeOutput:
         value = random_number(seed, min, max, integer=number_type)
         kind = "int" if number_type else "float"
         preview = f"{value}\n\n{kind} between {min:g} and {max:g} · seed {seed}"

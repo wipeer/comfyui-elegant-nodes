@@ -4,6 +4,7 @@ from comfy_api.latest import io, ui
 
 from ..core.switch import OUT_OF_RANGE_OPTIONS, pick_index
 from ..core.text import to_text, unescape
+from .preview_option import show_preview_input
 
 MAX_SOURCES = 20
 SOURCE_NAMES = [f"source_{i}" for i in range(1, MAX_SOURCES + 1)]
@@ -43,12 +44,12 @@ class ElegantAnyToStringPreview(io.ComfyNode):
             description="Converts any value to a string and shows it as plain text, also on the "
             "subgraph node when used inside a subgraph.",
             is_output_node=True,
-            inputs=[io.AnyType.Input("source"), _wrap_input()],
+            inputs=[io.AnyType.Input("source"), _wrap_input(), show_preview_input()],
             outputs=[io.String.Output(display_name="string")],
         )
 
     @classmethod
-    def execute(cls, source=None, wrap_text: bool = False) -> io.NodeOutput:
+    def execute(cls, source=None, wrap_text: bool = False, show_preview: bool = True) -> io.NodeOutput:
         text = _to_text(source)
         return io.NodeOutput(text, ui=ui.PreviewText(text))
 
@@ -132,6 +133,7 @@ class ElegantAnyToStringMultiPreview(io.ComfyNode):
                 # optional, so prompts saved before (API format) stay valid.
                 *_affix_inputs("prefix", "before"),
                 *_affix_inputs("suffix", "after"),
+                show_preview_input(),
             ],
             outputs=[
                 io.String.Output(display_name="string"),
@@ -155,6 +157,7 @@ class ElegantAnyToStringMultiPreview(io.ComfyNode):
         prefix: str = "",
         use_suffix: bool = False,
         suffix: str = "",
+        show_preview: bool = True,
     ) -> io.NodeOutput:
         names = [name for name in SOURCE_NAMES if name in sources]
         if mode == "switch":

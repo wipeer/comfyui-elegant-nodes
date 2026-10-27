@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+- **Preview box on/off:** the nodes with a preview box (Any to String Preview, Multi Preview, Any Math Multi
+  Preview, Random Number, Load Image from Folder) have an advanced **show_preview** switch (⚙). Off hides the
+  text box on the node and on its subgraph node, and the node gets smaller; the result is still output. Workflows
+  saved before show the box as before.
+- **Fix:** in the classic canvas, advanced inputs (`wrap_text`, `use_prefix`, `out_of_range`, …) are hidden
+  behind the ⚙ again on current ComfyUI frontends, and Multi Preview's mode hints (hiding the unused
+  `delimiter` or `index`) work there.
+
 ## 1.10.0
 
 - **Elegant Resolution Selector** also outputs **resolution** (the new RESOLUTION type: width and height on

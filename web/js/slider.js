@@ -2,7 +2,6 @@
 // the node's min, max and step; the Python side keeps the value there for runs from the API.
 
 import { app } from "../../scripts/app.js";
-import { syncClassicAdvanced } from "./advanced_toggle.js";
 import { NODE_IDS, chainMethod, onNodeCreated } from "./common.js";
 
 // Nodes 2.0 puts every widget's name in a column to the left of the widget, which leaves the
@@ -120,10 +119,6 @@ function setupSlider(node) {
   for (const widget of [min, max, step]) chainMethod(widget, "callback", () => apply(true));
   chainMethod(node, "onConfigure", () => apply(false));
   apply(false);
-
-  // The range settings are advanced: the classic canvas needs help hiding them behind the ⚙.
-  chainMethod(node, "onDrawBackground", () => syncClassicAdvanced(node));
-  syncClassicAdvanced(node);
 
   chainMethod(node, "onRemoved", () => liveSliders.delete(node));
   liveSliders.add(node);

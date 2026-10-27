@@ -2,7 +2,6 @@
 // text_output switch. The node always makes the text; this adds or removes its output slot.
 
 import { app } from "../../scripts/app.js";
-import { syncClassicAdvanced } from "./advanced_toggle.js";
 import { NODE_IDS, chainMethod, onNodeCreated } from "./common.js";
 
 const TEXT_OUTPUT = "text";
@@ -37,10 +36,6 @@ function setupResolutionReroute(node) {
   chainMethod(toggle, "callback", () => apply(false));
   chainMethod(node, "onConfigure", () => apply(true));
   apply(false);
-
-  // The switch is advanced: the classic canvas needs help hiding it behind the ⚙.
-  chainMethod(node, "onDrawBackground", () => syncClassicAdvanced(node));
-  syncClassicAdvanced(node);
 }
 
 app.registerExtension({

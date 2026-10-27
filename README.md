@@ -333,7 +333,7 @@ with a message.
 
 ## Advanced settings
 
-Rarely needed settings (`wrap_text`, `out_of_range`, `use_prefix`, `use_suffix`,
+Rarely needed settings (`wrap_text`, `show_preview`, `out_of_range`, `use_prefix`, `use_suffix`,
 `filename_format`, `include_subfolders`, and the Multi Preview settings its mode doesn't use) are advanced inputs, hidden by default. Click
 the cyan **⚙** in the node's title to show or hide them, in both the classic and the Vue nodes
 view. It uses the node's own "show advanced" state, so it stays in sync with ComfyUI's **Show

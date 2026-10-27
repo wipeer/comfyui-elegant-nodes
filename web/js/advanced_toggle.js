@@ -5,7 +5,7 @@
 // section — so all of them stay in sync, and it is saved with the workflow.
 
 import { app } from "../../scripts/app.js";
-import { NODE_IDS, growToFit, onNodeCreated } from "./common.js";
+import { NODE_IDS, chainMethod, growToFit, onNodeCreated } from "./common.js";
 import { refreshTitleButtons, registerTitleButton } from "./title_buttons.js";
 
 const ELEGANT_NODE_TYPES = new Set(Object.values(NODE_IDS));
@@ -19,19 +19,36 @@ const advancedWidgets = (node) => (node.widgets ?? []).filter((w) => w.options?.
 export const vueNodesEnabled = () => !!app.extensionManager?.setting?.get?.("Comfy.VueNodes.Enabled");
 
 /**
- * Hides the given advanced widgets in the classic canvas while the node's ⚙ is off (and shows
- * them with it), resizing the node when that changes; call it every frame or tick. Newer
- * frontends show advanced widgets in the classic canvas whatever `options.advanced` says, and
- * keep room for any widget that isn't `hidden`. The Vue nodes view hides them itself, so
- * there the widgets are left alone.
+ * Hides the advanced widgets among `widgets` in the classic canvas while the node's ⚙ is off
+ * (and shows them with it); call it every frame or tick. Newer frontends show advanced widgets
+ * in the classic canvas whatever `options.advanced` says, and keep room for any widget that
+ * isn't `hidden`. The Vue nodes view hides them itself, so there nothing is hidden here.
+ *
+ * Widgets can become advanced or not later (e.g. Multi Preview's mode), so every call looks at
+ * every widget. The node is resized when the ⚙ flips, or with `resize` (when the node is
+ * created), never when a workflow loads: the node keeps the size it was saved with.
  */
-export function syncClassicAdvanced(node, widgets = advancedWidgets(node)) {
+export function syncClassicAdvanced(node, widgets = node.widgets ?? [], { resize = false } = {}) {
   const vue = vueNodesEnabled();
   const show = vue || !!node.showAdvanced || alwaysShowAdvanced();
-  if (node.__elegantShowAdvanced === show) return;
+  const flipped = node.__elegantShowAdvanced !== undefined && node.__elegantShowAdvanced !== show;
   node.__elegantShowAdvanced = show;
-  for (const widget of widgets) widget.hidden = !show;
-  if (!vue) node.setSize?.([node.size[0], node.computeSize()[1]]);
+
+  let changed = false;
+  for (const widget of widgets) {
+    const hide = !show && !!widget.options?.advanced;
+    if (hide && !widget.hidden) {
+      widget.hidden = true;
+      widget.__elegantHid = true;
+      changed = true;
+    } else if (!hide && widget.__elegantHid) {
+      widget.hidden = false;
+      widget.__elegantHid = false;
+      changed = true;
+    }
+  }
+  if (!changed && !flipped) return;
+  if (!vue && (flipped || (resize && changed))) node.setSize?.([node.size[0], node.computeSize()[1]]);
   node.setDirtyCanvas?.(true, true);
 }
 
@@ -83,6 +100,12 @@ registerTitleButton({
 app.registerExtension({
   name: "elegant.advanced_toggle",
   async beforeRegisterNodeDef(nodeType, nodeData) {
-    if (ELEGANT_NODE_TYPES.has(nodeData.name)) onNodeCreated(nodeType, markAdvancedForCanvas);
+    if (!ELEGANT_NODE_TYPES.has(nodeData.name)) return;
+    onNodeCreated(nodeType, (node) => {
+      markAdvancedForCanvas(node);
+      // The classic canvas shows advanced widgets by itself on newer frontends: hide them behind the ⚙.
+      chainMethod(node, "onDrawBackground", () => syncClassicAdvanced(node));
+      syncClassicAdvanced(node, undefined, { resize: true });
+    });
   },
 });

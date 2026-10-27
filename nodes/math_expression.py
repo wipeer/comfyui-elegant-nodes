@@ -3,6 +3,7 @@ import string
 from comfy_api.latest import io, ui
 
 from ..core.math_expression import evaluate
+from .preview_option import show_preview_input
 
 
 class ElegantAnyMathMultiPreview(io.ComfyNode):
@@ -33,6 +34,7 @@ class ElegantAnyMathMultiPreview(io.ComfyNode):
                     tooltip="For example: a * b, (a + b) / 2, max(a, b), a > b, round(a / 64) * 64. "
                     "Click the ? in the title for all operators and functions.",
                 ),
+                show_preview_input(),
             ],
             outputs=[
                 io.Int.Output(display_name="int"),
@@ -43,7 +45,7 @@ class ElegantAnyMathMultiPreview(io.ComfyNode):
         )
 
     @classmethod
-    def execute(cls, values: io.Autogrow.Type, expression: str) -> io.NodeOutput:
+    def execute(cls, values: io.Autogrow.Type, expression: str, show_preview: bool = True) -> io.NodeOutput:
         result = evaluate(expression, values)
         return io.NodeOutput(
             result.as_int, result.as_float, result.as_bool, result.as_string, ui=ui.PreviewText(result.preview)
