@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- **New: Elegant Reroute**: passes any value through unchanged (the output takes the type of the
+  input). Rename it by double-clicking the title, resize it down to a small square.
+
 ## 1.8.0
 
 - **Elegant Load Image (from Folder)**: **start_index** (counting from 1) and **limit** (0: no

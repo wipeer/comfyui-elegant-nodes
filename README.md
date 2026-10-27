@@ -48,9 +48,10 @@ the rest follows. Demote them and it goes away.
 | [**Elegant Any Math Multi Preview**](#elegant-any-math-multi-preview) | A math expression over any number of inputs, with a worked-out preview. | Worked-out result |
 | [**Elegant Load Image (from Folder)**](#elegant-load-image-from-folder) | The images in a folder, optionally filtered (`*train_??5.*`), plus each file's name (or name without extension, or full path). | List of loaded files |
 | [**Elegant Random Number**](#elegant-random-number) | A seeded random int or float between min and max: ComfyUI's standard seed plus the seed buttons. | Seed buttons and value, per copy |
+| [**Elegant Reroute**](#elegant-reroute) | Passes any value through unchanged. Rename it, resize it down to a small square. | None needed |
 
 All nodes are in the **utilities → elegant** category. Click the cyan **?** in a node's title
-for detailed help on that node.
+for detailed help on that node (Elegant Reroute has none: it stays bare).
 
 ## Installation
 
@@ -222,6 +223,17 @@ Connect its `int` to a Multi Preview's `index` in switch mode for a random pick 
 **In a subgraph:** `seed` is promoted automatically and the seed buttons appear on the subgraph
 node; the value shows there after each run. *control after generate* stays on the node inside
 (ComfyUI doesn't promote it), and the buttons set it there.
+
+### Elegant Reroute
+
+A bare pass-through for tidying links: one input, one output, any type. The output takes the
+type of what's connected, so a `MODEL` stays a `MODEL` (same link colour, same type checks).
+
+- **Rename** it by double-clicking the title.
+- **Resize** it with the corner handle, down to a small square (the title is cut off to fit).
+  The input and output names are hidden; the title is the label.
+- In the Vue nodes view, Elegant Reroutes alone are allowed below the 225 px minimum width
+  ComfyUI gives other nodes.
 
 ### Elegant Load Image (from Folder)
 

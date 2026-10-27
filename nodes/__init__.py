@@ -3,6 +3,7 @@
 from .load_image_folder import ElegantLoadImageFromFolder
 from .math_expression import ElegantAnyMathMultiPreview
 from .random_number import ElegantRandomNumber
+from .reroute import ElegantReroute
 from .resolution_selector import ElegantResolutionSelector
 from .seed import ElegantSeed
 from .text_preview import ElegantAnyToStringMultiPreview, ElegantAnyToStringPreview
@@ -15,4 +16,5 @@ NODES = [
     ElegantAnyMathMultiPreview,
     ElegantRandomNumber,
     ElegantLoadImageFromFolder,
+    ElegantReroute,
 ]
