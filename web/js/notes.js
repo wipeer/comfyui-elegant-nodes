@@ -20,7 +20,6 @@ const FONT = "12px system-ui, sans-serif";
 const TEXT = "var(--input-text, #ddd)";
 const MUTED = "var(--descrip-text, #999)";
 const LINE = "var(--border-color, #444)";
-const ACCENT = "var(--p-primary-color, #60a5fa)";
 
 /** The tabs in the widget's JSON, or none when it doesn't hold a list of tabs. */
 function readTabs(widget) {
@@ -91,8 +90,7 @@ function setupEditor(node) {
   Object.assign(bar.style, {
     display: "flex",
     alignItems: "flex-end",
-    gap: "2px",
-    borderBottom: `1px solid ${LINE}`,
+    gap: "3px",
     overflowX: "auto",
     flex: "0 0 auto",
   });
@@ -110,7 +108,7 @@ function setupEditor(node) {
     background: "var(--comfy-input-bg, #222)",
     color: TEXT,
     border: `1px solid ${LINE}`,
-    borderRadius: "4px",
+    borderRadius: "0 6px 6px 6px",
     font: FONT,
     whiteSpace: "pre-wrap",
   });
@@ -127,6 +125,7 @@ function setupEditor(node) {
     notesWidget.value = JSON.stringify(tabs);
     notesWidget.callback?.(notesWidget.value);
     node.setDirtyCanvas?.(true, true);
+    updateMergesIn(node.graph);
   };
 
   const renameTab = (label, index) => {
@@ -167,12 +166,15 @@ function setupEditor(node) {
     label.textContent = tab.name || `tab${index + 1}`;
     label.title = "Double-click to rename";
     Object.assign(label.style, {
-      padding: "4px 10px",
+      padding: "5px 12px",
       cursor: "pointer",
       userSelect: "none",
       whiteSpace: "nowrap",
       color: isActive ? TEXT : MUTED,
-      borderBottom: `2px solid ${isActive ? ACCENT : "transparent"}`,
+      background: isActive ? "var(--comfy-input-bg, #222)" : "rgba(255, 255, 255, 0.05)",
+      border: `1px solid ${isActive ? LINE : "transparent"}`,
+      borderBottom: isActive ? "1px solid var(--comfy-input-bg, #222)" : `1px solid ${LINE}`,
+      borderRadius: "6px 6px 0 0",
       marginBottom: "-1px",
     });
     label.addEventListener("click", () => {
@@ -261,6 +263,7 @@ function addFileButtons(node) {
         if (notesWidget) {
           notesWidget.value = data.notes;
           node.__elegantNotes.refresh();
+          updateMergesIn(node.graph);
         }
       } catch (error) {
         report(error.message);
@@ -280,28 +283,36 @@ function addFileButtons(node) {
   return [load, save];
 }
 
-/** Elegant Notes Merge: the index starts at 1, and a label shows the count of the last run. */
-function setupMerge(node) {
-  const indexWidget = node.widgets?.find((w) => w.name === INDEX_WIDGET);
-  if (indexWidget) {
-    indexWidget.options ??= {};
-    indexWidget.options.min = 1;
-  }
-  const label = document.createElement("div");
-  Object.assign(label.style, { font: FONT, color: MUTED, padding: "2px 4px", userSelect: "none" });
-  label.textContent = "count: –";
-  frontendOnly(node.addDOMWidget(COUNT_WIDGET, "elegant_label", label, { serialize: false, getMinHeight: () => 20 }));
-  node.__elegantCount = { label, indexWidget };
-  growToFit(node);
+/** The node that feeds an input, found through the graph's links. */
+function linkedOrigin(node, input) {
+  const graph = node.graph;
+  if (!graph || input?.link == null) return null;
+  const link = graph.links?.get?.(input.link) ?? graph.links?.[input.link];
+  return link ? graph.getNodeById(link.origin_id) : null;
 }
 
-/** Shows the count of the last run (from the node's "count: N" text) and caps the index at it. */
-function showCount(node, message) {
-  const text = message?.text?.[0] ?? "";
-  const count = Number(/^count: (\d+)/.exec(text)?.[1]);
-  if (!Number.isFinite(count)) return;
+/** Tabs the named-list inputs of a Merge bring in, counted from the Notes nodes on the canvas. */
+function countTabs(node, depth = 0) {
+  if (depth > 32) return 0;
+  let total = 0;
+  for (const input of node.inputs ?? []) {
+    if (!input.name?.startsWith("list_")) continue;
+    const origin = linkedOrigin(node, input);
+    if (!origin) continue;
+    if (origin.type === NODE_IDS.notes || origin.type === NODE_IDS.notesFile) {
+      total += readTabs(origin.widgets?.find((w) => w.name === NOTES_WIDGET)).length;
+    } else if (origin.type === NODE_IDS.notesMerge) {
+      total += countTabs(origin, depth + 1);
+    }
+  }
+  return total;
+}
+
+/** Shows the count as a row like the widgets above it, and caps the index at it (1 to count). */
+function updateMerge(node) {
   const { label, indexWidget } = node.__elegantCount ?? {};
-  if (label) label.textContent = `count: ${count}`;
+  const count = countTabs(node);
+  if (label) label.textContent = String(count);
   if (indexWidget) {
     const top = Math.max(1, count);
     indexWidget.options ??= {};
@@ -312,12 +323,48 @@ function showCount(node, message) {
   node.setDirtyCanvas?.(true, true);
 }
 
+/** Updates every Merge node in the graph, e.g. after a Notes node changed. */
+function updateMergesIn(graph) {
+  for (const node of graph?.nodes ?? graph?._nodes ?? []) {
+    if (node.type === NODE_IDS.notesMerge) updateMerge(node);
+  }
+}
+
+/** Elegant Notes Merge: the index starts at 1, and a count row shows the tabs it brings in. */
+function setupMerge(node) {
+  const indexWidget = node.widgets?.find((w) => w.name === INDEX_WIDGET);
+  if (indexWidget) {
+    indexWidget.options ??= {};
+    indexWidget.options.min = 1;
+  }
+  const row = document.createElement("div");
+  Object.assign(row.style, {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    font: FONT,
+    color: MUTED,
+    padding: "2px 4px",
+    userSelect: "none",
+  });
+  const name = document.createElement("span");
+  name.textContent = "count";
+  const value = document.createElement("span");
+  value.style.color = TEXT;
+  row.append(name, value);
+  frontendOnly(node.addDOMWidget(COUNT_WIDGET, "elegant_label", row, { serialize: false, getMinHeight: () => 20 }));
+  node.__elegantCount = { label: value, indexWidget };
+  updateMerge(node);
+  growToFit(node);
+}
+
 app.registerExtension({
   name: "elegant.notes",
   async beforeRegisterNodeDef(nodeType, nodeData) {
     if (nodeData.name === NODE_IDS.notesMerge) {
       onNodeCreated(nodeType, setupMerge);
-      chainMethod(nodeType.prototype, "onExecuted", (node, _result, args) => showCount(node, args[0]));
+      chainMethod(nodeType.prototype, "onConnectionsChange", (node) => updateMergesIn(node.graph));
+      chainMethod(nodeType.prototype, "onConfigure", (node) => setTimeout(() => updateMerge(node), 0));
       return;
     }
     if (nodeData.name !== NODE_IDS.notes && nodeData.name !== NODE_IDS.notesFile) return;
@@ -326,6 +373,9 @@ app.registerExtension({
       if (nodeData.name === NODE_IDS.notesFile) addFileButtons(node);
     });
     // Workflows that load after the node exists: show their tabs.
-    chainMethod(nodeType.prototype, "onConfigure", (node) => node.__elegantNotes?.refresh());
+    chainMethod(nodeType.prototype, "onConfigure", (node) => {
+      node.__elegantNotes?.refresh();
+      setTimeout(() => updateMergesIn(node.graph), 0);
+    });
   },
 });

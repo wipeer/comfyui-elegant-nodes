@@ -3,7 +3,7 @@
 from aiohttp import web
 
 import folder_paths
-from comfy_api.latest import io, ui
+from comfy_api.latest import io
 from server import PromptServer
 
 from ..core.notes import (
@@ -115,7 +115,6 @@ class ElegantNotesMerge(io.ComfyNode):
             tab["name"],
             tab["value"],
             len(tabs),
-            ui=ui.PreviewText(f"count: {len(tabs)}"),
         )
 
 
