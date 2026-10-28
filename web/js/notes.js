@@ -23,6 +23,7 @@ const TEXT = "var(--input-text, #ddd)";
 const MUTED = "var(--descrip-text, #999)";
 const LINE = "var(--border-color, #444)";
 const PANEL = "var(--comfy-input-bg, #222)";
+const TAB_GREY = "rgba(255, 255, 255, 0.05)";
 const OK = "#7bd88f";
 const FAILED = "#ff7b7b";
 
@@ -67,14 +68,16 @@ function boxButton(text) {
   button.textContent = text;
   Object.assign(button.style, {
     flex: "1 1 0",
-    background: PANEL,
-    border: `1px solid ${LINE}`,
-    borderRadius: "4px",
-    color: TEXT,
+    background: TAB_GREY,
+    border: "none",
+    borderRadius: "6px",
+    color: MUTED,
     font: FONT,
-    padding: "4px 8px",
+    padding: "5px 8px",
     cursor: "pointer",
   });
+  button.addEventListener("mouseenter", () => (button.style.color = TEXT));
+  button.addEventListener("mouseleave", () => (button.style.color = MUTED));
   return button;
 }
 
@@ -169,7 +172,12 @@ function setupEditor(node) {
   Object.assign(status.style, { font: FONT, color: MUTED, minHeight: "16px", whiteSpace: "pre-wrap" });
   panel.append(pathInput, buttons, status);
 
-  root.append(bar, valueBox, panel);
+  // Shown instead of the editor while a named list is connected to the notes input.
+  const linkNote = document.createElement("div");
+  linkNote.textContent = "The tabs come from the named list connected to notes. Disconnect it to edit the tabs here.";
+  Object.assign(linkNote.style, { display: "none", font: FONT, color: MUTED, padding: "8px 4px", whiteSpace: "pre-wrap" });
+
+  root.append(bar, valueBox, panel, linkNote);
 
   const setStatus = (text, ok) => {
     status.textContent = text;
@@ -225,7 +233,7 @@ function setupEditor(node) {
       userSelect: "none",
       whiteSpace: "nowrap",
       color: isActive ? TEXT : MUTED,
-      background: isActive ? PANEL : "rgba(255, 255, 255, 0.05)",
+      background: isActive ? PANEL : TAB_GREY,
       border: `1px solid ${isActive ? LINE : "transparent"}`,
       borderBottom: isActive ? `1px solid ${PANEL}` : `1px solid ${LINE}`,
       borderRadius: "6px 6px 0 0",
@@ -248,8 +256,12 @@ function setupEditor(node) {
     valueBox.disabled = !tab;
     deleteButton.disabled = !tab;
     deleteButton.style.opacity = tab ? "1" : "0.4";
+    const linked = !!linkedOrigin(node, notesInput(node));
     const open = node.properties[FILES_OPEN_PROPERTY] === true;
-    panel.style.display = open ? "flex" : "none";
+    bar.style.display = linked ? "none" : "";
+    valueBox.style.display = linked ? "none" : "";
+    linkNote.style.display = linked ? "" : "none";
+    panel.style.display = open && !linked ? "flex" : "none";
     filesButton.style.color = open ? TEXT : MUTED;
     pathInput.value = node.properties[PATH_PROPERTY] || DEFAULT_PATH;
   };
@@ -327,6 +339,11 @@ function setupEditor(node) {
   growToFit(node);
 }
 
+/** The notes input of a Notes node: text, or a named list connected in. */
+function notesInput(node) {
+  return node.inputs?.find((input) => input.name === NOTES_WIDGET);
+}
+
 /** The node that feeds an input, found through the graph's links. */
 function linkedOrigin(node, input) {
   const graph = node.graph;
@@ -335,26 +352,24 @@ function linkedOrigin(node, input) {
   return link ? graph.getNodeById(link.origin_id) : null;
 }
 
-/** Tabs the inputs of a Merge bring in, counted from the Notes nodes on the canvas. */
-function countTabs(node, depth = 0) {
-  if (depth > 32) return 0;
-  let total = 0;
-  for (const input of node.inputs ?? []) {
-    const origin = linkedOrigin(node, input);
-    if (!origin) continue;
-    if (origin.type === NODE_IDS.notes) {
-      total += parseTabs(origin.widgets?.find((w) => w.name === NOTES_WIDGET)?.value).length;
-    } else if (origin.type === NODE_IDS.notesMerge) {
-      total += countTabs(origin, depth + 1);
-    }
+/** The tabs a node brings in: a Notes node's own, or everything connected to a Merge (or reroute). */
+function tabCount(node, depth = 0) {
+  if (!node || depth > 32) return 0;
+  if (node.type === NODE_IDS.notes) {
+    const input = notesInput(node);
+    const origin = input && linkedOrigin(node, input);
+    if (origin) return tabCount(origin, depth + 1);
+    return parseTabs(node.widgets?.find((w) => w.name === NOTES_WIDGET)?.value).length;
   }
+  let total = 0;
+  for (const input of node.inputs ?? []) total += tabCount(linkedOrigin(node, input), depth + 1);
   return total;
 }
 
 /** Shows the count as a row like the widgets above it, and keeps the index between 1 and the count. */
 function updateMerge(node) {
   const { label, indexWidget } = node.__elegantCount ?? {};
-  const count = countTabs(node);
+  const count = tabCount(node);
   if (label) label.textContent = String(count);
   if (indexWidget) {
     const top = Math.max(1, count);
@@ -387,7 +402,7 @@ function setupMerge(node) {
     alignItems: "center",
     font: FONT,
     color: MUTED,
-    padding: "2px 4px",
+    padding: "0",
     userSelect: "none",
   });
   const name = document.createElement("span");
@@ -412,6 +427,10 @@ app.registerExtension({
     }
     if (nodeData.name !== NODE_IDS.notes) return;
     onNodeCreated(nodeType, setupEditor);
+    chainMethod(nodeType.prototype, "onConnectionsChange", (node) => {
+      node.__elegantNotes?.refresh();
+      updateMergesIn(node.graph);
+    });
     // A workflow that loads after the node exists: show its tabs and Files panel.
     chainMethod(nodeType.prototype, "onConfigure", (node) => {
       node.__elegantNotes?.refresh();

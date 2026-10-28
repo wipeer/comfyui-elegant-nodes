@@ -7,6 +7,7 @@ from comfy_api.latest import io
 from server import PromptServer
 
 from ..core.notes import (
+    clean_tabs,
     dump_notes,
     merge,
     note_path,
@@ -23,7 +24,7 @@ LIST_NAMES = [f"list_{i}" for i in range(1, MAX_LISTS + 1)]
 
 # The tabs are edited in a box on the node (web/js/notes.js), stored as JSON in this widget.
 NOTES_INPUT = "notes"
-NOTES_TOOLTIP = "The tabs, as JSON. Edit them on the node."
+NOTES_TOOLTIP = "The tabs, as JSON: edit them on the node. Or connect a named list instead."
 
 
 def _tabs_output(name: str, tooltip: str):
@@ -42,13 +43,19 @@ class ElegantNotes(io.ComfyNode):
             category="elegant",
             description="Tabs of text, each with a name you can change. Outputs them as a named list "
             "for Elegant Notes Merge.",
-            inputs=[io.String.Input(NOTES_INPUT, default="[]", multiline=True, socketless=True, tooltip=NOTES_TOOLTIP)],
+            inputs=[
+                io.MultiType.Input(
+                    io.String.Input(NOTES_INPUT, default="[]", multiline=True, tooltip=NOTES_TOOLTIP),
+                    types=[NamedListType],
+                ),
+            ],
             outputs=[NamedListType.Output(display_name="named list")],
         )
 
     @classmethod
-    def execute(cls, notes: str) -> io.NodeOutput:
-        return io.NodeOutput(parse_notes(notes))
+    def execute(cls, notes) -> io.NodeOutput:
+        # Text: the tabs as JSON from the node. A named list connected in: used as it is.
+        return io.NodeOutput(clean_tabs(notes) if isinstance(notes, list) else parse_notes(notes))
 
 
 class ElegantNotesMerge(io.ComfyNode):
