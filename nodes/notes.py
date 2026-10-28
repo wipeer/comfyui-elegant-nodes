@@ -119,7 +119,7 @@ class ElegantNotesMerge(io.ComfyNode):
             tab["name"],
             tab["value"],
             len(tabs),
-            ui=ui.PreviewText(preview_text(tabs)),
+            ui=ui.PreviewText(f"count: {len(tabs)}\n\n{preview_text(tabs)}"),
         )
 
 
