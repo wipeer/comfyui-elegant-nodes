@@ -16,7 +16,6 @@ from ..core.notes import (
     write_notes,
 )
 from ..core.switch import OUT_OF_RANGE_OPTIONS
-from .preview_option import show_preview_input
 from .types import NamedListType
 
 MAX_LISTS = 20
@@ -24,7 +23,7 @@ LIST_NAMES = [f"list_{i}" for i in range(1, MAX_LISTS + 1)]
 
 # The tabs are edited in a box on the node (web/js/notes.js), stored as JSON in this widget.
 NOTES_INPUT = "notes"
-NOTES_TOOLTIP = "The tabs, as JSON. Edit them in the box on the node."
+NOTES_TOOLTIP = "The tabs, as JSON. Edit them on the node."
 
 
 def _tabs_output(name: str, tooltip: str):
@@ -88,7 +87,6 @@ class ElegantNotesMerge(io.ComfyNode):
                     "clamp: below 1 uses the first tab, above the last uses the last. "
                     "wrap: count around (one past the last is the first again).",
                 ),
-                show_preview_input(),
             ],
             outputs=[
                 NamedListType.Output(display_name="named list"),
@@ -106,7 +104,6 @@ class ElegantNotesMerge(io.ComfyNode):
         lists: io.Autogrow.Type,
         index: int = 1,
         out_of_range: str = "error",
-        show_preview: bool = True,
     ) -> io.NodeOutput:
         connected = [lists[name] for name in LIST_NAMES if name in lists and lists[name] is not None]
         tabs = merge(connected)

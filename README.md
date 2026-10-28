@@ -280,8 +280,8 @@ depends only on it. Pick whichever the group needs.
 
 ### Elegant Notes
 
-Tabs of text. Click a tab to show it, change its **name** and **text** in the box on the node, add
-one with **+** and remove the shown one with **Delete tab**. Outputs the tabs as a **named list**
+Tabs of text, shown as tabs on the node. Click a tab to show its text in the box below, **double-click** a tab
+to rename it, add one with **+** and delete the shown one with **✕**. Outputs the tabs as a **named list**
 (`NAMED_LIST`), for Elegant Notes Merge.
 
 ### Elegant Notes Merge
@@ -295,10 +295,10 @@ nested. Tabs with the same name get a suffix (`intro`, `intro_2`).
 | **named list** | All tabs, as one named list. |
 | **tab names**, **tab values** | Lists of all the names, and of all the values, in order. |
 | **tab name**, **tab value** | The tab at **index** (counting from 1; can be connected). |
-| **count** | How many tabs there are. |
+| **count** | How many tabs there are (also shown on the node). |
 
-**out_of_range** (advanced, ⚙) works as in Elegant Any to String Multi Preview. The preview box
-(**show_preview**) shows the count. The index field goes up to the number of tabs after a run.
+**out_of_range** (advanced, ⚙) works as in Elegant Any to String Multi Preview. The index starts at 1 and
+goes up to the number of tabs after a run; the count is shown as a label on the node.
 
 ### Elegant Notes (File)
 
