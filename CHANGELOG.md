@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.11.0
 
 - **New: Elegant Notes**: tabs of text, each with a name you can change (double-click a tab to rename it;
   **+** adds a tab, **✕** deletes the shown one). Outputs the tabs as a named list (`NAMED_LIST`). The tabs are
@@ -9,8 +9,18 @@
 - **New: Elegant Notes Merge**: joins named lists into one flat list (a new input appears each time you connect
   the last one; same names get a suffix). Outputs the tab names and values as lists, the tab at an index
   (`index`, default `clamp`, starts at 1 and is capped at the tab count), and the `count`, shown as a row on the node.
+- **New: Elegant Notes Merge**: joins named lists into one flat list (a new input appears each time you connect
+  the last one; same names get a suffix). Outputs the tab names and values as lists, the tab at an index
+  (`index`, default `clamp`, starts at 1 and is capped at the tab count), and the `count`, shown as a row on the node.
+- **Elegant Notes** also takes a **NAMED_LIST** on its input, next to the JSON text. A connected list is shown
+  read-only, with its tabs (through Merge and reroutes too).
+- **Elegant Slider**: **min**, **max** and **step** accept an **INT** as well as a FLOAT.
+- **Elegant Any Math Multi Preview**: the inputs can be left empty, as long as one is connected. An empty input
+  the expression uses stops the run with a message that names it.
 - **Elegant Any to String Multi Preview**: `out_of_range` defaults to `clamp` (was `error`). Workflows saved before
   keep their value.
+- **Node help files**: each node has a `docs/<NodeId>.md`, which ComfyUI's node documentation shows. The registry
+  package includes them.
 
 ## 1.10.1
 
