@@ -29,33 +29,43 @@ class ElegantSlider(io.ComfyNode):
                     display_mode=io.NumberDisplay.slider,
                     tooltip="Drag to choose. The range comes from min and max below.",
                 ),
-                # The range settings are advanced inputs: click the cyan ⚙ in the title to show them.
-                io.Float.Input(
-                    "min",
-                    default=0,
-                    min=-1e12,
-                    max=1e12,
-                    step=1,
-                    advanced=True,
-                    tooltip="Smallest value on the slider.",
+                # The range settings are advanced inputs: click the cyan ⚙ in the title to show them. An INT can be
+                # connected to any of them as well as a FLOAT.
+                io.MultiType.Input(
+                    io.Float.Input(
+                        "min",
+                        default=0,
+                        min=-1e12,
+                        max=1e12,
+                        step=1,
+                        advanced=True,
+                        tooltip="Smallest value on the slider.",
+                    ),
+                    types=[io.Int],
                 ),
-                io.Float.Input(
-                    "max",
-                    default=100,
-                    min=-1e12,
-                    max=1e12,
-                    step=1,
-                    advanced=True,
-                    tooltip="Largest value on the slider.",
+                io.MultiType.Input(
+                    io.Float.Input(
+                        "max",
+                        default=100,
+                        min=-1e12,
+                        max=1e12,
+                        step=1,
+                        advanced=True,
+                        tooltip="Largest value on the slider.",
+                    ),
+                    types=[io.Int],
                 ),
-                io.Float.Input(
-                    "step",
-                    default=1,
-                    min=0,
-                    max=1e12,
-                    step=0.01,
-                    advanced=True,
-                    tooltip="Size of one step: 1 for whole numbers, 0.01 for hundredths. 0: any value.",
+                io.MultiType.Input(
+                    io.Float.Input(
+                        "step",
+                        default=1,
+                        min=0,
+                        max=1e12,
+                        step=0.01,
+                        advanced=True,
+                        tooltip="Size of one step: 1 for whole numbers, 0.01 for hundredths. 0: any value.",
+                    ),
+                    types=[io.Int],
                 ),
             ],
             outputs=[

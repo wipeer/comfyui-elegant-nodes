@@ -354,6 +354,11 @@ function linkedOrigin(node, input) {
   return link ? graph.getNodeById(link.origin_id) : null;
 }
 
+/** Whether a Merge input takes a named list (its autogrow inputs are named lists.list_1, lists.list_2, …). */
+function isListInput(input) {
+  return /(^|\.)list_\d+$/.test(input.name ?? "") || input.type === "NAMED_LIST";
+}
+
 /** The tabs a node outputs: a Notes node's own, or those connected to it; a Merge or reroute gives all of its inputs' tabs. */
 function tabsOf(node, depth = 0) {
   if (!node || depth > 32) return [];
@@ -364,6 +369,8 @@ function tabsOf(node, depth = 0) {
   }
   const tabs = [];
   for (const input of node.inputs ?? []) {
+    // A Merge joins its named lists only: a number connected to index brings no tabs.
+    if (node.type === NODE_IDS.notesMerge && !isListInput(input)) continue;
     for (const tab of tabsOf(linkedOrigin(node, input), depth + 1)) {
       tabs.push({ name: uniqueName(tab.name, tabs.map((t) => t.name)), value: tab.value });
     }

@@ -4,7 +4,7 @@ ComfyUI's own slider for a number, with the range set on the node: no fixed 0 to
 
 ### Controls
 
-**min**, **max** and **step** are advanced: click the **⚙** in the title to show them.
+**min**, **max** and **step** are advanced: click the **⚙** in the title to show them. Each can also be connected: an **INT** works as well as a FLOAT. A connected value is only known when the workflow runs: until then the slider keeps the range set on the node, and the run uses the connected value (kept inside the slider's range and step).
 
 | Item | Description |
 |---|---|
