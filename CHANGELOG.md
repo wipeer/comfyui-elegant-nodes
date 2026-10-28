@@ -2,15 +2,15 @@
 
 ## Unreleased
 
-- **New: Elegant Notes**: tabs of text, each with a name you can change (click a tab to show it, edit its
-  name and text on the node, **+** adds a tab). Outputs the tabs as a named list (`NAMED_LIST`).
-- **New: Elegant Notes Merge**: joins named lists into one flat list (a new input appears each time you
-  connect the last one; same names get a suffix). Outputs the tab names and values as lists, the tab at
-  an index (`index`, with the same `out_of_range` options as Multi Preview), the `count`, shown as a label
-  on the node (the index starts at 1 and is capped at the count after a run). Its preview box follows **show_preview**.
-- **New: Elegant Notes (File)**: Elegant Notes saved to and loaded from a JSON file in ComfyUI's output
-  folder, with **Load from file** and **Save to file** buttons. Paths outside that folder are refused.
-
+- **New: Elegant Notes**: tabs of text, each with a name you can change (double-click a tab to rename it;
+  **+** adds a tab, **✕** deletes the shown one). Outputs the tabs as a named list (`NAMED_LIST`). The tabs are
+  saved with the workflow. The **Files** panel loads and saves them in a JSON file in ComfyUI's output folder
+  (default `elegant-notes.json`), and says whether it worked.
+- **New: Elegant Notes Merge**: joins named lists into one flat list (a new input appears each time you connect
+  the last one; same names get a suffix). Outputs the tab names and values as lists, the tab at an index
+  (`index`, default `clamp`, starts at 1 and is capped at the tab count), and the `count`, shown as a row on the node.
+- **Elegant Any to String Multi Preview**: `out_of_range` defaults to `clamp` (was `error`). Workflows saved before
+  keep their value.
 
 ## 1.10.1
 

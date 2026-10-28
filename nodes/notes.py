@@ -1,4 +1,4 @@
-"""Elegant Notes: tabs with names and text, the Merge node that joins them, and notes kept in a JSON file."""
+"""Elegant Notes: tabs with names and text, and the Merge node that joins them."""
 
 from aiohttp import web
 
@@ -42,7 +42,7 @@ class ElegantNotes(io.ComfyNode):
             category="elegant",
             description="Tabs of text, each with a name you can change. Outputs them as a named list "
             "for Elegant Notes Merge.",
-            inputs=[io.String.Input(NOTES_INPUT, default="[]", multiline=True, tooltip=NOTES_TOOLTIP)],
+            inputs=[io.String.Input(NOTES_INPUT, default="[]", multiline=True, socketless=True, tooltip=NOTES_TOOLTIP)],
             outputs=[NamedListType.Output(display_name="named list")],
         )
 
@@ -81,10 +81,10 @@ class ElegantNotesMerge(io.ComfyNode):
                 io.Combo.Input(
                     "out_of_range",
                     options=OUT_OF_RANGE_OPTIONS,
-                    default="error",
+                    default="clamp",
                     advanced=True,
                     tooltip="What an index outside the tabs does. error: stop with a message. "
-                    "clamp: below 1 uses the first tab, above the last uses the last. "
+                    "clamp (default): below 1 uses the first tab, above the last uses the last. "
                     "wrap: count around (one past the last is the first again).",
                 ),
             ],
@@ -103,7 +103,7 @@ class ElegantNotesMerge(io.ComfyNode):
         cls,
         lists: io.Autogrow.Type,
         index: int = 1,
-        out_of_range: str = "error",
+        out_of_range: str = "clamp",
     ) -> io.NodeOutput:
         connected = [lists[name] for name in LIST_NAMES if name in lists and lists[name] is not None]
         tabs = merge(connected)
@@ -118,36 +118,7 @@ class ElegantNotesMerge(io.ComfyNode):
         )
 
 
-class ElegantNotesFile(io.ComfyNode):
-    """Elegant Notes whose tabs are saved to and loaded from a JSON file, with buttons for both."""
-
-    @classmethod
-    def define_schema(cls):
-        return io.Schema(
-            node_id="ElegantNotesFile",
-            display_name="Elegant Notes (File)",
-            search_aliases=["notes file", "load notes", "save notes", "json notes", "tabs file"],
-            category="elegant",
-            description="Tabs of text, saved to and loaded from a JSON file in ComfyUI's output folder with "
-            "the Load and Save buttons. Outputs them as a named list.",
-            inputs=[
-                io.String.Input(
-                    "path",
-                    default="notes.json",
-                    tooltip="JSON file, relative to ComfyUI's output folder (.json is added when missing). "
-                    "Load and Save use it.",
-                ),
-                io.String.Input(NOTES_INPUT, default="[]", multiline=True, tooltip=NOTES_TOOLTIP),
-            ],
-            outputs=[NamedListType.Output(display_name="named list")],
-        )
-
-    @classmethod
-    def execute(cls, path: str, notes: str) -> io.NodeOutput:
-        return io.NodeOutput(parse_notes(notes))
-
-
-# Load and Save buttons (web/js/notes.js). Paths are kept inside the output folder.
+# Load and Save (web/js/notes.js, the Files panel). Paths are kept inside the output folder.
 
 def _output_directory() -> str:
     return folder_paths.get_output_directory()

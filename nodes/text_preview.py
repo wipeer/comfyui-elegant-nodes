@@ -123,7 +123,7 @@ class ElegantAnyToStringMultiPreview(io.ComfyNode):
                 io.Combo.Input(
                     "out_of_range",
                     options=OUT_OF_RANGE_OPTIONS,
-                    default="error",
+                    default="clamp",
                     advanced=True,
                     tooltip="switch: what an index outside the sources does. error: stop with a message. "
                     "clamp: below 1 uses the first source, above the last uses the last. "

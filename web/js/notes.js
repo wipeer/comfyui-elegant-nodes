@@ -1,30 +1,35 @@
-// Tab editor for Elegant Notes and Elegant Notes (File): tabs with a name and a text
-// value. The tabs are kept as JSON in the node's "notes" widget, which is saved in the
-// workflow and sent with the prompt; the node shows the editor instead of that JSON.
-// Elegant Notes (File) also has Load and Save buttons. Elegant Notes Merge shows its
-// count as a label and limits its index to the tabs of the last run.
+// Elegant Notes: tabs with a name and a text value. The tabs are kept as JSON in the node's
+// "notes" widget, which is saved in the workflow and sent with the prompt; the node shows
+// the tab editor instead of that JSON. Load and Save (behind the Files button) read and
+// write the tabs in a JSON file. Elegant Notes Merge shows its count as a row and limits
+// its index to the tabs it brings in.
 
 import { app } from "../../scripts/app.js";
 import { api } from "../../scripts/api.js";
 import { NODE_IDS, chainMethod, frontendOnly, growToFit, onNodeCreated } from "./common.js";
 
 const NOTES_WIDGET = "notes";
-const PATH_WIDGET = "path";
 const INDEX_WIDGET = "index";
-const EDITOR_WIDGET = "elegant_notes_editor";
 const COUNT_WIDGET = "elegant_count";
 const MIN_HEIGHT = 150;
+const DEFAULT_PATH = "elegant-notes.json";
+// Saved in the node's properties (in the workflow), not in the prompt.
+const PATH_PROPERTY = "elegant_file_path";
+const FILES_OPEN_PROPERTY = "elegant_file_open";
 
 // Colours and font follow ComfyUI's theme variables, so the editor matches the rest of the node.
 const FONT = "12px system-ui, sans-serif";
 const TEXT = "var(--input-text, #ddd)";
 const MUTED = "var(--descrip-text, #999)";
 const LINE = "var(--border-color, #444)";
+const PANEL = "var(--comfy-input-bg, #222)";
+const OK = "#7bd88f";
+const FAILED = "#ff7b7b";
 
-/** The tabs in the widget's JSON, or none when it doesn't hold a list of tabs. */
-function readTabs(widget) {
+/** The tabs in a JSON text, or none when it doesn't hold a list of tabs. */
+function parseTabs(text) {
   try {
-    const data = JSON.parse(widget?.value || "[]");
+    const data = JSON.parse(text || "[]");
     return Array.isArray(data) ? data.map((tab) => ({ name: String(tab?.name ?? ""), value: String(tab?.value ?? "") })) : [];
   } catch {
     return [];
@@ -37,15 +42,6 @@ function uniqueName(name, taken) {
   let number = 2;
   while (taken.includes(`${name}_${number}`)) number += 1;
   return `${name}_${number}`;
-}
-
-/** Hides the widget that stores the JSON, so the node shows the editor and not the raw text. */
-function hideWidget(widget) {
-  widget.hidden = true;
-  widget.computeSize = () => [0, -4];
-  for (const element of [widget.inputEl, widget.element]) {
-    if (element) element.style.display = "none";
-  }
 }
 
 function flatButton(text, title) {
@@ -66,14 +62,47 @@ function flatButton(text, title) {
   return button;
 }
 
-/** A tab strip with a text box below it. Double-click a tab to rename it. */
-function setupEditor(node) {
-  const notesWidget = node.widgets?.find((w) => w.name === NOTES_WIDGET);
-  if (!notesWidget) return;
-  hideWidget(notesWidget);
+function boxButton(text) {
+  const button = document.createElement("button");
+  button.textContent = text;
+  Object.assign(button.style, {
+    flex: "1 1 0",
+    background: PANEL,
+    border: `1px solid ${LINE}`,
+    borderRadius: "4px",
+    color: TEXT,
+    font: FONT,
+    padding: "4px 8px",
+    cursor: "pointer",
+  });
+  return button;
+}
 
+async function post(url, body) {
+  const response = await api.fetchApi(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.error || `HTTP ${response.status}`);
+  return data;
+}
+
+const plural = (count) => `${count} tab${count === 1 ? "" : "s"}`;
+
+/** The tab editor: a strip of tabs, the shown tab's text, and a Files panel for Load and Save. */
+function setupEditor(node) {
+  const original = node.widgets?.find((w) => w.name === NOTES_WIDGET);
+  if (!original) return;
+  // The editor replaces the plain text widget. It still holds the JSON, under the same name.
+  original.inputEl?.remove?.();
+  node.widgets.splice(node.widgets.indexOf(original), 1);
+
+  let json = "[]";
   let tabs = [];
   let active = 0;
+  node.properties ??= {};
 
   const root = document.createElement("div");
   Object.assign(root.style, {
@@ -87,13 +116,7 @@ function setupEditor(node) {
   });
 
   const bar = document.createElement("div");
-  Object.assign(bar.style, {
-    display: "flex",
-    alignItems: "flex-end",
-    gap: "3px",
-    overflowX: "auto",
-    flex: "0 0 auto",
-  });
+  Object.assign(bar.style, { display: "flex", alignItems: "flex-end", gap: "3px", overflowX: "auto", flex: "0 0 auto" });
 
   const valueBox = document.createElement("textarea");
   valueBox.placeholder = "Text of this tab";
@@ -105,7 +128,7 @@ function setupEditor(node) {
     boxSizing: "border-box",
     padding: "6px 8px",
     resize: "none",
-    background: "var(--comfy-input-bg, #222)",
+    background: PANEL,
     color: TEXT,
     border: `1px solid ${LINE}`,
     borderRadius: "0 6px 6px 6px",
@@ -115,15 +138,46 @@ function setupEditor(node) {
   valueBox.addEventListener("wheel", (e) => e.stopPropagation(), { passive: true });
 
   const addButton = flatButton("+", "Add a tab");
+  const filesButton = flatButton("Files", "Load and save the tabs in a JSON file");
   const deleteButton = flatButton("✕", "Delete the shown tab");
   const spacer = document.createElement("div");
   spacer.style.flex = "1 1 auto";
 
-  root.append(bar, valueBox);
+  // Files panel: path, Load and Save, and a line that says how the last one went.
+  const panel = document.createElement("div");
+  Object.assign(panel.style, { display: "none", flexDirection: "column", gap: "4px" });
+  const pathInput = document.createElement("input");
+  pathInput.type = "text";
+  pathInput.placeholder = DEFAULT_PATH;
+  Object.assign(pathInput.style, {
+    width: "100%",
+    boxSizing: "border-box",
+    padding: "4px 6px",
+    background: PANEL,
+    color: TEXT,
+    border: `1px solid ${LINE}`,
+    borderRadius: "4px",
+    font: FONT,
+  });
+  pathInput.addEventListener("wheel", (e) => e.stopPropagation(), { passive: true });
+  const loadButton = boxButton("Load from file");
+  const saveButton = boxButton("Save to file");
+  const buttons = document.createElement("div");
+  Object.assign(buttons.style, { display: "flex", gap: "4px" });
+  buttons.append(loadButton, saveButton);
+  const status = document.createElement("div");
+  Object.assign(status.style, { font: FONT, color: MUTED, minHeight: "16px", whiteSpace: "pre-wrap" });
+  panel.append(pathInput, buttons, status);
+
+  root.append(bar, valueBox, panel);
+
+  const setStatus = (text, ok) => {
+    status.textContent = text;
+    status.style.color = ok ? OK : FAILED;
+  };
 
   const store = () => {
-    notesWidget.value = JSON.stringify(tabs);
-    notesWidget.callback?.(notesWidget.value);
+    json = JSON.stringify(tabs);
     node.setDirtyCanvas?.(true, true);
     updateMergesIn(node.graph);
   };
@@ -171,9 +225,9 @@ function setupEditor(node) {
       userSelect: "none",
       whiteSpace: "nowrap",
       color: isActive ? TEXT : MUTED,
-      background: isActive ? "var(--comfy-input-bg, #222)" : "rgba(255, 255, 255, 0.05)",
+      background: isActive ? PANEL : "rgba(255, 255, 255, 0.05)",
       border: `1px solid ${isActive ? LINE : "transparent"}`,
-      borderBottom: isActive ? "1px solid var(--comfy-input-bg, #222)" : `1px solid ${LINE}`,
+      borderBottom: isActive ? `1px solid ${PANEL}` : `1px solid ${LINE}`,
       borderRadius: "6px 6px 0 0",
       marginBottom: "-1px",
     });
@@ -186,19 +240,23 @@ function setupEditor(node) {
     return label;
   };
 
-  /** Draws the strip and the shown tab's text. */
+  /** Draws the strip, the shown tab's text and the Files panel. */
   const render = () => {
-    bar.replaceChildren(...tabs.map(tabLabel), addButton, spacer, deleteButton);
+    bar.replaceChildren(...tabs.map(tabLabel), addButton, spacer, filesButton, deleteButton);
     const tab = tabs[active];
     valueBox.value = tab?.value ?? "";
     valueBox.disabled = !tab;
     deleteButton.disabled = !tab;
     deleteButton.style.opacity = tab ? "1" : "0.4";
+    const open = node.properties[FILES_OPEN_PROPERTY] === true;
+    panel.style.display = open ? "flex" : "none";
+    filesButton.style.color = open ? TEXT : MUTED;
+    pathInput.value = node.properties[PATH_PROPERTY] || DEFAULT_PATH;
   };
 
-  /** Reloads the editor from the widget (after a load, paste or Load button). */
+  /** Reloads the editor from the JSON (after the workflow loads, or a file is loaded). */
   const refresh = () => {
-    tabs = readTabs(notesWidget);
+    tabs = parseTabs(json);
     active = Math.min(active, Math.max(0, tabs.length - 1));
     render();
   };
@@ -222,65 +280,51 @@ function setupEditor(node) {
     render();
     store();
   });
+  filesButton.addEventListener("click", () => {
+    node.properties[FILES_OPEN_PROPERTY] = !(node.properties[FILES_OPEN_PROPERTY] === true);
+    render();
+    node.setDirtyCanvas?.(true, true);
+  });
+  pathInput.addEventListener("change", () => {
+    node.properties[PATH_PROPERTY] = pathInput.value.trim() || DEFAULT_PATH;
+    pathInput.value = node.properties[PATH_PROPERTY];
+  });
 
-  frontendOnly(
-    node.addDOMWidget(EDITOR_WIDGET, "elegant_notes", root, {
-      serialize: false,
-      getValue: () => notesWidget.value,
-      setValue: () => refresh(),
-      getMinHeight: () => MIN_HEIGHT,
-    })
-  );
-  node.__elegantNotes = { refresh, notesWidget };
+  loadButton.addEventListener("click", async () => {
+    const path = node.properties[PATH_PROPERTY] || DEFAULT_PATH;
+    try {
+      const data = await post("/elegant/notes/load", { path });
+      json = data.notes;
+      refresh();
+      updateMergesIn(node.graph);
+      setStatus(`Loaded ${plural(tabs.length)} from ${path}`, true);
+    } catch (error) {
+      setStatus(`Load failed: ${error.message}`, false);
+    }
+  });
+  saveButton.addEventListener("click", async () => {
+    const path = node.properties[PATH_PROPERTY] || DEFAULT_PATH;
+    try {
+      const data = await post("/elegant/notes/save", { path, notes: json });
+      setStatus(`Saved ${plural(tabs.length)} to ${path}`, true);
+      status.title = data.path;
+    } catch (error) {
+      setStatus(`Save failed: ${error.message}`, false);
+    }
+  });
+
+  node.addDOMWidget(NOTES_WIDGET, "elegant_notes", root, {
+    // Serialized: the JSON is saved in the workflow and sent with the prompt.
+    getValue: () => json,
+    setValue: (value) => {
+      json = value || "[]";
+      refresh();
+    },
+    getMinHeight: () => MIN_HEIGHT,
+  });
+  node.__elegantNotes = { refresh };
   refresh();
   growToFit(node);
-}
-
-/** Buttons for the file node: Load fills the tabs from the file, Save writes them out. */
-function addFileButtons(node) {
-  const pathWidget = node.widgets?.find((w) => w.name === PATH_WIDGET);
-  const post = async (url, body) => {
-    const response = await api.fetchApi(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.error || `HTTP ${response.status}`);
-    return data;
-  };
-  const report = (message) => {
-    const toast = app.extensionManager?.toast;
-    if (toast) toast.add({ severity: "error", summary: "Elegant Notes", detail: message, life: 5000 });
-    else alert(message);
-  };
-
-  const load = frontendOnly(
-    node.addWidget("button", "Load from file", null, async () => {
-      try {
-        const data = await post("/elegant/notes/load", { path: pathWidget?.value });
-        const { notesWidget } = node.__elegantNotes ?? {};
-        if (notesWidget) {
-          notesWidget.value = data.notes;
-          node.__elegantNotes.refresh();
-          updateMergesIn(node.graph);
-        }
-      } catch (error) {
-        report(error.message);
-      }
-    })
-  );
-  const save = frontendOnly(
-    node.addWidget("button", "Save to file", null, async () => {
-      try {
-        const { notesWidget } = node.__elegantNotes ?? {};
-        await post("/elegant/notes/save", { path: pathWidget?.value, notes: notesWidget?.value ?? "[]" });
-      } catch (error) {
-        report(error.message);
-      }
-    })
-  );
-  return [load, save];
 }
 
 /** The node that feeds an input, found through the graph's links. */
@@ -291,16 +335,15 @@ function linkedOrigin(node, input) {
   return link ? graph.getNodeById(link.origin_id) : null;
 }
 
-/** Tabs the named-list inputs of a Merge bring in, counted from the Notes nodes on the canvas. */
+/** Tabs the inputs of a Merge bring in, counted from the Notes nodes on the canvas. */
 function countTabs(node, depth = 0) {
   if (depth > 32) return 0;
   let total = 0;
   for (const input of node.inputs ?? []) {
-    if (!input.name?.startsWith("list_")) continue;
     const origin = linkedOrigin(node, input);
     if (!origin) continue;
-    if (origin.type === NODE_IDS.notes || origin.type === NODE_IDS.notesFile) {
-      total += readTabs(origin.widgets?.find((w) => w.name === NOTES_WIDGET)).length;
+    if (origin.type === NODE_IDS.notes) {
+      total += parseTabs(origin.widgets?.find((w) => w.name === NOTES_WIDGET)?.value).length;
     } else if (origin.type === NODE_IDS.notesMerge) {
       total += countTabs(origin, depth + 1);
     }
@@ -308,7 +351,7 @@ function countTabs(node, depth = 0) {
   return total;
 }
 
-/** Shows the count as a row like the widgets above it, and caps the index at it (1 to count). */
+/** Shows the count as a row like the widgets above it, and keeps the index between 1 and the count. */
 function updateMerge(node) {
   const { label, indexWidget } = node.__elegantCount ?? {};
   const count = countTabs(node);
@@ -367,12 +410,9 @@ app.registerExtension({
       chainMethod(nodeType.prototype, "onConfigure", (node) => setTimeout(() => updateMerge(node), 0));
       return;
     }
-    if (nodeData.name !== NODE_IDS.notes && nodeData.name !== NODE_IDS.notesFile) return;
-    onNodeCreated(nodeType, (node) => {
-      setupEditor(node);
-      if (nodeData.name === NODE_IDS.notesFile) addFileButtons(node);
-    });
-    // Workflows that load after the node exists: show their tabs.
+    if (nodeData.name !== NODE_IDS.notes) return;
+    onNodeCreated(nodeType, setupEditor);
+    // A workflow that loads after the node exists: show its tabs and Files panel.
     chainMethod(nodeType.prototype, "onConfigure", (node) => {
       node.__elegantNotes?.refresh();
       setTimeout(() => updateMergesIn(node.graph), 0);

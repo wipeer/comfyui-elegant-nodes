@@ -2,7 +2,7 @@
 
 from .load_image_folder import ElegantLoadImageFromFolder
 from .math_expression import ElegantAnyMathMultiPreview
-from .notes import ElegantNotes, ElegantNotesFile, ElegantNotesMerge
+from .notes import ElegantNotes, ElegantNotesMerge
 from .random_number import ElegantRandomNumber
 from .reroute import ElegantReroute
 from .resolution_reroute import ElegantResolutionReroute
@@ -24,5 +24,4 @@ NODES = [
     ElegantSlider,
     ElegantNotes,
     ElegantNotesMerge,
-    ElegantNotesFile,
 ]
