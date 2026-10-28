@@ -14,7 +14,7 @@ The preview shows the expression with the real numbers filled in, e.g. `1 + (2 /
 
 - `values` is the list of all inputs, e.g. `sum(values)` or `max(values)`.
 
-- Using an input that isn't connected stops the run with an error.
+- Inputs can stay empty, as long as at least one is connected. An empty input that the expression uses stops the run with a message.
 
 ### Operators
 

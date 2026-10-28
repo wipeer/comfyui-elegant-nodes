@@ -24,9 +24,11 @@ class ElegantAnyMathMultiPreview(io.ComfyNode):
                 io.Autogrow.Input(
                     "values",
                     template=io.Autogrow.TemplateNames(
-                        io.AnyType.Input("value"), names=list(string.ascii_lowercase), min=1
+                        # Every input is optional: any of them can be left empty, as long as one is connected.
+                        io.AnyType.Input("value", optional=True), names=list(string.ascii_lowercase), min=1
                     ),
-                    tooltip="Values used in the expression as a, b, c, …",
+                    tooltip="Values used in the expression as a, b, c, …. At least one must be connected; "
+                    "an empty one is fine if the expression doesn't use it.",
                 ),
                 io.String.Input(
                     "expression",

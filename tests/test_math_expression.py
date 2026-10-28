@@ -39,7 +39,7 @@ def test_text_inputs():
     [
         ("", {"a": 1}, "cannot be empty"),
         ("a / 0", {"a": 1}, "division by zero"),
-        ("a + b", {"a": 1}, "'b' is not defined"),
+        ("a + b", {"a": 1}, "Input b is not connected"),
         ("__import__('os')", {"a": 1}, "not defined"),
         ("a ** 99999", {"a": 10}, "too large"),
         ("pow(a, 99999)", {"a": 10}, "exceeds maximum"),
@@ -58,3 +58,18 @@ def test_helpers():
     assert format_value(0.1) == "0.1"
     assert format_value("a") == "'a'"
     assert substitute("max(a, b)", {"a": 1, "b": 2, "max": 9}) == "max(1, 2)"
+
+
+def test_unconnected_first_input_is_fine_when_the_expression_does_not_use_it():
+    assert evaluate("b * 2", {"b": 3}).as_int == 6
+    assert evaluate("sum(values)", {"b": 3, "c": 4}).as_int == 7
+
+
+def test_unconnected_input_used_by_the_expression_says_so():
+    with pytest.raises(ValueError, match="Input a is not connected"):
+        evaluate("a + b", {"b": 1})
+
+
+def test_needs_at_least_one_connected_input():
+    with pytest.raises(ValueError, match="Connect at least one value"):
+        evaluate("1 + 1", {})

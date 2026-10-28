@@ -2,11 +2,12 @@
 
 import io
 import math
+import string
 import random
 import tokenize
 from dataclasses import dataclass
 
-from simpleeval import simple_eval
+from simpleeval import NameNotDefined, simple_eval
 
 MAX_EXPONENT = 4000
 
@@ -166,10 +167,18 @@ def evaluate(expression: str, values: dict) -> MathResult:
     """Evaluates `expression` with `values` as variables (a, b, …) and `values` as their list."""
     if not expression.strip():
         raise ValueError("Expression cannot be empty.")
+    if not values:
+        raise ValueError("Connect at least one value.")
 
     operands = {name: to_operand(value) for name, value in values.items()}
     variables = {**operands, "values": list(operands.values())}
-    result = simple_eval(expression, names={**CONSTANTS, **variables}, functions=FUNCTIONS)
+    try:
+        result = simple_eval(expression, names={**CONSTANTS, **variables}, functions=FUNCTIONS)
+    except NameNotDefined as error:
+        # Only the inputs a, b, c, … can be missing; anything else is a mistake in the expression.
+        if error.name in string.ascii_lowercase and error.name not in operands:
+            raise ValueError(f"Input {error.name} is not connected, but the expression uses it.") from None
+        raise
     as_int, as_float, as_bool, as_string = to_outputs(result)
 
     worked = substitute(expression.strip(), variables)
