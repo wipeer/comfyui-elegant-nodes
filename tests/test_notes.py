@@ -7,7 +7,6 @@ from core.notes import (
     note_path,
     parse_notes,
     pick_tab,
-    preview_text,
     read_notes,
     unique_name,
     write_notes,
@@ -61,8 +60,10 @@ def test_pick_tab_by_index_and_out_of_range():
     assert pick_tab(tabs, 2) == {"name": "b", "value": "2"}
     assert pick_tab(tabs, 5, "clamp") == {"name": "b", "value": "2"}
     assert pick_tab(tabs, 3, "wrap") == {"name": "a", "value": "1"}
-    with pytest.raises(ValueError, match="out of range"):
+    with pytest.raises(ValueError, match="Index 5 is out of range: there are 2 tabs"):
         pick_tab(tabs, 5)
+    with pytest.raises(ValueError, match="Index 0 is out of range"):
+        pick_tab(tabs, 0)
     with pytest.raises(ValueError, match="no tabs"):
         pick_tab([], 1)
 
@@ -86,6 +87,3 @@ def test_write_then_read_file(tmp_path):
     with pytest.raises(ValueError, match="File not found"):
         read_notes(str(tmp_path / "missing.json"))
 
-
-def test_preview_text():
-    assert preview_text([{"name": "a", "value": "1"}, {"name": "b", "value": "2"}]) == "[a]\n1\n\n[b]\n2"

@@ -298,7 +298,7 @@ nested. Tabs with the same name get a suffix (`intro`, `intro_2`).
 | **count** | How many tabs there are. |
 
 **out_of_range** (advanced, ⚙) works as in Elegant Any to String Multi Preview. The preview box
-(**show_preview**) lists the tabs.
+(**show_preview**) shows the count. The index field goes up to the number of tabs after a run.
 
 ### Elegant Notes (File)
 

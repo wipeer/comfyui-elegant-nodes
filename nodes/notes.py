@@ -12,7 +12,6 @@ from ..core.notes import (
     note_path,
     parse_notes,
     pick_tab,
-    preview_text,
     read_notes,
     write_notes,
 )
@@ -119,7 +118,7 @@ class ElegantNotesMerge(io.ComfyNode):
             tab["name"],
             tab["value"],
             len(tabs),
-            ui=ui.PreviewText(f"count: {len(tabs)}\n\n{preview_text(tabs)}"),
+            ui=ui.PreviewText(f"count: {len(tabs)}"),
         )
 
 

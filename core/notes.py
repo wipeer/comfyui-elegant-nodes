@@ -62,6 +62,8 @@ def pick_tab(tabs: list[dict], index: int, out_of_range: str = "error") -> dict:
     """The tab at 1-based `index`, with the same out-of-range rules as the switch."""
     if not tabs:
         raise ValueError("There are no tabs: connect a named list or add a tab.")
+    if out_of_range == "error" and not 1 <= index <= len(tabs):
+        raise ValueError(f"Index {index} is out of range: there are {len(tabs)} tabs (1–{len(tabs)}).")
     return tabs[pick_index(index, len(tabs), out_of_range)]
 
 
@@ -91,7 +93,3 @@ def write_notes(full_path: str, tabs: list[dict]) -> None:
     with open(full_path, "w", encoding="utf-8") as file:
         file.write(dump_notes(tabs) + "\n")
 
-
-def preview_text(tabs: list[dict]) -> str:
-    """The tabs as text for a preview box: each name in brackets, then its value."""
-    return "\n\n".join(f"[{tab['name']}]\n{tab['value']}" for tab in tabs)

@@ -21,6 +21,14 @@ function readTabs(widget) {
   }
 }
 
+/** `name`, or name_2, name_3, … when `taken` already has it. */
+function uniqueName(name, taken) {
+  if (!taken.includes(name)) return name;
+  let number = 2;
+  while (taken.includes(`${name}_${number}`)) number += 1;
+  return `${name}_${number}`;
+}
+
 /** Builds the tab bar, the name field and the value box, and keeps them in step with the widget. */
 function setupEditor(node) {
   const notesWidget = node.widgets?.find((w) => w.name === NOTES_WIDGET);
@@ -121,6 +129,15 @@ function setupEditor(node) {
     renderBar();
     store();
   });
+  // When the name is left, a name another tab already has gets a suffix (tab2 → tab2_2).
+  nameInput.addEventListener("change", () => {
+    if (!tabs[active]) return;
+    const others = tabs.filter((_, index) => index !== active).map((tab) => tab.name);
+    tabs[active].name = uniqueName(nameInput.value.trim() || `tab${active + 1}`, others);
+    nameInput.value = tabs[active].name;
+    renderBar();
+    store();
+  });
   valueBox.addEventListener("input", () => {
     if (!tabs[active]) return;
     tabs[active].value = valueBox.value;
@@ -203,9 +220,25 @@ function addFileButtons(node) {
   return [load, save];
 }
 
+/** Elegant Notes Merge: the index can go up to the number of tabs of the last run ("count: N" in its preview). */
+function limitIndexToCount(node, message) {
+  const text = message?.text?.[0] ?? "";
+  const count = Number(/^count: (\d+)/.exec(text)?.[1]);
+  const indexWidget = node.widgets?.find((w) => w.name === "index");
+  if (!indexWidget || !Number.isFinite(count)) return;
+  indexWidget.options ??= {};
+  indexWidget.options.max = Math.max(1, count);
+  if (indexWidget.value > count) indexWidget.value = Math.max(1, count);
+  node.setDirtyCanvas?.(true, true);
+}
+
 app.registerExtension({
   name: "elegant.notes",
   async beforeRegisterNodeDef(nodeType, nodeData) {
+    if (nodeData.name === NODE_IDS.notesMerge) {
+      chainMethod(nodeType.prototype, "onExecuted", (node, _result, args) => limitIndexToCount(node, args[0]));
+      return;
+    }
     if (nodeData.name !== NODE_IDS.notes && nodeData.name !== NODE_IDS.notesFile) return;
     onNodeCreated(nodeType, (node) => {
       setupEditor(node);

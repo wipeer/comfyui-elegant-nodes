@@ -7,7 +7,7 @@
 - **New: Elegant Notes Merge**: joins named lists into one flat list (a new input appears each time you
   connect the last one; same names get a suffix). Outputs the tab names and values as lists, the tab at
   an index (`index`, with the same `out_of_range` options as Multi Preview), the `count`, and a
-  preview of the tabs with the count on top. Its preview box follows **show_preview**.
+  count preview (the index field is capped at it after a run). Its preview box follows **show_preview**.
 - **New: Elegant Notes (File)**: Elegant Notes saved to and loaded from a JSON file in ComfyUI's output
   folder, with **Load from file** and **Save to file** buttons. Paths outside that folder are refused.
 
