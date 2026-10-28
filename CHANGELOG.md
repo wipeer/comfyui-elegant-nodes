@@ -9,9 +9,6 @@
 - **New: Elegant Notes Merge**: joins named lists into one flat list (a new input appears each time you connect
   the last one; same names get a suffix). Outputs the tab names and values as lists, the tab at an index
   (`index`, default `clamp`, starts at 1 and is capped at the tab count), and the `count`, shown as a row on the node.
-- **New: Elegant Notes Merge**: joins named lists into one flat list (a new input appears each time you connect
-  the last one; same names get a suffix). Outputs the tab names and values as lists, the tab at an index
-  (`index`, default `clamp`, starts at 1 and is capped at the tab count), and the `count`, shown as a row on the node.
 - **Elegant Notes** also takes a **NAMED_LIST** on its input, next to the JSON text. A connected list is shown
   read-only, with its tabs (through Merge and reroutes too).
 - **Elegant Slider**: **min**, **max** and **step** accept an **INT** as well as a FLOAT.
