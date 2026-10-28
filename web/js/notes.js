@@ -258,7 +258,7 @@ function setupEditor(node) {
     deleteButton.style.opacity = tab ? "1" : "0.4";
     const linked = !!linkedOrigin(node, notesInput(node));
     const open = node.properties[FILES_OPEN_PROPERTY] === true;
-    bar.style.display = linked ? "none" : "";
+    bar.style.display = linked ? "none" : "flex";
     valueBox.style.display = linked ? "none" : "";
     linkNote.style.display = linked ? "" : "none";
     panel.style.display = open && !linked ? "flex" : "none";
