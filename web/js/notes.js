@@ -174,8 +174,8 @@ function setupEditor(node) {
 
   // Shown instead of the editor while a named list is connected to the notes input.
   const linkNote = document.createElement("div");
-  linkNote.textContent = "The tabs come from the named list connected to notes. Disconnect it to edit the tabs here.";
-  Object.assign(linkNote.style, { display: "none", font: FONT, color: MUTED, padding: "8px 4px", whiteSpace: "pre-wrap" });
+  linkNote.textContent = "Read only: these tabs come from the list connected to notes. Disconnect it to edit them here.";
+  Object.assign(linkNote.style, { display: "none", font: FONT, color: MUTED, padding: "2px 4px", whiteSpace: "pre-wrap" });
 
   root.append(bar, valueBox, panel, linkNote);
 
@@ -184,6 +184,8 @@ function setupEditor(node) {
     status.style.color = ok ? OK : FAILED;
   };
 
+  const isLinked = () => !!linkedOrigin(node, notesInput(node));
+
   const store = () => {
     json = JSON.stringify(tabs);
     node.setDirtyCanvas?.(true, true);
@@ -191,6 +193,7 @@ function setupEditor(node) {
   };
 
   const renameTab = (label, index) => {
+    if (isLinked()) return;
     let done = false;
     const finish = (commit) => {
       if (done) return;
@@ -250,17 +253,16 @@ function setupEditor(node) {
 
   /** Draws the strip, the shown tab's text and the Files panel. */
   const render = () => {
-    bar.replaceChildren(...tabs.map(tabLabel), addButton, spacer, filesButton, deleteButton);
+    const linked = isLinked();
+    bar.replaceChildren(...tabs.map(tabLabel), ...(linked ? [] : [addButton, spacer, filesButton, deleteButton]));
     const tab = tabs[active];
     valueBox.value = tab?.value ?? "";
+    valueBox.readOnly = linked;
     valueBox.disabled = !tab;
     deleteButton.disabled = !tab;
     deleteButton.style.opacity = tab ? "1" : "0.4";
-    const linked = !!linkedOrigin(node, notesInput(node));
-    const open = node.properties[FILES_OPEN_PROPERTY] === true;
-    bar.style.display = linked ? "none" : "flex";
-    valueBox.style.display = linked ? "none" : "";
     linkNote.style.display = linked ? "" : "none";
+    const open = node.properties[FILES_OPEN_PROPERTY] === true;
     panel.style.display = open && !linked ? "flex" : "none";
     filesButton.style.color = open ? TEXT : MUTED;
     pathInput.value = node.properties[PATH_PROPERTY] || DEFAULT_PATH;
@@ -268,7 +270,7 @@ function setupEditor(node) {
 
   /** Reloads the editor from the JSON (after the workflow loads, or a file is loaded). */
   const refresh = () => {
-    tabs = parseTabs(json);
+    tabs = isLinked() ? tabsOf(node) : parseTabs(json);
     active = Math.min(active, Math.max(0, tabs.length - 1));
     render();
   };
@@ -352,24 +354,27 @@ function linkedOrigin(node, input) {
   return link ? graph.getNodeById(link.origin_id) : null;
 }
 
-/** The tabs a node brings in: a Notes node's own, or everything connected to a Merge (or reroute). */
-function tabCount(node, depth = 0) {
-  if (!node || depth > 32) return 0;
+/** The tabs a node outputs: a Notes node's own, or those connected to it; a Merge or reroute gives all of its inputs' tabs. */
+function tabsOf(node, depth = 0) {
+  if (!node || depth > 32) return [];
   if (node.type === NODE_IDS.notes) {
-    const input = notesInput(node);
-    const origin = input && linkedOrigin(node, input);
-    if (origin) return tabCount(origin, depth + 1);
-    return parseTabs(node.widgets?.find((w) => w.name === NOTES_WIDGET)?.value).length;
+    const origin = linkedOrigin(node, notesInput(node));
+    if (origin) return tabsOf(origin, depth + 1);
+    return parseTabs(node.widgets?.find((w) => w.name === NOTES_WIDGET)?.value);
   }
-  let total = 0;
-  for (const input of node.inputs ?? []) total += tabCount(linkedOrigin(node, input), depth + 1);
-  return total;
+  const tabs = [];
+  for (const input of node.inputs ?? []) {
+    for (const tab of tabsOf(linkedOrigin(node, input), depth + 1)) {
+      tabs.push({ name: uniqueName(tab.name, tabs.map((t) => t.name)), value: tab.value });
+    }
+  }
+  return tabs;
 }
 
 /** Shows the count as a row like the widgets above it, and keeps the index between 1 and the count. */
 function updateMerge(node) {
   const { label, indexWidget } = node.__elegantCount ?? {};
-  const count = tabCount(node);
+  const count = tabsOf(node).length;
   if (label) label.textContent = String(count);
   if (indexWidget) {
     const top = Math.max(1, count);
@@ -381,10 +386,12 @@ function updateMerge(node) {
   node.setDirtyCanvas?.(true, true);
 }
 
-/** Updates every Merge node in the graph, e.g. after a Notes node changed. */
+/** Updates the Merge nodes and the linked Notes nodes of the graph, e.g. after a Notes node changed. */
 function updateMergesIn(graph) {
   for (const node of graph?.nodes ?? graph?._nodes ?? []) {
     if (node.type === NODE_IDS.notesMerge) updateMerge(node);
+    // A Notes node fed by a list shows that list, so it follows the change too.
+    if (node.type === NODE_IDS.notes && linkedOrigin(node, notesInput(node))) node.__elegantNotes?.refresh();
   }
 }
 
