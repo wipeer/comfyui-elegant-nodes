@@ -20,6 +20,7 @@ const PREVIEW_NODE_TYPES = new Set([
   NODE_IDS.anyMathMultiPreview,
   NODE_IDS.randomNumber,
   NODE_IDS.loadImageFromFolder,
+  NODE_IDS.notesMerge,
 ]);
 
 const TEXT_WIDGET = "text";

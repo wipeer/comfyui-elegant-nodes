@@ -13,6 +13,9 @@ export const NODE_IDS = {
   groupMuter: "ElegantGroupMuter",
   slider: "ElegantSlider",
   resolutionReroute: "ElegantResolutionReroute",
+  notes: "ElegantNotes",
+  notesMerge: "ElegantNotesMerge",
+  notesFile: "ElegantNotesFile",
 };
 
 /** Runs `after(this, result, args)` after `object[name](...args)`, keeping the original. */

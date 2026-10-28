@@ -53,6 +53,9 @@ the rest follows. Demote them and it goes away.
 | [**Elegant Resolution Reroute**](#elegant-resolution-reroute) | Width and height on one link: take a width and height, or a resolution like `1024 x 1024`, and give both back plus a RESOLUTION and its text. | None needed |
 | [**Elegant Group Bypasser**](#elegant-group-bypasser) | One toggle per group to bypass or enable everything inside it. A port of rgthree's Fast Groups Bypasser that also works in the Vue nodes view. | Lists the groups of its own (sub)graph |
 | [**Elegant Group Muter**](#elegant-group-muter) | The Group Bypasser with mute instead of bypass. A port of rgthree's Fast Groups Muter. | Lists the groups of its own (sub)graph |
+| [**Elegant Notes**](#elegant-notes) | Tabs of text, each with a name you can change; outputs them as a named list. | None needed |
+| [**Elegant Notes Merge**](#elegant-notes-merge) | Joins named lists into one flat list; gives the tab names and values as lists, or one tab by index. | Text preview |
+| [**Elegant Notes (File)**](#elegant-notes-file) | Elegant Notes saved to and loaded from a JSON file, with Load and Save buttons. | None needed |
 
 All nodes are in the top-level **elegant** category. Click the cyan **?** in a node's title
 for detailed help on that node (Elegant Simple Reroute has none: it stays bare).
@@ -274,6 +277,35 @@ mutes every node inside the group (they don't run, and what is connected after t
 
 Bypass lets values pass through a node unchanged; mute stops the node and everything that
 depends only on it. Pick whichever the group needs.
+
+### Elegant Notes
+
+Tabs of text. Click a tab to show it, change its **name** and **text** in the box on the node, add
+one with **+** and remove the shown one with **Delete tab**. Outputs the tabs as a **named list**
+(`NAMED_LIST`), for Elegant Notes Merge.
+
+### Elegant Notes Merge
+
+Takes named lists from Elegant Notes (or Elegant Notes (File)); a new input appears each time you
+connect the last one. The tabs of all of them are joined into one flat list, in order, so nothing is
+nested. Tabs with the same name get a suffix (`intro`, `intro_2`).
+
+| Output | What it is |
+|--------|------------|
+| **named list** | All tabs, as one named list. |
+| **tab names**, **tab values** | Lists of all the names, and of all the values, in order. |
+| **tab name**, **tab value** | The tab at **index** (counting from 1; can be connected). |
+| **count** | How many tabs there are. |
+
+**out_of_range** (advanced, ⚙) works as in Elegant Any to String Multi Preview. The preview box
+(**show_preview**) lists the tabs.
+
+### Elegant Notes (File)
+
+Like Elegant Notes, with a **path** and two buttons. **Load from file** fills the tabs from a JSON
+file; **Save to file** writes them out. Paths are relative to ComfyUI's **output** folder (`.json` is
+added when missing), and a path that leads outside it is refused. The workflow runs with the tabs
+shown on the node, so it doesn't need the file to be there.
 
 ### Elegant Slider
 

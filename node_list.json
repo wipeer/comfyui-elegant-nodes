@@ -8,5 +8,8 @@
   "ElegantLoadImageFromFolder": "Load images from a folder",
   "ElegantReroute": "Minimal pass-through for any value",
   "ElegantResolutionReroute": "Width, height and resolution in any combination",
-  "ElegantSlider": "Slider with a range you set"
+  "ElegantSlider": "Slider with a range you set",
+  "ElegantNotes": "Tabs of named text",
+  "ElegantNotesMerge": "Merge named notes, pick a tab by index",
+  "ElegantNotesFile": "Notes saved to and loaded from a JSON file"
 }
