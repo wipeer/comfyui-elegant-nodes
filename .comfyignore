@@ -1,4 +1,6 @@
-# Kept in git but not needed in the Comfy Registry package.
+# Kept in git but not needed in the Comfy Registry package. The node help (docs/*.md) is shipped.
 .github/
-docs/
+docs/images/
+docs/icon.svg
 tests/
+__pycache__/

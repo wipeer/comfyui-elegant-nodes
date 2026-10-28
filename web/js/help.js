@@ -124,8 +124,8 @@ const HELP = {
 <h3>Advanced: out of range</h3>
 <p>Click the <b>⚙</b> in the title to show it. What an <b>index</b> outside the connected sources does:</p>
 <table>
-<tr><td><code>error</code></td><td>(default) stop the run with a message.</td></tr>
-<tr><td><code>clamp</code></td><td>below 1 uses the first source, above the last uses the last.</td></tr>
+<tr><td><code>error</code></td><td>stop the run with a message.</td></tr>
+<tr><td><code>clamp</code></td><td>(default) below 1 uses the first source, above the last uses the last.</td></tr>
 <tr><td><code>wrap</code></td><td>count around: with 3 sources, 4 is the first again and 0 the last.</td></tr>
 </table>
 <p>Each value is converted like in <b>Elegant Any to String Preview</b>.</p>`,
