@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- **Any Math Multi Preview:** an input that isn't connected, or whose node is bypassed, is `None` in the
+  expression, so a formula can test for it: `b if b is not None else c`. Using it in a calculation, or
+  returning it, still stops the run, with an error that names the input.
+
 ## 1.10.1
 
 - **Preview box on/off:** the nodes with a preview box (Any to String Preview, Multi Preview, Any Math Multi

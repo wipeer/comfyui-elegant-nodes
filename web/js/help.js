@@ -185,7 +185,7 @@ const HELP = {
 <li>Connect values to <code>a</code>, <code>b</code>, …; a new input appears each time you connect the last free one (up to <code>z</code>).</li>
 <li>Any type is accepted. Text that looks like a number (<code>"12"</code>, <code>"0.5"</code>) is used as a number; other text stays text.</li>
 <li><code>values</code> is the list of all inputs, e.g. <code>sum(values)</code> or <code>max(values)</code>.</li>
-<li>Using an input that isn't connected stops the run with an error.</li>
+<li>An input that isn't connected (or whose node is bypassed) is <code>None</code>. Using it in a calculation, or returning it, stops the run with an error; test for it to avoid that, e.g. <code>b if b is not None else c</code>.</li>
 </ul>
 
 <h3>Operators</h3>

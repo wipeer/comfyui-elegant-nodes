@@ -39,7 +39,8 @@ def test_text_inputs():
     [
         ("", {"a": 1}, "cannot be empty"),
         ("a / 0", {"a": 1}, "division by zero"),
-        ("a + b", {"a": 1}, "'b' is not defined"),
+        ("a + b", {"a": 1}, "b is used but not connected"),
+        ("b", {"a": 1}, "no value"),
         ("__import__('os')", {"a": 1}, "not defined"),
         ("a ** 99999", {"a": 10}, "too large"),
         ("pow(a, 99999)", {"a": 10}, "exceeds maximum"),
@@ -48,6 +49,13 @@ def test_text_inputs():
 def test_errors(expression, values, error):
     with pytest.raises(Exception, match=error):
         evaluate(expression, values)
+
+
+def test_unconnected_inputs_are_none():
+    assert evaluate("c if a == False else b", {"a": False, "c": 5}).as_int == 5
+    assert evaluate("b if b is not None else c", {"a": 1, "c": 9}).as_int == 9
+    assert evaluate("b if b is not None else c", {"a": 1, "b": None, "c": 9}).as_int == 9
+    assert evaluate("sum(values)", {"a": 1, "b": None, "c": 3}).as_int == 4
 
 
 def test_helpers():

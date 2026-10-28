@@ -3,6 +3,7 @@
 import io
 import math
 import random
+import string
 import tokenize
 from dataclasses import dataclass
 
@@ -162,14 +163,35 @@ def substitute(expression: str, names: dict) -> str:
     return expression
 
 
+def _names_used(expression: str) -> set[str]:
+    try:
+        return {t.string for t in tokenize.generate_tokens(io.StringIO(expression).readline) if t.type == tokenize.NAME}
+    except (tokenize.TokenError, IndentationError, SyntaxError):
+        return set()
+
+
 def evaluate(expression: str, values: dict) -> MathResult:
     """Evaluates `expression` with `values` as variables (a, b, …) and `values` as their list."""
     if not expression.strip():
         raise ValueError("Expression cannot be empty.")
 
-    operands = {name: to_operand(value) for name, value in values.items()}
+    # A missing input (not connected, or its link dropped because the node feeding it is bypassed)
+    # reads as None, so a formula can test for it: `b if b is not None else c`.
+    operands = {name: to_operand(value) for name, value in values.items() if value is not None}
+    missing = {name: None for name in string.ascii_lowercase if name not in operands}
     variables = {**operands, "values": list(operands.values())}
-    result = simple_eval(expression, names={**CONSTANTS, **variables}, functions=FUNCTIONS)
+    try:
+        result = simple_eval(expression, names={**CONSTANTS, **missing, **variables}, functions=FUNCTIONS)
+    except TypeError as error:
+        used = [name for name in missing if name in _names_used(expression)]
+        if not used:
+            raise
+        raise ValueError(
+            f"Input {', '.join(used)} is used but not connected (or bypassed). "
+            f"Test for it in the formula, e.g. `{used[0]} is not None`. ({error})"
+        ) from None
+    if result is None:
+        raise ValueError("The expression produced no value: an input it returns is not connected (or bypassed).")
     as_int, as_float, as_bool, as_string = to_outputs(result)
 
     worked = substitute(expression.strip(), variables)
