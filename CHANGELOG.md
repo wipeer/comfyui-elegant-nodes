@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- **New: Elegant Boolean Switch**: an on/off switch that outputs `true` or `false`. A connected boolean is
+  passed on instead of the switch.
+
 ## 1.11.0
 
 - **New: Elegant Notes**: tabs of text, each with a name you can change (double-click a tab to rename it;

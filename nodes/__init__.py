@@ -1,5 +1,6 @@
 """ComfyUI node definitions (V3 schema). The logic they use lives in ../core."""
 
+from .boolean_switch import ElegantBooleanSwitch
 from .load_image_folder import ElegantLoadImageFromFolder
 from .math_expression import ElegantAnyMathMultiPreview
 from .notes import ElegantNotes, ElegantNotesMerge
@@ -24,4 +25,5 @@ NODES = [
     ElegantSlider,
     ElegantNotes,
     ElegantNotesMerge,
+    ElegantBooleanSwitch,
 ]

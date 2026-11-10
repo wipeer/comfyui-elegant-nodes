@@ -55,6 +55,7 @@ the rest follows. Demote them and it goes away.
 | [**Elegant Group Muter**](#elegant-group-muter) | The Group Bypasser with mute instead of bypass. A port of rgthree's Fast Groups Muter. | Lists the groups of its own (sub)graph |
 | [**Elegant Notes**](#elegant-notes) | Tabs of text, each with a name you can change; outputs them as a named list. Can load and save them in a JSON file. | None needed |
 | [**Elegant Notes Merge**](#elegant-notes-merge) | Joins named lists into one flat list; gives the tab names and values as lists, or one tab by index. | None needed |
+| [**Elegant Boolean Switch**](#elegant-boolean-switch) | An on/off switch that outputs true or false, or passes on a boolean you connect. | None needed |
 
 All nodes are in the top-level **elegant** category. Click the cyan **?** in a node's title
 for detailed help on that node (Elegant Simple Reroute has none: it stays bare).
@@ -318,6 +319,11 @@ A slider whose range you set yourself. ComfyUI's number boxes have a fixed range
 Outputs `int` (rounded) and `float`. The range is also enforced when the workflow runs, so a value
 outside it sent through the API is moved into the range. If you promote **value** to a subgraph
 node, the slider there keeps the range it had when promoted.
+
+### Elegant Boolean Switch
+
+An on/off switch that outputs `true` or `false`. Connect a boolean to **value** and that value is passed on
+instead; leave it unconnected and the switch decides. Output: `boolean`.
 
 ### Elegant Resolution Reroute
 
