@@ -55,6 +55,7 @@ the rest follows. Demote them and it goes away.
 | [**Elegant Group Muter**](#elegant-group-muter) | The Group Bypasser with mute instead of bypass. A port of rgthree's Fast Groups Muter. | Lists the groups of its own (sub)graph |
 | [**Elegant Notes**](#elegant-notes) | Tabs of text, each with a name you can change; outputs them as a named list. Can load and save them in a JSON file. | None needed |
 | [**Elegant Notes Merge**](#elegant-notes-merge) | Joins named lists into one flat list; gives the tab names and values as lists, or one tab by index. | None needed |
+| [**Elegant Switch**](#elegant-switch) | A true/false switch that outputs `on_true` or `on_false`; an empty input sends the plain true or false. | None needed |
 
 All nodes are in the top-level **elegant** category. Click the cyan **?** in a node's title
 for detailed help on that node (Elegant Simple Reroute has none: it stays bare).
@@ -318,6 +319,13 @@ A slider whose range you set yourself. ComfyUI's number boxes have a fixed range
 Outputs `int` (rounded) and `float`. The range is also enforced when the workflow runs, so a value
 outside it sent through the API is moved into the range. If you promote **value** to a subgraph
 node, the slider there keeps the range it had when promoted.
+
+### Elegant Switch
+
+A true/false switch with two inputs of any type. On **true** the `on_true` input is output, on **false** the
+`on_false` input. An input with nothing connected sends the plain `true` or `false` instead, so with no inputs it is
+just a boolean, and with only `on_true` connected it gives that value or `false`. The advanced `lazy_evaluation`
+switch (off by default) skips computing the input that is not chosen. Output: `output`.
 
 ### Elegant Resolution Reroute
 

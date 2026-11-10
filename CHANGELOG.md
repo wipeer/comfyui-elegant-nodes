@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- **New: Elegant Switch**: a true/false switch with two inputs of any type (`on_true`, `on_false`). Outputs the
+  input of the chosen side; an empty input sends the plain `true` or `false`. The advanced **lazy_evaluation** switch (off by default) skips the branch
+  that is not chosen.
+
 ## 1.11.0
 
 - **New: Elegant Notes**: tabs of text, each with a name you can change (double-click a tab to rename it;
