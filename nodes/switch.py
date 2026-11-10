@@ -17,8 +17,6 @@ class ElegantSwitch(io.ComfyNode):
                 io.Boolean.Input(
                     "switch",
                     default=True,
-                    label_on="true",
-                    label_off="false",
                     tooltip="true: output on_true. false: output on_false.",
                 ),
                 # lazy: ComfyUI asks check_lazy_status below which of the two to run first.
@@ -32,8 +30,6 @@ class ElegantSwitch(io.ComfyNode):
                     "lazy_evaluation",
                     default=False,
                     optional=True,
-                    label_on="on",
-                    label_off="off",
                     advanced=True,
                     tooltip="on: only the chosen input is computed, the other branch is skipped. "
                     "off: both inputs are computed, as in any other node.",

@@ -4,7 +4,7 @@
 
 - **New: Elegant Switch**: a true/false switch with two inputs of any type (`on_true`, `on_false`). Outputs the
   input of the chosen side; an empty input sends the plain `true` or `false`. The advanced **lazy_evaluation** switch (off by default) skips the branch
-  that is not chosen.
+  that is not chosen. Both booleans are real switches, not on/off buttons.
 
 ## 1.11.0
 
