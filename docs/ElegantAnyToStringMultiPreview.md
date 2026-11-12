@@ -12,7 +12,7 @@ Turns several values into text and joins them with a delimiter (**concat**), pic
 | **delimiter** | concat: put between the values. `\n` = new line (default), `\t` = tab, `\\` = backslash. Anything else is used as typed, e.g. `, ` or ` \| `. |
 | **wrap_text** | (advanced) Wrap long lines to the box width instead of scrolling sideways. |
 | **mode** | `concat`: join all sources with the delimiter. `switch`: use only the source chosen by **index**. `template`: fill the sources into the **template** text. Only the settings the mode uses are shown: **delimiter** (and **prefix** / **suffix** when switched on) in concat, **index** in switch. The others move to the advanced settings (**⚙**) and are greyed out there. |
-| **template** | template mode: your text. `$var1`, `$var2`, … (also `$source_1`, …) are replaced by the text of that source. A variable without a connected source is left as typed. |
+| **template** | template mode: your text. `$var1`, `$var2`, … (also `$source_1`, …) are replaced by the text of that source. A variable without a connected source is replaced with nothing. |
 | **index** | switch: which source to use, counting from 1 (`source_1`). Connect a number to choose it from elsewhere, e.g. an **Elegant Random Number** for a random pick. |
 | **use_prefix**, **use_suffix** | (advanced) concat: switch on to show the **prefix** / **suffix** field. |
 | **prefix**, **suffix** | concat: text added before / after the joined text. `\n` = new line, `\t` = tab, like the delimiter. |

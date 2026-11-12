@@ -37,11 +37,11 @@ _VARIABLE = re.compile(r"\$(?:var|source_)(\d+)")
 
 
 def _fill_template(template: str, sources: dict) -> str:
-    """Replaces $var1, $var2, … (also $source_1) with the text of that source; unknown ones stay as typed."""
+    """Replaces $var1, $var2, … (also $source_1) with the text of that source; unknown ones become empty."""
 
     def replace(match):
         name = f"source_{int(match.group(1))}"
-        return _to_text(sources[name]) if name in sources else match.group(0)
+        return _to_text(sources[name]) if name in sources else ""
 
     return _VARIABLE.sub(replace, template)
 
@@ -155,7 +155,7 @@ class ElegantAnyToStringMultiPreview(io.ComfyNode):
                     multiline=True,
                     optional=True,
                     tooltip="template: your text; $var1, $var2… (also $source_1…) are replaced by the "
-                    "text of that source. Variables without a connected source are left as typed.",
+                    "text of that source. Variables without a connected source are replaced with nothing.",
                 ),
                 show_preview_input(),
             ],
