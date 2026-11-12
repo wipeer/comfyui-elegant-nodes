@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.13.0
 
 - **Elegant Switch**: new **mode** (`pick input` as before, or `pick output`: the switch chooses which of two
   outputs is active, the other is blocked; one input goes to the active output, with two `input_1` feeds `output_1`
