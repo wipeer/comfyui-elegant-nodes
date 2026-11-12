@@ -55,7 +55,7 @@ the rest follows. Demote them and it goes away.
 | [**Elegant Group Muter**](#elegant-group-muter) | The Group Bypasser with mute instead of bypass. A port of rgthree's Fast Groups Muter. | Lists the groups of its own (sub)graph |
 | [**Elegant Notes**](#elegant-notes) | Tabs of text, each with a name you can change; outputs them as a named list. Can load and save them in a JSON file. | None needed |
 | [**Elegant Notes Merge**](#elegant-notes-merge) | Joins named lists into one flat list; gives the tab names and values as lists, or one tab by index. | None needed |
-| [**Elegant Switch**](#elegant-switch) | A true/false switch that outputs `on_true` or `on_false`; an empty input sends the plain true or false. | None needed |
+| [**Elegant Switch**](#elegant-switch) | A switch with two modes: pick one of two inputs, or pick which of two outputs is active. | None needed |
 
 All nodes are in the top-level **elegant** category. Click the cyan **?** in a node's title
 for detailed help on that node (Elegant Simple Reroute has none: it stays bare).
@@ -322,10 +322,11 @@ node, the slider there keeps the range it had when promoted.
 
 ### Elegant Switch
 
-A true/false switch with two inputs of any type. On **true** the `on_true` input is output, on **false** the
-`on_false` input. An input with nothing connected sends the plain `true` or `false` instead, so with no inputs it is
-just a boolean, and with only `on_true` connected it gives that value or `false`. The advanced `lazy_evaluation`
-switch (off by default) skips computing the input that is not chosen. Output: `output`.
+A switch with two modes (**mode**). **pick input** (default): the output is `input_1` when the switch is **1**, `input_2`
+when **2**; an input with nothing connected sends the plain `true` / `false` instead. **pick output**: the switch
+chooses which of `output_1` / `output_2` is active and the other is blocked, so nodes fed only by it do not run;
+with one input it goes to the active output, with two `input_1` feeds `output_1` and `input_2` feeds `output_2`.
+The advanced `lazy_evaluation` switch (pick input only, off by default) skips computing the input that is not chosen.
 
 ### Elegant Resolution Reroute
 
