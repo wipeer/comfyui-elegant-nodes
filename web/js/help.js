@@ -103,7 +103,7 @@ const HELP = {
   [NODE_IDS.anyToStringMultiPreview]: {
     title: "Elegant Any to String Multi Preview",
     html: `
-<p>Turns several values into text and joins them with a delimiter (<b>concat</b>), or picks one of them by index (<b>switch</b>).</p>
+<p>Turns several values into text and joins them with a delimiter (<b>concat</b>), picks one of them by index (<b>switch</b>), or fills them into your own text (<b>template</b>).</p>
 <p class="elegant-help-subgraph"><b>Works from the subgraph node.</b> After each run the joined text also appears on the subgraph node. Each copy of a subgraph shows its own value.</p>
 <h3>Inputs</h3>
 <table>
@@ -111,6 +111,7 @@ const HELP = {
 <tr><td><b>delimiter</b></td><td>concat: put between the values. <code>\\n</code> = new line (default), <code>\\t</code> = tab, <code>\\\\</code> = backslash. Anything else is used as typed, e.g. <code>, </code> or <code> | </code>.</td></tr>
 <tr><td><b>wrap_text</b></td><td>(advanced) Wrap long lines to the box width instead of scrolling sideways.</td></tr>
 <tr><td><b>mode</b></td><td><code>concat</code>: join all sources with the delimiter. <code>switch</code>: use only the source chosen by <b>index</b>. Only the settings the mode uses are shown: <b>delimiter</b> (and <b>prefix</b> / <b>suffix</b> when switched on) in concat, <b>index</b> in switch. The others move to the advanced settings (<b>⚙</b>) and are greyed out there.</td></tr>
+<tr><td><b>template</b></td><td>template mode: your text. <code>$var1</code>, <code>$var2</code>, … (also <code>$source_1</code>, …) are replaced by the text of that source. A variable without a connected source is replaced with nothing.</td></tr>
 <tr><td><b>index</b></td><td>switch: which source to use, counting from 1 (<code>source_1</code>). Connect a number to choose it from elsewhere, e.g. an <b>Elegant Random Number</b> for a random pick.</td></tr>
 <tr><td><b>use_prefix</b>, <b>use_suffix</b></td><td>(advanced) concat: switch on to show the <b>prefix</b> / <b>suffix</b> field.</td></tr>
 <tr><td><b>prefix</b>, <b>suffix</b></td><td>concat: text added before / after the joined text. <code>\\n</code> = new line, <code>\\t</code> = tab, like the delimiter.</td></tr>

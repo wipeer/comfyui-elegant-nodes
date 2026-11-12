@@ -1,3 +1,5 @@
+import re
+
 import torch
 
 from comfy_api.latest import io, ui
@@ -29,6 +31,19 @@ def _to_text(value) -> str:
         return to_text(value)
     finally:
         torch.set_printoptions()
+
+
+_VARIABLE = re.compile(r"\$(?:var|source_)(\d+)")
+
+
+def _fill_template(template: str, sources: dict) -> str:
+    """Replaces $var1, $var2, … (also $source_1) with the text of that source; unknown ones become empty."""
+
+    def replace(match):
+        name = f"source_{int(match.group(1))}"
+        return _to_text(sources[name]) if name in sources else ""
+
+    return _VARIABLE.sub(replace, template)
 
 
 class ElegantAnyToStringPreview(io.ComfyNode):
@@ -109,9 +124,10 @@ class ElegantAnyToStringMultiPreview(io.ComfyNode):
                 _wrap_input(),
                 io.Combo.Input(
                     "mode",
-                    options=["concat", "switch"],
+                    options=["concat", "switch", "template"],
                     default="concat",
-                    tooltip="concat: join all sources. switch: use only the source chosen by index.",
+                    tooltip="concat: join all sources. switch: use only the source chosen by index. "
+                    "template: write text with $var1, $var2… standing for the sources.",
                 ),
                 io.Int.Input(
                     "index",
@@ -133,6 +149,14 @@ class ElegantAnyToStringMultiPreview(io.ComfyNode):
                 # optional, so prompts saved before (API format) stay valid.
                 *_affix_inputs("prefix", "before"),
                 *_affix_inputs("suffix", "after"),
+                io.String.Input(
+                    "template",
+                    default="",
+                    multiline=True,
+                    optional=True,
+                    tooltip="template: your text; $var1, $var2… (also $source_1…) are replaced by the "
+                    "text of that source. Variables without a connected source are replaced with nothing.",
+                ),
                 show_preview_input(),
             ],
             outputs=[
@@ -157,9 +181,13 @@ class ElegantAnyToStringMultiPreview(io.ComfyNode):
         prefix: str = "",
         use_suffix: bool = False,
         suffix: str = "",
+        template: str = "",
         show_preview: bool = True,
     ) -> io.NodeOutput:
         names = [name for name in SOURCE_NAMES if name in sources]
+        if mode == "template":
+            text = _fill_template(template, sources)
+            return io.NodeOutput(text, text, ui=ui.PreviewText(text))
         if mode == "switch":
             name = names[pick_index(index, len(names), out_of_range)]  # raises if out of range or empty
             value = sources[name]

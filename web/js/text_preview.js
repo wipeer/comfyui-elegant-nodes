@@ -301,10 +301,11 @@ function setupModeHints(node) {
   const mode = find("mode");
   if (!mode || !find("index")) return;
   const apply = (resize = true) => {
-    const concat = mode.value !== "switch";
+    const concat = mode.value === "concat";
     const shown = {
       delimiter: concat,
-      index: !concat,
+      index: mode.value === "switch",
+      template: mode.value === "template",
       prefix: concat && !!find("use_prefix")?.value,
       suffix: concat && !!find("use_suffix")?.value,
     };
