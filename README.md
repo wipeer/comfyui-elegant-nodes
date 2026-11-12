@@ -55,6 +55,7 @@ the rest follows. Demote them and it goes away.
 | [**Elegant Group Muter**](#elegant-group-muter) | The Group Bypasser with mute instead of bypass. A port of rgthree's Fast Groups Muter. | Lists the groups of its own (sub)graph |
 | [**Elegant Notes**](#elegant-notes) | Tabs of text, each with a name you can change; outputs them as a named list. Can load and save them in a JSON file. | None needed |
 | [**Elegant Notes Merge**](#elegant-notes-merge) | Joins named lists into one flat list; gives the tab names and values as lists, or one tab by index. | None needed |
+| [**Elegant Switch Split**](#elegant-switch-split) | The opposite switch: picks which of two outputs is active; the other is blocked. | None needed |
 | [**Elegant Switch**](#elegant-switch) | A true/false switch that outputs `on_true` or `on_false`; an empty input sends the plain true or false. | None needed |
 
 All nodes are in the top-level **elegant** category. Click the cyan **?** in a node's title
@@ -326,6 +327,12 @@ A true/false switch with two inputs of any type. On **true** the `on_true` input
 `on_false` input. An input with nothing connected sends the plain `true` or `false` instead, so with no inputs it is
 just a boolean, and with only `on_true` connected it gives that value or `false`. The advanced `lazy_evaluation`
 switch (off by default) skips computing the input that is not chosen. Output: `output`.
+
+### Elegant Switch Split
+
+The opposite of Elegant Switch: the `switch` picks which of two outputs is active; the other output is blocked, so
+nodes connected only to it do not run. With one input (`input_1`) the value goes to the active output. With two,
+`input_1` feeds `output_1` and `input_2` feeds `output_2`. Outputs: `output_1`, `output_2`.
 
 ### Elegant Resolution Reroute
 

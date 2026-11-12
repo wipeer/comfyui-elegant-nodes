@@ -56,3 +56,45 @@ class ElegantSwitch(io.ComfyNode):
         chosen = on_true if switch else on_false
         # Nothing connected on the chosen side: send the switch itself.
         return io.NodeOutput(bool(switch) if chosen is None else chosen)
+
+
+class ElegantSwitchSplit(io.ComfyNode):
+    """The opposite of Elegant Switch: the switch picks which of two outputs is active; the other is blocked."""
+
+    @classmethod
+    def define_schema(cls):
+        return io.Schema(
+            node_id="ElegantSwitchSplit",
+            display_name="Elegant Switch Split",
+            search_aliases=["switch", "split", "route", "router", "demux", "branch", "if", "select output", "toggle"],
+            category="elegant",
+            description="The switch picks which of two outputs is active. The other output is blocked, so "
+            "nodes connected only to it do not run. With one input, it goes to the active output. With "
+            "two, input_1 feeds output_1 and input_2 feeds output_2.",
+            inputs=[
+                io.Boolean.Input(
+                    "switch",
+                    default=True,
+                    label_on="output_1",
+                    label_off="output_2",
+                    tooltip="Which output is active: output_1 (on) or output_2 (off).",
+                ),
+                io.AnyType.Input("input_1", optional=True, tooltip="Feeds output_1. Alone, it feeds the active output."),
+                io.AnyType.Input("input_2", optional=True, tooltip="Feeds output_2 (optional)."),
+            ],
+            outputs=[
+                io.AnyType.Output(display_name="output_1"),
+                io.AnyType.Output(display_name="output_2"),
+            ],
+        )
+
+    @classmethod
+    def execute(cls, switch: bool, input_1=None, input_2=None) -> io.NodeOutput:
+        from comfy_execution.graph import ExecutionBlocker
+
+        blocked = ExecutionBlocker(None)  # nodes fed only by a blocked output are silently skipped
+        if input_2 is None:
+            value_1 = value_2 = input_1  # one input: it goes to whichever output is active
+        else:
+            value_1, value_2 = input_1, input_2
+        return io.NodeOutput(value_1 if switch else blocked, blocked if switch else value_2)

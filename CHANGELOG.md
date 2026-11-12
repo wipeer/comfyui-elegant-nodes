@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- **New: Elegant Switch Split**: the opposite of Elegant Switch. The `switch` picks which of two outputs is active;
+  the other is blocked, so nodes fed only by it do not run. One input goes to the active output; with two inputs,
+  `input_1` feeds `output_1` and `input_2` feeds `output_2`.
+
 ## 1.12.0
 
 - **Elegant Any to String Multi Preview**: new **template** mode. Write any text with `$var1`, `$var2`, … (also

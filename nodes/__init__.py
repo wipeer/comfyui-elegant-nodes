@@ -9,7 +9,7 @@ from .resolution_reroute import ElegantResolutionReroute
 from .resolution_selector import ElegantResolutionSelector
 from .seed import ElegantSeed
 from .slider import ElegantSlider
-from .switch import ElegantSwitch
+from .switch import ElegantSwitch, ElegantSwitchSplit
 from .text_preview import ElegantAnyToStringMultiPreview, ElegantAnyToStringPreview
 
 NODES = [
@@ -26,4 +26,5 @@ NODES = [
     ElegantNotes,
     ElegantNotesMerge,
     ElegantSwitch,
+    ElegantSwitchSplit,
 ]

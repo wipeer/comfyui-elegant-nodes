@@ -11,5 +11,6 @@
   "ElegantSlider": "Slider with a range you set",
   "ElegantNotes": "Tabs of named text, saved to a JSON file",
   "ElegantNotesMerge": "Merge named notes, pick a tab by index",
-  "ElegantSwitch": "True/false switch between two inputs"
+  "ElegantSwitch": "True/false switch between two inputs",
+  "ElegantSwitchSplit": "Switch picks which of two outputs is active"
 }
