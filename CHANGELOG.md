@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- **Elegant Any to String Multi Preview**: new **template** mode. Write any text with `$var1`, `$var2`, … (also
+  `$source_1`) standing for the sources; variables without a connected source are left as typed.
 - **New: Elegant Switch**: a true/false switch with two inputs of any type (`on_true`, `on_false`). Outputs the
   input of the chosen side; an empty input sends the plain `true` or `false`. The advanced **lazy_evaluation** switch (off by default) skips the branch
   that is not chosen.
