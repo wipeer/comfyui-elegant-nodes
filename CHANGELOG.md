@@ -2,9 +2,10 @@
 
 ## Unreleased
 
-- **New: Elegant Switch Split**: the opposite of Elegant Switch. The `switch` picks which of two outputs is active;
-  the other is blocked, so nodes fed only by it do not run. One input goes to the active output; with two inputs,
-  `input_1` feeds `output_1` and `input_2` feeds `output_2`.
+- **Elegant Switch**: new **mode** (`pick input` as before, or `pick output`: the switch chooses which of two
+  outputs is active, the other is blocked; one input goes to the active output, with two `input_1` feeds `output_1`
+  and `input_2` feeds `output_2`). The switch now reads `1` / `2` instead of true / false, and the inputs and
+  output are shown as `input_1`, `input_2`, `output_1` (new: `output_2`). Saved workflows keep working.
 
 ## 1.12.0
 

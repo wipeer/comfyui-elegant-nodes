@@ -1,29 +1,37 @@
 # Elegant Switch
 
-A true/false switch that picks one of two inputs and passes it on.
+A switch with two modes: pick one of two inputs, or pick which of two outputs is active.
 
 ### Controls
 
 | Item | Description |
 |---|---|
-| **switch** | `true` or `false`. Connect a BOOLEAN to it and that value is used instead. |
-| **on_true** | Any value. Output when the switch is **true**. |
-| **on_false** | Any value. Output when the switch is **false**. |
-| **lazy_evaluation** | Advanced (⚙). **off** (default): both inputs are computed, as in any node. **on**: only the chosen input is computed and the other branch is skipped, which saves time and memory when it is heavy. |
+| **switch** | `1` or `2`. Connect a BOOLEAN to it (true = 1) and that value is used instead. |
+| **input_1** | Any value. Used when the switch is **1**. |
+| **input_2** | Any value. Used when the switch is **2**. |
+| **mode** | `pick input` (default) or `pick output`, see below. |
+| **lazy_evaluation** | Advanced (⚙), pick input only. **off** (default): both inputs are computed, as in any node. **on**: only the chosen input is computed and the other branch is skipped. |
 
-An input with nothing connected sends the plain boolean instead:
+### pick input
 
-| switch | on_true connected | on_false connected | Output |
+**output_1** is the chosen input. An input with nothing connected sends the plain boolean instead:
+
+| switch | input_1 connected | input_2 connected | output_1 |
 |---|---|---|---|
-| true | yes | any | **on_true** |
-| true | no | any | `true` |
-| false | any | yes | **on_false** |
-| false | any | no | `false` |
+| 1 | yes | any | **input_1** |
+| 1 | no | any | `true` |
+| 2 | any | yes | **input_2** |
+| 2 | any | no | `false` |
 
-So with no inputs at all the node is just a true/false switch, and with only **on_true** connected it gives that value or `false`.
+**output_2** is blocked.
 
-### Outputs
+### pick output
 
-| Item | Description |
-|---|---|
-| **output** | The chosen input, or the switch itself when that input is empty (any type). |
+The switch chooses which output is active. The other is blocked, so nodes connected only to it do not run.
+
+| inputs connected | switch 1 | switch 2 |
+|---|---|---|
+| only input_1 | input_1 → output_1 | input_1 → output_2 |
+| input_1 and input_2 | input_1 → output_1 | input_2 → output_2 |
+
+Workflows saved before this mode existed keep working (the inputs were called `on_true` / `on_false`).
