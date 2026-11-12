@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.12.0
 
 - **Elegant Any to String Multi Preview**: new **template** mode. Write any text with `$var1`, `$var2`, … (also
   `$source_1`) standing for the sources; variables without a connected source are replaced with nothing.
